@@ -1,87 +1,177 @@
-// ============================================
+// 
 // FUNCIONALIDADES DO ADMINISTRADOR
-// ============================================
+// 
 
-document.addEventListener('DOMContentLoaded', function() {
-  if (!window.Auth) return;
+(function() {
+  'use strict';
 
-  window.Admin = {
-    isAdmin(profile) {
-      return profile?.role === 'admin';
-    },
+  function initAdmin() {
+    if (!window.Auth) {
+      console.error('❌ Auth não disponível');
+      return;
+    }
 
-    // Renderizar seção de upload
-    renderUploadSection(containerId, profile) {
-      const container = document.getElementById(containerId);
-      if (!container || !this.isAdmin(profile)) {
-        if (container) container.style.display = 'none';
+    window.Admin = {
+      isAdmin(profile) {
+        return profile?.role === 'admin';
+      },
+
+      renderUploadSection(containerId, profile) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (!this.isAdmin(profile)) {
+          container.style.display = 'none';
+          return;
+        }
+
+        container.innerHTML = `
+          <div style="background:#f0f9ff;border:2px dashed #3b82f6;border-radius:12px;padding:24px;margin:20px 0;">
+            <h3 style="color:#1e40af;margin-bottom:16px;">
+              <i class="fas fa-cloud-upload-alt"></i> Área do Administrador
+            </h3>
+            
+            <label style="display:block;margin-bottom:8px;font-weight:500;">Categoria:</label>
+            <select id="uploadCategory" style="width:100%;padding:10px;margin-bottom:12px;border-radius:8px;border:1px solid #d1d5db;">
+              <option value="escritura">Escritura</option>
+              <option value="divorcio">Divórcio</option>
+              <option value="procuracao">Procuração</option>
+              <option value="usucapiao">Usucapião</option>
+              <option value="inventario">Inventário</option>
+              <option value="outros">Outros</option>
+            </select>
+            
+            <label style="display:block;margin-bottom:8px;font-weight:500;">Arquivo PDF:</label>
+            <input type="file" id="requirementFile" accept=".pdf" style="width:100%;padding:10px;margin-bottom:16px;border:1px solid #d1d5db;border-radius:8px;">
+            
+            <button onclick="window.handleFileUpload()" style="background:#3b82f6;color:white;padding:12px 24px;border:none;border-radius:8px;cursor:pointer;font-weight:500;">
+              <i class="fas fa-upload"></i> Enviar Arquivo
+            </button>
+            
+            <div id="uploadStatus" style="margin-top:16px;"></div>
+            
+            <div style="margin-top:24px;">
+              <h4 style="margin-bottom:12px;">Arquivos Enviados:</h4>
+              <div id="adminFilesList">Carregando...</div>
+            </div>
+          </div>
+        `;
+
+        this.loadFilesList();
+      },
+
+      async loadFilesList() {
+        const listDiv = document.getElementById('adminFilesList');
+        if (!listDiv) return;
+
+        try {
+          const { data, error } = await window.Auth.client
+            .from('requirement_files')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) throw error;
+
+          if (!data || data.length === 0) {
+            listDiv.innerHTML = '<p style="color:#6b7280;">Nenhum arquivo enviado.</p>';
+            return;
+          }
+
+          listDiv.innerHTML = data.map(file => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:white;border-radius:8px;margin-bottom:8px;border:1px solid #e5e7eb;">
+              <div>
+                <strong>${file.name}</strong><br>
+                <small style="color:#6b7280;">${file.category} • ${this.formatSize(file.file_size)}</small>
+              </div>
+              <div>
+                <a href="${this.getFileUrl(file.file_path)}" target="_blank" style="color:#3b82f6;margin-right:12px;">
+                  <i class="fas fa-download"></i>
+                </a>
+                <button onclick="window.deleteRequirementFile('${file.id}', '${file.file_path}')" style="background:#ef4444;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          `).join('');
+        } catch (e) {
+          listDiv.innerHTML = `<p style="color:#ef4444;">Erro: ${e.message}</p>`;
+        }
+      },
+
+      getFileUrl(filePath) {
+        const { data } = window.Auth.client.storage
+          .from('requirements')
+          .getPublicUrl(filePath);
+        return data.publicUrl;
+      },
+
+      formatSize(bytes) {
+        if (!bytes) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+      }
+    };
+
+    window.handleFileUpload = async function() {
+      const fileInput = document.getElementById('requirementFile');
+      const category = document.getElementById('uploadCategory').value;
+      const status = document.getElementById('uploadStatus');
+
+      const file = fileInput.files[0];
+      if (!file) {
+        status.innerHTML = '<span style="color:#ef4444;">Selecione um arquivo!</span>';
         return;
       }
 
-      container.innerHTML = `
-        <div style="background:#f0f9ff;border:2px dashed #3b82f6;border-radius:12px;padding:24px;margin:20px 0;">
-          <h3 style="color:#1e40af;margin-bottom:16px;">
-            <i class="fas fa-cloud-upload-alt"></i> Área do Administrador
-          </h3>
-          
-          <select id="uploadCategory" style="width:100%;padding:10px;margin-bottom:12px;border-radius:8px;border:1px solid #d1d5db;">
-            <option value="escritura">Escritura</option>
-            <option value="divorcio">Divórcio</option>
-            <option value="procuracao">Procuração</option>
-            <option value="usucapiao">Usucapião</option>
-          </select>
-          
-          <input type="file" id="requirementFile" accept=".pdf" style="width:100%;padding:10px;margin-bottom:12px;">
-          
-          <button onclick="handleUpload()" style="background:#3b82f6;color:white;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;">
-            <i class="fas fa-upload"></i> Enviar
-          </button>
-          
-          <div id="uploadStatus" style="margin-top:12px;"></div>
-        </div>
-      `;
-    }
-  };
+      status.innerHTML = '<span style="color:#3b82f6;">Enviando...</span>';
 
-  // Handler global
-  window.handleUpload = async function() {
-    const file = document.getElementById('requirementFile').files[0];
-    const category = document.getElementById('uploadCategory').value;
-    const status = document.getElementById('uploadStatus');
-    
-    if (!file) {
-      status.innerHTML = '<span style="color:#ef4444;">Selecione um arquivo</span>';
-      return;
-    }
+      try {
+        const fileName = `${category}_${Date.now()}_${file.name}`;
+        
+        const { error: uploadError } = await window.Auth.client.storage
+          .from('requirements')
+          .upload(fileName, file);
 
-    status.innerHTML = '<span style="color:#3b82f6;">Enviando...</span>';
-    
-    // Upload para Storage
-    const fileName = `${category}_${Date.now()}.pdf`;
-    const { error: uploadError } = await window.Auth.client.storage
-      .from('requirements')
-      .upload(fileName, file);
+        if (uploadError) throw uploadError;
 
-    if (uploadError) {
-      status.innerHTML = `<span style="color:#ef4444;">Erro: ${uploadError.message}</span>`;
-      return;
-    }
+        const { error: dbError } = await window.Auth.client
+          .from('requirement_files')
+          .insert([{
+            name: file.name,
+            file_path: fileName,
+            category: category,
+            file_type: file.type,
+            file_size: file.size
+          }]);
 
-    // Salvar no banco
-    const { error: dbError } = await window.Auth.client
-      .from('requirement_files')
-      .insert([{
-        name: file.name,
-        file_path: fileName,
-        category: category,
-        file_type: file.type,
-        file_size: file.size
-      }]);
+        if (dbError) throw dbError;
 
-    if (dbError) {
-      status.innerHTML = `<span style="color:#ef4444;">Erro: ${dbError.message}</span>`;
-    } else {
-      status.innerHTML = '<span style="color:#10b981;">✅ Enviado com sucesso!</span>';
-    }
-  };
-});
+        status.innerHTML = '<span style="color:#10b981;">✅ Arquivo enviado!</span>';
+        fileInput.value = '';
+        window.Admin.loadFilesList();
+      } catch (e) {
+        status.innerHTML = `<span style="color:#ef4444;">Erro: ${e.message}</span>`;
+      }
+    };
+
+    window.deleteRequirementFile = async function(fileId, filePath) {
+      if (!confirm('Excluir este arquivo?')) return;
+
+      try {
+        await window.Auth.client.storage.from('requirements').remove([filePath]);
+        await window.Auth.client.from('requirement_files').delete().eq('id', fileId);
+        window.Admin.loadFilesList();
+      } catch (e) {
+        alert('Erro ao excluir: ' + e.message);
+      }
+    };
+
+    window.Auth.getCurrentUser().then(({ profile }) => {
+      window.Admin.renderUploadSection('adminUploadSection', profile);
+    });
+  }
+
+  window.addEventListener('authReady', initAdmin);
+})();
