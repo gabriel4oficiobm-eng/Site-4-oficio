@@ -1,140 +1,98 @@
 // ============================================
-// SISTEMA DE AUTENTICAÇÃO
+// SISTEMA DE AUTENTICAÇÃO - CORRIGIDO
 // ============================================
 
-// Inicializar Supabase
-const supabase = window.supabase.createClient(
-  window.ENV.SUPABASE_URL,
-  window.ENV.SUPABASE_ANON_KEY
-);
+// Aguardar Supabase carregar
+document.addEventListener('DOMContentLoaded', function() {
+  // Verificar se Supabase está disponível
+  if (typeof window.supabase === 'undefined') {
+    console.error('❌ Supabase não carregou!');
+    showError('Erro ao carregar sistema. Recarregue a página.');
+    return;
+  }
 
-// Criar usuário admin automaticamente
-async function createAdminUser() {
-  try {
-    // Verificar se admin já existe
-    const { data: existingUser } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('email', 'admin@cartorio4oficio.com')
-      .single();
+  // Inicializar cliente Supabase
+  const supabaseUrl = window.ENV?.SUPABASE_URL || 'https://cqvkfrojkjicfxipwltz.supabase.co';
+  const supabaseKey = window.ENV?.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2ppY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTQzNzksImV4cCI6MjA4Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE';
+  
+  window.Auth = {
+    client: window.supabase.createClient(supabaseUrl, supabaseKey),
+    
+    // Criar usuário admin
+    async createAdminUser() {
+      try {
+        const { data: existing } = await this.client
+          .from('profiles')
+          .select('email')
+          .eq('email', 'admin@cartorio4oficio.com')
+          .single();
 
-    if (!existingUser) {
-      // Criar usuário no Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: 'admin@cartorio4oficio.com',
-        password: 'Admin@123456'
-      });
+        if (!existing) {
+          const { data: authData, error: authError } = await this.client.auth.signUp({
+            email: 'admin@cartorio4oficio.com',
+            password: 'Admin@123456'
+          });
 
-      if (authError) {
-        console.log('Admin já existe ou erro:', authError.message);
-        return;
-      }
+          if (authError) {
+            console.log('Admin já existe');
+            return;
+          }
 
-      // Criar perfil admin
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([
-          {
+          await this.client.from('profiles').insert([{
             id: authData.user.id,
             email: 'admin@cartorio4oficio.com',
             role: 'admin',
             name: 'Administrador',
             accepted: true
-          }
-        ]);
+          }]);
 
-      if (profileError) {
-        console.error('Erro ao criar perfil admin:', profileError);
-      } else {
-        console.log('✅ Usuário admin criado com sucesso!');
-      }
-    }
-  } catch (error) {
-    console.error('Erro ao criar admin:', error);
-  }
-}
-
-// Login de usuário
-async function loginUser(email, password) {
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) throw error;
-
-    // Buscar perfil do usuário
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', data.user.id)
-      .single();
-
-    return { user: data.user, profile, error: null };
-  } catch (error) {
-    return { user: null, profile: null, error };
-  }
-}
-
-// Registrar novo usuário
-async function registerUser(email, password, userData) {
-  try {
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password
-    });
-
-    if (authError) throw authError;
-
-    // Criar perfil
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert([
-        {
-          id: authData.user.id,
-          email,
-          role: userData.role || 'client',
-          name: userData.name,
-          accepted: false
+          console.log('✅ Admin criado');
         }
-      ]);
+      } catch (e) {
+        console.error('Erro ao criar admin:', e);
+      }
+    },
 
-    if (profileError) throw profileError;
+    // Login
+    async login(email, password) {
+      const { data, error } = await this.client.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      
+      const { data: profile } = await this.client
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+        
+      return { user: data.user, profile };
+    },
 
-    return { user: authData.user, error: null };
-  } catch (error) {
-    return { user: null, error };
-  }
+    // Logout
+    async logout() {
+      await this.client.auth.signOut();
+      window.location.reload();
+    },
+
+    // Verificar sessão
+    async getUser() {
+      const { data: { user } } = await this.client.auth.getUser();
+      if (!user) return null;
+      
+      const { data: profile } = await this.client
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+        
+      return { user, profile };
+    }
+  };
+
+  // Inicializar
+  window.Auth.createAdminUser();
+});
+
+function showError(msg) {
+  const el = document.getElementById('error-message');
+  if (el) el.textContent = msg;
 }
-
-// Verificar sessão atual
-async function getCurrentUser() {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) return { user: null, profile: null };
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-  return { user, profile };
-}
-
-// Logout
-async function logoutUser() {
-  await supabase.auth.signOut();
-  window.location.reload();
-}
-
-// Exportar funções
-window.Auth = {
-  supabase,
-  createAdminUser,
-  loginUser,
-  registerUser,
-  getCurrentUser,
-  logoutUser
-};
