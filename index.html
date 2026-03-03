@@ -24,6 +24,13 @@
         .error-banner{background:var(--danger);color:white;padding:16px;text-align:center;position:fixed;top:0;left:0;right:0;z-index:10000;display:none}
         .error-banner.show{display:block}
     </style>
+
+  <!-- Scripts do Supabase e Configurações -->
+<script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/admin.js"></script>
+
 </head>
 <body>
 
@@ -2010,6 +2017,61 @@ document.addEventListener('keydown', e => {
         document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
     }
 });
+</script>
+
+<!-- Script para Horário de Funcionamento Dinâmico -->
+<script>
+  function updateOpenStatus() {
+    const now = new Date();
+    const day = now.getDay(); // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    const currentTime = hour * 60 + minute; // Minutos desde meia-noite
+    
+    // Horário de funcionamento: 9:00 - 17:00 (540 - 1020 minutos)
+    const openTime = 9 * 60;   // 540
+    const closeTime = 17 * 60; // 1020
+    
+    const statusBadge = document.getElementById('status-badge');
+    if (!statusBadge) return;
+    
+    // Verificar se é dia útil (1-5 = Seg-Sex) e dentro do horário
+    const isWeekday = day >= 1 && day <= 5;
+    const isOpen = isWeekday && currentTime >= openTime && currentTime < closeTime;
+    
+    if (isOpen) {
+      statusBadge.textContent = '🟢 Aberto agora';
+      statusBadge.style.background = '#d1fae5';
+      statusBadge.style.color = '#065f46';
+    } else {
+      statusBadge.textContent = '🔴 Fechado';
+      statusBadge.style.background = '#fee2e2';
+      statusBadge.style.color = '#991b1b';
+    }
+  }
+
+  // Atualizar imediatamente e a cada minuto
+  updateOpenStatus();
+  setInterval(updateOpenStatus, 60000);
+</script>
+
+<!-- Script de Inicialização -->
+<script>
+  // Inicializar quando a página carregar
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Criar usuário admin se não existir
+    await window.Auth.createAdminUser();
+    
+    // Verificar usuário logado
+    const { user, profile } = await window.Auth.getCurrentUser();
+    
+    // Renderizar seção de upload se for admin
+    if (profile && window.Admin.isAdmin(profile)) {
+      window.Admin.renderAdminUploadSection('adminUploadSection', profile);
+    }
+    
+    console.log('✅ Sistema inicializado');
+  });
 </script>
 
 </body>
