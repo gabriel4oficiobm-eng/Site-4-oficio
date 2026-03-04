@@ -1,172 +1,230 @@
 // 
 // SISTEMA DE AUTENTICAÇÃO - 4º Ofício de Notas
-// Raphael da Costa Souza
 // 
 
 (function() {
   'use strict';
 
-  function initAuth() {
+  // Variáveis globais
+  let supabase = null;
+  let isInitialized = false;
+
+  // Inicialização
+  function init() {
+    console.log('🚀 Inicializando Auth...');
+
     // Verificar se Supabase está disponível
     if (typeof window.supabase === 'undefined') {
-      console.error('❌ Supabase não carregou. Tentando novamente em 500ms...');
-      setTimeout(initAuth, 500);
+      console.log('⏳ Aguardando Supabase...');
+      setTimeout(init, 100);
       return;
     }
 
-    console.log('✅ Supabase carregado, inicializando auth...');
-
-    const supabaseUrl = window.ENV?.SUPABASE_URL;
-    const supabaseKey = window.ENV?.SUPABASE_ANON_KEY;
-    
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('❌ Configuração do Supabase não encontrada em window.ENV');
+    // Verificar config
+    if (!window.ENV || !window.ENV.SUPABASE_URL) {
+      console.error('❌ Configuração não encontrada');
+      showError('Erro ao carregar sistema');
       return;
     }
 
-    // Criar cliente Supabase
-    const client = window.supabase.createClient(supabaseUrl, supabaseKey);
+    try {
+      // Criar cliente
+      supabase = window.supabase.createClient(
+        window.ENV.SUPABASE_URL,
+        window.ENV.SUPABASE_ANON_KEY
+      );
 
-    // Objeto global Auth
-    window.Auth = {
-      client: client,
+      console.log('✅ Supabase conectado');
       
-      // Criar usuário admin automaticamente
+      // Tornar disponível globalmente
+      window.Auth = createAuthAPI();
+      
+      // Criar admin
+      window.Auth.createAdminUser();
+      
+      // Disparar evento
+      isInitialized = true;
+      window.dispatchEvent(new CustomEvent('authReady'));
+      console.log('✅ Auth pronto');
+
+    } catch (error) {
+      console.error('❌ Erro ao inicializar:', error);
+      showError('Erro ao conectar com servidor');
+    }
+  }
+
+  // Mostrar erro na interface
+  function showError(message) {
+    const errorDiv = document.getElementById('systemError');
+    if (errorDiv) {
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+  }
+
+  // Criar API de autenticação
+  function createAuthAPI() {
+    return {
+      client: supabase,
+
+      // Criar usuário admin
       async createAdminUser() {
         try {
-          // Verificar se admin já existe
-          const { data: existing, error: checkError } = await this.client
+          const { data: existing } = await supabase
             .from('profiles')
-            .select('email')
-            .eq('email', 'admin@cartorio4oficio.com')
-            .single();
+            .select('id')
+            .eq('role', 'admin')
+            .limit(1);
 
-          if (existing) {
-            console.log('ℹ️ Usuário admin já existe');
+          if (existing && existing.length > 0) {
+            console.log('ℹ️ Admin já existe');
             return;
           }
 
-          // Criar usuário no Auth
-          const { data: authData, error: authError } = await this.client.auth.signUp({
+          console.log('🔄 Criando admin...');
+
+          const { data: authData, error: authError } = await supabase.auth.signUp({
             email: 'admin@cartorio4oficio.com',
             password: 'Admin@123456'
           });
 
-          if (authError) {
-            console.log('ℹ️ Admin já existe no auth:', authError.message);
+          if (authError && !authError.message.includes('already registered')) {
+            console.error('Erro auth:', authError);
             return;
           }
 
-          // Criar perfil do admin
-          const { error: profileError } = await this.client
-            .from('profiles')
-            .insert([{
-              id: authData.user.id,
+          const userId = authData?.user?.id;
+          if (!userId) {
+            // Tentar login para pegar ID
+            const { data: loginData } = await supabase.auth.signInWithPassword({
               email: 'admin@cartorio4oficio.com',
-              role: 'admin',
-              name: 'Raphael Souza',
-              accepted: true,
-              created_at: new Date().toISOString()
-            }]);
-
-          if (profileError) {
-            console.error('❌ Erro ao criar perfil:', profileError);
+              password: 'Admin@123456'
+            });
+            
+            if (loginData?.user) {
+              await this.upsertAdminProfile(loginData.user.id);
+              await supabase.auth.signOut();
+            }
             return;
           }
 
-          console.log('✅ Usuário admin criado com sucesso!');
-          console.log('   Email: admin@cartorio4oficio.com');
-          console.log('   Senha: Admin@123456');
+          await this.upsertAdminProfile(userId);
+          console.log('✅ Admin criado');
 
         } catch (e) {
-          console.error('❌ Erro ao criar admin:', e);
+          console.error('❌ Erro:', e);
         }
       },
 
-      // Login de usuário
+      // Criar/atualizar perfil admin
+      async upsertAdminProfile(userId) {
+        await supabase
+          .from('profiles')
+          .upsert({
+            id: userId,
+            email: 'admin@cartorio4oficio.com',
+            role: 'admin',
+            name: 'Raphael Souza',
+            accepted: true,
+            created_at: new Date().toISOString()
+          });
+      },
+
+      // Login
       async login(email, password) {
         try {
-          const { data, error } = await this.client.auth.signInWithPassword({
+          console.log('🔐 Login:', email);
+
+          const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password
           });
 
           if (error) throw error;
 
-          // Buscar perfil do usuário
-          const { data: profile, error: profileError } = await this.client
+          const { data: profile } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', data.user.id)
             .single();
 
-          if (profileError) {
-            console.error('Erro ao buscar perfil:', profileError);
+          if (profile && !profile.accepted) {
+            await supabase.auth.signOut();
+            return { error: { message: 'Cadastro aguardando aprovação.' } };
           }
 
-          return { 
-            user: data.user, 
-            profile: profile || null, 
-            error: null 
-          };
+          console.log('✅ Login OK');
+          return { user: data.user, profile, error: null };
 
         } catch (error) {
-          console.error('❌ Erro no login:', error.message);
-          return { user: null, profile: null, error };
+          console.error('❌ Login erro:', error);
+          return { error: { message: 'Email ou senha incorretos.' } };
         }
       },
 
       // Logout
       async logout() {
-        try {
-          await this.client.auth.signOut();
-          console.log('✅ Logout realizado');
-        } catch (e) {
-          console.error('❌ Erro no logout:', e);
-        }
+        await supabase.auth.signOut();
       },
 
-      // Verificar usuário atual
+      // Verificar sessão
       async getCurrentUser() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { user: null, profile: null };
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        return { user, profile };
+      },
+
+      // Registrar
+      async register(email, password, userData) {
         try {
-          const { data: { user }, error } = await this.client.auth.getUser();
-          
-          if (error || !user) {
-            return { user: null, profile: null };
-          }
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email,
+            password
+          });
 
-          const { data: profile } = await this.client
+          if (authError) throw authError;
+
+          await supabase
             .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
+            .insert([{
+              id: authData.user.id,
+              email,
+              role: userData.role || 'client',
+              name: userData.name,
+              accepted: false,
+              created_at: new Date().toISOString()
+            }]);
 
-          return { user, profile: profile || null };
+          return { error: null, message: 'Cadastro realizado! Aguarde aprovação.' };
 
-        } catch (e) {
-          console.error('❌ Erro ao verificar usuário:', e);
-          return { user: null, profile: null };
+        } catch (error) {
+          return { error };
         }
       },
 
-      // Verificar se é admin
-      isAdmin(profile) {
-        return profile?.role === 'admin';
-      }
-    };
+      // Login com Google
+      async loginWithGoogle() {
+        return await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin }
+        });
+      },
 
-    // Inicializar
-    window.Auth.createAdminUser();
-    
-    // Disparar evento de pronto
-    window.dispatchEvent(new CustomEvent('authReady'));
-    console.log('✅ Sistema de autenticação pronto');
+      isAdmin: (profile) => profile?.role === 'admin'
+    };
   }
 
-  // Iniciar quando DOM estiver pronto
+  // Iniciar
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAuth);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    initAuth();
+    init();
   }
 })();
