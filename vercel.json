@@ -1,11 +1,5 @@
 {
-  "version": 2,
-  "name": "cartorio-4-oficio",
-  "outputDirectory": "public",
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
