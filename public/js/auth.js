@@ -9,7 +9,7 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2ppY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTQzNzksImV4cCI6MjA4Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE';
     
     // ============================================
-    // INICIALIZAÇÃO ÚNICA
+    // INICIALIZAÇÃO
     // ============================================
     
     if (window.Auth && window.Auth.client) {
@@ -21,48 +21,40 @@
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     // ============================================
-    // FUNÇÕES AUXILIARES
+    // CRIAR ADMIN AUTOMATICAMENTE
     // ============================================
     
-    async function createAdminUser() {
-        const adminEmail = 'admin@cartorio4oficio.com';
-        const adminPassword = 'Admin@123456';
-        
+    async function setupAdmin() {
         try {
-            // Tenta fazer login primeiro
+            const adminEmail = 'admin@cartorio4oficio.com';
+            const adminPassword = 'Admin@123456';
+            
+            // Tenta fazer login
             const { data: loginData, error: loginError } = await client.auth.signInWithPassword({
                 email: adminEmail,
                 password: adminPassword
             });
             
             if (loginError) {
-                // Se falhar, tenta criar
-                if (loginError.message.includes('Invalid login credentials')) {
-                    const { data: signUpData, error: signUpError } = await client.auth.signUp({
+                // Se falhar, cria o usuário
+                if (loginError.message.includes('Invalid login')) {
+                    const { error: signUpError } = await client.auth.signUp({
                         email: adminEmail,
-                        password: adminPassword,
-                        options: {
-                            data: {
-                                role: 'admin',
-                                name: 'Administrador'
-                            }
-                        }
+                        password: adminPassword
                     });
                     
                     if (signUpError) {
-                        console.error('Erro ao criar admin:', signUpError.message);
+                        console.log('Admin pode já existir ou erro:', signUpError.message);
                     } else {
-                        console.log('✅ Usuário admin criado:', adminEmail);
-                        // Faz logout após criar
-                        await client.auth.signOut();
+                        console.log('✅ Admin criado:', adminEmail);
                     }
                 }
             } else {
-                console.log('✅ Admin já existe');
+                console.log('✅ Admin verificado');
                 await client.auth.signOut();
             }
         } catch (err) {
-            console.error('Erro ao verificar/criar admin:', err);
+            console.error('Erro setup admin:', err);
         }
     }
     
@@ -72,7 +64,6 @@
     
     window.Auth = {
         client: client,
-        supabase: client, // alias para compatibilidade
         
         // Login
         async login(email, password) {
@@ -86,16 +77,12 @@
                 
                 return { 
                     success: true, 
-                    user: data.user, 
-                    session: data.session,
+                    user: data.user,
                     error: null 
                 };
             } catch (error) {
-                console.error('Login error:', error.message);
                 return { 
                     success: false, 
-                    user: null,
-                    session: null,
                     error: error.message 
                 };
             }
@@ -104,63 +91,22 @@
         // Logout
         async logout() {
             try {
-                const { error } = await client.auth.signOut();
-                if (error) throw error;
-                
-                // Limpa storage
-                localStorage.removeItem('supabase.auth.token');
-                
-                return { success: true, error: null };
+                await client.auth.signOut();
+                return { success: true };
             } catch (error) {
-                console.error('Logout error:', error.message);
                 return { success: false, error: error.message };
             }
         },
         
-        // Verificar sessão atual
+        // Verificar sessão
         async getCurrentUser() {
-            try {
-                const { data: { session }, error: sessionError } = await client.auth.getSession();
-                
-                if (sessionError) throw sessionError;
-                
-                if (!session) {
-                    return { user: null, session: null, error: null };
-                }
-                
-                const { data: { user }, error: userError } = await client.auth.getUser();
-                
-                if (userError) throw userError;
-                
-                return { 
-                    user: user, 
-                    session: session,
-                    error: null 
-                };
-            } catch (error) {
-                console.error('Get user error:', error.message);
-                return { user: null, session: null, error: error.message };
-            }
-        },
-        
-        // Verificar se é admin
-        isAdmin(user) {
-            return user?.user_metadata?.role === 'admin' || 
-                   user?.app_metadata?.role === 'admin';
+            const { data: { user } } = await client.auth.getUser();
+            return { user };
         }
     };
     
-    // ============================================
-    // INICIALIZAÇÃO AUTOMÁTICA
-    // ============================================
+    // Inicializar
+    setupAdmin();
     
-    // Cria admin se não existir
-    createAdminUser();
-    
-    // Dispara evento de prontidão
-    window.dispatchEvent(new CustomEvent('authReady', { 
-        detail: { auth: window.Auth } 
-    }));
-    
-    console.log('✅ Auth inicializado');
+    console.log('✅ Auth pronto');
 })();
