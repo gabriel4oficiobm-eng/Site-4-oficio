@@ -1,230 +1,166 @@
-// 
-// SISTEMA DE AUTENTICAÇÃO - 4º Ofício de Notas
-// 
-
 (function() {
-  'use strict';
-
-  // Variáveis globais
-  let supabase = null;
-  let isInitialized = false;
-
-  // Inicialização
-  function init() {
-    console.log('🚀 Inicializando Auth...');
-
-    // Verificar se Supabase está disponível
-    if (typeof window.supabase === 'undefined') {
-      console.log('⏳ Aguardando Supabase...');
-      setTimeout(init, 100);
-      return;
+    'use strict';
+    
+    // ============================================
+    // CONFIGURAÇÃO SUPABASE
+    // ============================================
+    
+    const SUPABASE_URL = 'https://cqvkfrojkicfxipwltz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2ppY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTQzNzksImV4cCI6MjA4Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE';
+    
+    // ============================================
+    // INICIALIZAÇÃO ÚNICA
+    // ============================================
+    
+    if (window.Auth && window.Auth.client) {
+        console.log('Auth já inicializado');
+        return;
     }
-
-    // Verificar config
-    if (!window.ENV || !window.ENV.SUPABASE_URL) {
-      console.error('❌ Configuração não encontrada');
-      showError('Erro ao carregar sistema');
-      return;
-    }
-
-    try {
-      // Criar cliente
-      supabase = window.supabase.createClient(
-        window.ENV.SUPABASE_URL,
-        window.ENV.SUPABASE_ANON_KEY
-      );
-
-      console.log('✅ Supabase conectado');
-      
-      // Tornar disponível globalmente
-      window.Auth = createAuthAPI();
-      
-      // Criar admin
-      window.Auth.createAdminUser();
-      
-      // Disparar evento
-      isInitialized = true;
-      window.dispatchEvent(new CustomEvent('authReady'));
-      console.log('✅ Auth pronto');
-
-    } catch (error) {
-      console.error('❌ Erro ao inicializar:', error);
-      showError('Erro ao conectar com servidor');
-    }
-  }
-
-  // Mostrar erro na interface
-  function showError(message) {
-    const errorDiv = document.getElementById('systemError');
-    if (errorDiv) {
-      errorDiv.textContent = message;
-      errorDiv.style.display = 'block';
-    }
-  }
-
-  // Criar API de autenticação
-  function createAuthAPI() {
-    return {
-      client: supabase,
-
-      // Criar usuário admin
-      async createAdminUser() {
+    
+    // Criar cliente Supabase
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // ============================================
+    // FUNÇÕES AUXILIARES
+    // ============================================
+    
+    async function createAdminUser() {
+        const adminEmail = 'admin@cartorio4oficio.com';
+        const adminPassword = 'Admin@123456';
+        
         try {
-          const { data: existing } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('role', 'admin')
-            .limit(1);
-
-          if (existing && existing.length > 0) {
-            console.log('ℹ️ Admin já existe');
-            return;
-          }
-
-          console.log('🔄 Criando admin...');
-
-          const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: 'admin@cartorio4oficio.com',
-            password: 'Admin@123456'
-          });
-
-          if (authError && !authError.message.includes('already registered')) {
-            console.error('Erro auth:', authError);
-            return;
-          }
-
-          const userId = authData?.user?.id;
-          if (!userId) {
-            // Tentar login para pegar ID
-            const { data: loginData } = await supabase.auth.signInWithPassword({
-              email: 'admin@cartorio4oficio.com',
-              password: 'Admin@123456'
+            // Tenta fazer login primeiro
+            const { data: loginData, error: loginError } = await client.auth.signInWithPassword({
+                email: adminEmail,
+                password: adminPassword
             });
             
-            if (loginData?.user) {
-              await this.upsertAdminProfile(loginData.user.id);
-              await supabase.auth.signOut();
+            if (loginError) {
+                // Se falhar, tenta criar
+                if (loginError.message.includes('Invalid login credentials')) {
+                    const { data: signUpData, error: signUpError } = await client.auth.signUp({
+                        email: adminEmail,
+                        password: adminPassword,
+                        options: {
+                            data: {
+                                role: 'admin',
+                                name: 'Administrador'
+                            }
+                        }
+                    });
+                    
+                    if (signUpError) {
+                        console.error('Erro ao criar admin:', signUpError.message);
+                    } else {
+                        console.log('✅ Usuário admin criado:', adminEmail);
+                        // Faz logout após criar
+                        await client.auth.signOut();
+                    }
+                }
+            } else {
+                console.log('✅ Admin já existe');
+                await client.auth.signOut();
             }
-            return;
-          }
-
-          await this.upsertAdminProfile(userId);
-          console.log('✅ Admin criado');
-
-        } catch (e) {
-          console.error('❌ Erro:', e);
+        } catch (err) {
+            console.error('Erro ao verificar/criar admin:', err);
         }
-      },
-
-      // Criar/atualizar perfil admin
-      async upsertAdminProfile(userId) {
-        await supabase
-          .from('profiles')
-          .upsert({
-            id: userId,
-            email: 'admin@cartorio4oficio.com',
-            role: 'admin',
-            name: 'Raphael Souza',
-            accepted: true,
-            created_at: new Date().toISOString()
-          });
-      },
-
-      // Login
-      async login(email, password) {
-        try {
-          console.log('🔐 Login:', email);
-
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          });
-
-          if (error) throw error;
-
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
-
-          if (profile && !profile.accepted) {
-            await supabase.auth.signOut();
-            return { error: { message: 'Cadastro aguardando aprovação.' } };
-          }
-
-          console.log('✅ Login OK');
-          return { user: data.user, profile, error: null };
-
-        } catch (error) {
-          console.error('❌ Login erro:', error);
-          return { error: { message: 'Email ou senha incorretos.' } };
+    }
+    
+    // ============================================
+    // API PÚBLICA
+    // ============================================
+    
+    window.Auth = {
+        client: client,
+        supabase: client, // alias para compatibilidade
+        
+        // Login
+        async login(email, password) {
+            try {
+                const { data, error } = await client.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                
+                if (error) throw error;
+                
+                return { 
+                    success: true, 
+                    user: data.user, 
+                    session: data.session,
+                    error: null 
+                };
+            } catch (error) {
+                console.error('Login error:', error.message);
+                return { 
+                    success: false, 
+                    user: null,
+                    session: null,
+                    error: error.message 
+                };
+            }
+        },
+        
+        // Logout
+        async logout() {
+            try {
+                const { error } = await client.auth.signOut();
+                if (error) throw error;
+                
+                // Limpa storage
+                localStorage.removeItem('supabase.auth.token');
+                
+                return { success: true, error: null };
+            } catch (error) {
+                console.error('Logout error:', error.message);
+                return { success: false, error: error.message };
+            }
+        },
+        
+        // Verificar sessão atual
+        async getCurrentUser() {
+            try {
+                const { data: { session }, error: sessionError } = await client.auth.getSession();
+                
+                if (sessionError) throw sessionError;
+                
+                if (!session) {
+                    return { user: null, session: null, error: null };
+                }
+                
+                const { data: { user }, error: userError } = await client.auth.getUser();
+                
+                if (userError) throw userError;
+                
+                return { 
+                    user: user, 
+                    session: session,
+                    error: null 
+                };
+            } catch (error) {
+                console.error('Get user error:', error.message);
+                return { user: null, session: null, error: error.message };
+            }
+        },
+        
+        // Verificar se é admin
+        isAdmin(user) {
+            return user?.user_metadata?.role === 'admin' || 
+                   user?.app_metadata?.role === 'admin';
         }
-      },
-
-      // Logout
-      async logout() {
-        await supabase.auth.signOut();
-      },
-
-      // Verificar sessão
-      async getCurrentUser() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return { user: null, profile: null };
-
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        return { user, profile };
-      },
-
-      // Registrar
-      async register(email, password, userData) {
-        try {
-          const { data: authData, error: authError } = await supabase.auth.signUp({
-            email,
-            password
-          });
-
-          if (authError) throw authError;
-
-          await supabase
-            .from('profiles')
-            .insert([{
-              id: authData.user.id,
-              email,
-              role: userData.role || 'client',
-              name: userData.name,
-              accepted: false,
-              created_at: new Date().toISOString()
-            }]);
-
-          return { error: null, message: 'Cadastro realizado! Aguarde aprovação.' };
-
-        } catch (error) {
-          return { error };
-        }
-      },
-
-      // Login com Google
-      async loginWithGoogle() {
-        return await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: window.location.origin }
-        });
-      },
-
-      isAdmin: (profile) => profile?.role === 'admin'
     };
-  }
-
-  // Iniciar
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+    
+    // ============================================
+    // INICIALIZAÇÃO AUTOMÁTICA
+    // ============================================
+    
+    // Cria admin se não existir
+    createAdminUser();
+    
+    // Dispara evento de prontidão
+    window.dispatchEvent(new CustomEvent('authReady', { 
+        detail: { auth: window.Auth } 
+    }));
+    
+    console.log('✅ Auth inicializado');
 })();
