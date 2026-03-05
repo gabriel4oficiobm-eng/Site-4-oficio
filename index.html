@@ -835,17 +835,16 @@ updateOpenStatus();
 setInterval(updateOpenStatus, 60000);
 
 // Verificar sessão ao carregar
-window.addEventListener('authReady', async function() {
+document.addEventListener('authReady', async function() {
     if (window.Auth) {
         const { user } = await window.Auth.getCurrentUser();
         if (user) {
-            // Usuário já logado
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('appContainer').style.display = 'flex';
             loadDashboard();
         }
     }
-});
+})
 </script>
 
 <!-- Dentro do <head> ou antes de </body> no index.html -->
