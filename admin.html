@@ -3,34 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin - 4º Ofício</title>
+    <title>Dashboard Admin - 4º Ofício</title>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Auth - Caminho corrigido para public/js/auth.js -->
+    <script src="public/js/auth.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f6fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;<br/>
+            background: #f4f7f6;<br/>
+            color: #333;
         }
         
         .sidebar {
-            width: 250px;
-            height: 100vh;
-            background: #1e3c72;
-            position: fixed;
-            left: 0;
-            top: 0;
-            color: white;
-            padding: 20px;
+            width: 250px;<br/>
+            height: 100vh;<br/>
+            background: #1e3c72;<br/>
+            position: fixed;<br/>
+            left: 0;<br/>
+            top: 0;<br/>
+            color: white;<br/>
+            padding: 20px;<br/>
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
         
         .sidebar h2 {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 30px;<br/>
+            padding-bottom: 20px;<br/>
+            border-bottom: 1px solid rgba(255,255,255,0.2);<br/>
+            font-size: 22px;
         }
         
         .sidebar nav ul {
@@ -42,80 +45,99 @@
         }
         
         .sidebar nav ul li a {
-            color: white;
-            text-decoration: none;
-            padding: 12px;
-            display: block;
-            border-radius: 5px;
-            transition: background 0.3s;
+            color: white;<br/>
+            text-decoration: none;<br/>
+            padding: 12px 15px;<br/>
+            display: block;<br/>
+            border-radius: 8px;<br/>
+            transition: background 0.3s, transform 0.2s;
         }
         
-        .sidebar nav ul li a:hover {
-            background: rgba(255,255,255,0.1);
+        .sidebar nav ul li a:hover {<br/>
+            background: rgba(255,255,255,0.15);<br/>
+            transform: translateX(5px);
         }
         
         .main-content {
-            margin-left: 250px;
+            margin-left: 250px;<br/>
             padding: 30px;
         }
         
         .header {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: white;<br/>
+            padding: 25px 30px;<br/>
+            border-radius: 12px;<br/>
+            margin-bottom: 30px;<br/>
+            display: flex;<br/>
+            justify-content: space-between;<br/>
+            align-items: center;<br/>
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .header h1 {
+            font-size: 28px;<br/>
+            color: #1e3c72;
         }
         
         .logout-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
+            background: #e74c3c;<br/>
+            color: white;<br/>
+            border: none;<br/>
+            padding: 10px 20px;<br/>
+            border-radius: 8px;<br/>
+            cursor: pointer;<br/>
+            font-size: 16px;<br/>
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover {<br/>
+            background: #c0392b;
         }
         
         .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            display: grid;<br/>
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));<br/>
+            gap: 25px;<br/>
             margin-bottom: 30px;
         }
         
         .card {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: white;<br/>
+            padding: 25px;<br/>
+            border-radius: 12px;<br/>
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);<br/>
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {<br/>
+            transform: translateY(-5px);
         }
         
         .card h3 {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 10px;
+            color: #666;<br/>
+            font-size: 15px;<br/>
+            margin-bottom: 10px;<br/>
+            text-transform: uppercase;
         }
         
         .card .number {
-            font-size: 32px;
-            font-weight: bold;
+            font-size: 38px;<br/>
+            font-weight: bold;<br/>
             color: #1e3c72;
         }
         
         .section {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: white;<br/>
+            padding: 25px;<br/>
+            border-radius: 12px;<br/>
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);<br/>
             margin-bottom: 20px;
         }
         
         .section h3 {
-            margin-bottom: 20px;
-            color: #1e3c72;
+            margin-bottom: 20px;<br/>
+            color: #1e3c72;<br/>
+            font-size: 20px;
         }
     </style>
 </head>
@@ -135,7 +157,7 @@
     
     <main class="main-content">
         <div class="header">
-            <h1>Bem-vindo, <span id="adminName">Admin</span></h1>
+            <h1>Bem-vindo, <span id="adminName">Admin</span>!</h1>
             <button class="logout-btn" onclick="logout()">Sair</button>
         </div>
         
@@ -152,29 +174,67 @@
                 <h3>Pendentes</h3>
                 <div class="number">3</div>
             </div>
+            <div class="card">
+                <h3>Casos Abertos</h3>
+                <div class="number">5</div>
+            </div>
         </div>
         
         <div class="section">
             <h3>📋 Últimos Protocolos</h3>
-            <p>Aqui você pode integrar com o Supabase para mostrar os protocolos reais.</p>
+            <p>Aqui você pode listar os últimos protocolos ou casos.</p>
+            <ul>
+                <li>Protocolo #12345 - Escritura de Compra e Venda - Pendente</li>
+                <li>Protocolo #12344 - Divórcio - Concluído</li>
+                <li>Protocolo #12343 - Usucapião - Em Análise</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h3>💬 Mensagens Recentes</h3>
+            <p>Aqui você pode exibir mensagens ou interações com clientes.</p>
+            <ul>
+                <li>Cliente A: "Dúvida sobre ITBI" - 10:30</li><br/>
+                <li>Cliente B: "Status do processo" - 09:45</li>
+            </ul>
         </div>
     </main>
 
     <script>
-        // Verifica se está logado
-        if (!localStorage.getItem('adminLoggedIn')) {
-            window.location.href = 'login.html';
+        // Função para verificar o login e proteger a rota
+        async function protectAdminRoute() {
+            // Espera o Auth estar pronto
+            if (!window.Auth || !window.Auth.client) {
+                console.log('Auth não pronto, aguardando...');
+                setTimeout(protectAdminRoute, 100); // Tenta novamente em 100ms
+                return;
+            }
+
+            const { user, profile, error } = await window.Auth.getCurrentUser();
+
+            if (error || !user || !window.Auth.isAdmin(profile)) {
+                console.log('Usuário não logado ou não é admin. Redirecionando para login.');
+                window.location.href = 'login.html'; // Redireciona se não for admin
+                return;
+            }
+            
+            // Se chegou aqui, o usuário é admin e está logado
+            document.getElementById('adminName').textContent = profile ? profile.name : user.email;<br/>
+            console.log('✅ Acesso ao dashboard concedido para:', user.email);
         }
-        
-        // Mostra nome do admin
-        document.getElementById('adminName').textContent = localStorage.getItem('adminUser') || 'Admin';
-        
+
         // Função de logout
-        function logout() {
-            localStorage.removeItem('adminLoggedIn');
-            localStorage.removeItem('adminUser');
-            window.location.href = 'login.html';
+        async function logout() {
+            if (window.Auth) {
+                await window.Auth.logout();
+            }
+            window.location.href = 'login.html'; // Redireciona para a página de login
         }
+
+        // Executa a proteção de rota ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            protectAdminRoute();
+        });
     </script>
 </body>
 </html>
