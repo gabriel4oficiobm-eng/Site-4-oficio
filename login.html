@@ -3,67 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Admin - 4º Ofício</title>
+    <title>Login - 4º Ofício</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0;
         }
-        
-        .login-container {
+        .login-box {
             background: white;
             padding: 40px;
             border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             width: 100%;
             max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
-        
-        .logo {
+        h1 {
             text-align: center;
+            color: #1e3c72;
             margin-bottom: 30px;
         }
-        
-        .logo h1 {
-            color: #1e3c72;
-            font-size: 24px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-            font-weight: 500;
-        }
-        
         input {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e0e0e0;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
-            transition: border-color 0.3s;
+            box-sizing: border-box;
         }
-        
-        input:focus {
-            outline: none;
-            border-color: #1e3c72;
-        }
-        
         button {
             width: 100%;
             padding: 14px;
@@ -72,17 +45,19 @@
             border: none;
             border-radius: 5px;
             font-size: 16px;
-            font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s;
         }
-        
         button:hover {
             background: #2a5298;
         }
-        
         .error {
             color: #e74c3c;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+        .success {
+            color: #27ae60;
             text-align: center;
             margin-top: 15px;
             display: none;
@@ -90,50 +65,51 @@
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo">
-            <h1>🔐 Área Administrativa</h1>
-            <p>4º Ofício de Registro de Imóveis</p>
-        </div>
-        
+    <div class="login-box">
+        <h1>🔐 Login Admin</h1>
         <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Usuário</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Senha</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            
+            <input type="email" id="email" placeholder="E-mail" required>
+            <input type="password" id="password" placeholder="Senha" required>
             <button type="submit">Entrar</button>
-            <p class="error" id="errorMsg">Usuário ou senha incorretos</p>
         </form>
+        <p class="error" id="errorMsg">E-mail ou senha incorretos</p>
+        <p class="success" id="successMsg">Login realizado! Redirecionando...</p>
     </div>
 
     <script>
-        // Configuração de credenciais (em produção, use backend)
-        const ADMIN_CREDENTIALS = {
-            username: 'admin',
-            password: 'admin123' // Troque por uma senha forte!
-        };
+        // Configuração Supabase
+        const SUPABASE_URL = 'https://cqvkfrojkicfxipwltz.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2ppY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTQzNzksImV4cCI6MjA4Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE';
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
             
-            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                // Salva sessão no localStorage
-                localStorage.setItem('adminLoggedIn', 'true');
-                localStorage.setItem('adminUser', username);
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
                 
-                // Redireciona para o painel
-                window.location.href = 'admin.html';
-            } else {
-                document.getElementById('errorMsg').style.display = 'block';
+                if (error) throw error;
+                
+                successMsg.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                errorMsg.style.display = 'block';
             }
         });
     </script>
