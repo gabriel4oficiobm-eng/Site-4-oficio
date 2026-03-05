@@ -2,9 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - 4º Ofício</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,11 +23,7 @@
             max-width: 400px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
-        h1 {
-            text-align: center;
-            color: #1e3c72;
-            margin-bottom: 30px;
-        }
+        h1 { text-align: center; color: #1e3c72; margin-bottom: 30px; }
         input {
             width: 100%;
             padding: 12px;
@@ -47,17 +43,9 @@
             font-size: 16px;
             cursor: pointer;
         }
-        button:hover {
-            background: #2a5298;
-        }
+        button:hover { background: #2a5298; }
         .error {
             color: #e74c3c;
-            text-align: center;
-            margin-top: 15px;
-            display: none;
-        }
-        .success {
-            color: #27ae60;
             text-align: center;
             margin-top: 15px;
             display: none;
@@ -68,49 +56,27 @@
     <div class="login-box">
         <h1>🔐 Login Admin</h1>
         <form id="loginForm">
-            <input type="email" id="email" placeholder="E-mail" required>
-            <input type="password" id="password" placeholder="Senha" required>
+            <input type="email" id="email" placeholder="E-mail" value="admin@cartorio4oficio.com">
+            <input type="password" id="password" placeholder="Senha">
             <button type="submit">Entrar</button>
         </form>
-        <p class="error" id="errorMsg">E-mail ou senha incorretos</p>
-        <p class="success" id="successMsg">Login realizado! Redirecionando...</p>
+        <p class="error" id="errorMsg"></p>
     </div>
 
     <script>
-        // ✅ CORREÇÃO: Verifica se já existe antes de criar
-        if (typeof window.supabaseClient === 'undefined') {
-            window.supabaseClient = supabase.createClient(
-                'https://cqvkfrojkicfxipwltz.supabase.co',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2ppY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTQzNzksImV4cCI6MjA4Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE'
-            );
-        }
-
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorMsg = document.getElementById('errorMsg');
-            const successMsg = document.getElementById('successMsg');
             
-            errorMsg.style.display = 'none';
-            successMsg.style.display = 'none';
+            const result = await window.Auth.login(email, password);
             
-            try {
-                const { data, error } = await window.supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                
-                if (error) throw error;
-                
-                successMsg.style.display = 'block';
-                setTimeout(() => {
-                    window.location.href = 'admin.html';
-                }, 1000);
-                
-            } catch (error) {
-                console.error('Erro:', error);
+            if (result.success) {
+                window.location.href = 'admin.html';
+            } else {
+                errorMsg.textContent = result.error || 'Erro no login';
                 errorMsg.style.display = 'block';
             }
         });
