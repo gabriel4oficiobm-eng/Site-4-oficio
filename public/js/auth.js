@@ -1,129 +1,106 @@
-(function() {
-    'use strict';
+(function () {
+  'use strict';
 
-    const SUPABASE_URL = 'https://cqvkfrojkicfxipwltz.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2ppY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTQzNzksImV4cCI6MjA4Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE';
+  // SUPABASE_ANON_KEY é pública por design (segura para o front-end).
+  // ⚠️ NUNCA coloque senha, email de admin ou qualquer credencial sensível aqui.
+  // O usuário admin deve ser criado UMA VEZ manualmente no painel do Supabase:
+  // Authentication → Users → Invite User
+  const SUPABASE_URL = 'https://cqvkfrojkicfxipwltz.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2ppY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTQzNzksImV4cCI6MjA4Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE';
 
-    if (typeof supabase === 'undefined') {
-        console.error('❌ Supabase SDK não carregado');
-        window.Auth = { error: 'Supabase SDK não carregado' };
-        return;
-    }
+  if (typeof supabase === 'undefined') {
+    console.error('❌ Supabase SDK não carregado');
+    window.Auth = { error: 'Supabase SDK não carregado' };
+    return;
+  }
 
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Criar usuário admin automaticamente
-    async function createAdminUser() {
-        const adminEmail = 'admin@cartorio4oficio.com';
-        const adminPassword = 'Admin@123456';
-        const adminName = 'Raphael da Costa Souza';
+  window.Auth = {
+    client: client,
 
-        try {
-            const { data: loginData, error: loginError } = await client.auth.signInWithPassword({
-                email: adminEmail,
-                password: adminPassword
-            });
+    // Login com email e senha
+    async login(email, password) {
+      try {
+        const { data, error } = await client.auth.signInWithPassword({ email, password });
+        if (error) throw error;
 
-            if (loginError && loginError.message.includes('Invalid login')) {
-                const { data: signUpData, error: signUpError } = await client.auth.signUp({
-                    email: adminEmail,
-                    password: adminPassword,
-                });
+        const { data: profile, error: profileError } = await client
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
 
-                if (!signUpError) {
-                    await client.from('profiles').upsert({
-                        id: signUpData.user.id,
-                        name: adminName,
-                        email: adminEmail,
-                        cpf: '000.000.000-00',
-                        role: 'admin',
-                        oab: null,
-                        created_at: new Date().toISOString()
-                    });
-                    await client.auth.signOut();
-                }
-            }
-        } catch (err) {
-            console.error('❌ Erro:', err);
-        }
-    }
+        if (profileError) throw profileError;
 
-    window.Auth = {
-        client: client,
+        return { success: true, user: data.user, profile: profile, error: null };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    },
 
-        async login(email, password) {
-            try {
-                const { data, error } = await client.auth.signInWithPassword({ email, password });
-                if (error) throw error;
+    // Cadastro de novo usuário
+    async register(userData) {
+      try {
+        const { email, password, name, cpf, role, oab } = userData;
+        const { data: authData, error: authError } = await client.auth.signUp({ email, password });
+        if (authError) throw authError;
 
-                const { data: profile, error: profileError } = await client
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', data.user.id)
-                    .single();
+        const { error: profileError } = await client.from('profiles').insert([{
+          id: authData.user.id,
+          name: name,
+          email: email,
+          cpf: cpf,
+          role: role,
+          oab: oab || null,
+          created_at: new Date().toISOString()
+        }]);
 
-                if (profileError) throw profileError;
+        if (profileError) throw profileError;
 
-                return { success: true, user: data.user, profile: profile, error: null };
-            } catch (error) {
-                return { success: false, error: error.message };
-            }
-        },
+        return { success: true, user: authData.user, error: null };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    },
 
-        async register(userData) {
-            try {
-                const { email, password, name, cpf, role, oab } = userData;
-                const { data: authData, error: authError } = await client.auth.signUp({ email, password });
-                if (authError) throw authError;
+    // Logout
+    async logout() {
+      try {
+        await client.auth.signOut();
+        return { success: true };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    },
 
-                await client.from('profiles').insert([{
-                    id: authData.user.id,
-                    name: name,
-                    email: email,
-                    cpf: cpf,
-                    role: role,
-                    oab: oab || null,
-                    created_at: new Date().toISOString()
-                }]);
+    // Obter usuário logado e seu perfil
+    async getCurrentUser() {
+      try {
+        const { data: { user }, error: userError } = await client.auth.getUser();
+        if (userError) throw userError;
+        if (!user) return { user: null, profile: null, error: null };
 
-                return { success: true, user: authData.user, error: null };
-            } catch (error) {
-                return { success: false, error: error.message };
-            }
-        },
+        const { data: profile, error: profileError } = await client
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
 
-        async logout() {
-            try {
-                await client.auth.signOut();
-                return { success: true };
-            } catch (error) {
-                return { success: false, error: error.message };
-            }
-        },
+        if (profileError) throw profileError;
 
-        async getCurrentUser() {
-            try {
-                const { data: { user }, error: userError } = await client.auth.getUser();
-                if (userError) throw userError;
-                if (!user) return { user: null, profile: null, error: null };
+        return { user: user, profile: profile, error: null };
+      } catch (error) {
+        return { user: null, profile: null, error: error.message };
+      }
+    },
 
-                const { data: profile, error: profileError } = await client
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
+    isAdmin:  (profile) => profile?.role === 'admin',
+    isClient: (profile) => profile?.role === 'cliente',
+    isLawyer: (profile) => profile?.role === 'advogado'
+  };
 
-                if (profileError) throw profileError;
-                return { user: user, profile: profile, error: null };
-            } catch (error) {
-                return { user: null, profile: null, error: error.message };
-            }
-        },
+  // Avisa o resto da aplicação que o Auth está pronto
+  document.dispatchEvent(new CustomEvent('authReady'));
 
-        isAdmin: (profile) => profile?.role === 'admin',
-        isClient: (profile) => profile?.role === 'cliente',
-        isLawyer: (profile) => profile?.role === 'advogado'
-    };
-
-    createAdminUser();
 })();
