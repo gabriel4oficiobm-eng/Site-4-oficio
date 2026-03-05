@@ -827,4 +827,24 @@ window.addEventListener('authReady', async function() {
 });
 </script>
 
+<!-- Dentro do <head> ou antes de </body> no index.html -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="public/js/auth.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Espera o Auth estar pronto
+        if (!window.Auth || !window.Auth.client) {
+            console.log('Auth não pronto no index.html, aguardando...');
+            setTimeout(arguments.callee, 100); // Tenta novamente em 100ms
+            return;
+        }
+
+        const { user, profile, error } = await window.Auth.getCurrentUser();
+        if (user && window.Auth.isAdmin(profile)) {
+            window.location.href = 'admin.html'; // Redireciona admin logado
+        }
+    });
+</script>
+
+    
 </body>
