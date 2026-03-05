@@ -867,5 +867,122 @@ window.addEventListener('authReady', async function() {
     });
 </script>
 
+    <script>
+    const loadingScreen = document.getElementById('loadingScreen');
+    const publicSite = document.getElementById('publicSite');
+    const loginModal = document.getElementById('loginModal');
+    const registerModal = document.getElementById('registerModal');
+    const dashboard = document.getElementById('dashboard');
+
+    // Verifica autenticação ao carregar
+    document.addEventListener('DOMContentLoaded', () => {
+        let attempts = 0;
+        const checkAuth = setInterval(async () => {
+            attempts++;
+            if (window.Auth && !window.Auth.error) {
+                clearInterval(checkAuth);
+                const { user, profile } = await window.Auth.getCurrentUser();
+                if (user && profile) {
+                    showDashboard(user, profile);
+                } else {
+                    showPublicSite();
+                }
+            } else if (attempts >= 50) {
+                clearInterval(checkAuth);
+                showPublicSite();
+            }
+        }, 100);
+    });
+
+    function showPublicSite() {
+        publicSite.style.display = 'block';
+        dashboard.classList.remove('active');
+        loadingScreen.classList.add('hidden');
+    }
+
+    function showDashboard(user, profile) {
+        publicSite.style.display = 'none';
+        dashboard.classList.add('active');
+        loadingScreen.classList.add('hidden');
+
+        // Atualiza informações do usuário
+        document.getElementById('userName').textContent = profile.name || user.email.split('@')[0];
+        document.getElementById('userEmail').textContent = user.email;
+        document.getElementById('userRoleDisplay').textContent = profile.role.toUpperCase();
+
+        // APLICA PERMISSÕES
+        const isAdmin = window.Auth.isAdmin(profile);
+        const isClient = window.Auth.isClient(profile);
+        const isLawyer = window.Auth.isLawyer(profile);
+
+        // Admin vê tudo
+        document.getElementById('adminMenu').style.display = isAdmin ? 'list-item' : 'none';
+        document.getElementById('btnNewCase').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('btnEditCase').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('sectionAdmin').style.display = isAdmin ? 'block' : 'none';
+
+        // Cliente e Advogado não veem botões de criar/editar
+        if (isClient || isLawyer) {
+            // Esconde elementos de administração
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        }
+    }
+
+    // Login
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        const result = await window.Auth.login(email, password);
+        if (result.success) {
+            closeLoginModal();
+            showDashboard(result.user, result.profile);
+        } else {
+            document.getElementById('loginError').textContent = result.error;
+            document.getElementById('loginError').style.display = 'block';
+        }
+    });
+
+    // Registro
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const userData = {
+            name: document.getElementById('registerName').value,
+            email: document.getElementById('registerEmail').value,
+            password: document.getElementById('registerPassword').value,
+            cpf: document.getElementById('registerCpf').value,
+            role: document.getElementById('registerType').value,
+            oab: document.getElementById('registerType').value === 'advogado' 
+                ? document.getElementById('registerOab').value 
+                : null
+        };
+
+        const result = await window.Auth.register(userData);
+        if (result.success) {
+            alert('Cadastro realizado! Faça login.');
+            closeRegisterModal();
+            openLoginModal();
+        } else {
+            document.getElementById('registerError').textContent = result.error;
+            document.getElementById('registerError').style.display = 'block';
+        }
+    });
+
+    async function logout() {
+        await window.Auth.logout();
+        showPublicSite();
+    }
+
+    function openLoginModal() { loginModal.classList.add('active'); }
+    function closeLoginModal() { loginModal.classList.remove('active'); }
+    function openRegisterModal() { registerModal.classList.add('active'); closeLoginModal(); }
+    function closeRegisterModal() { registerModal.classList.remove('active'); }
+
+    // Fechar modais ao clicar fora
+    loginModal.addEventListener('click', (e) => { if (e.target === loginModal) closeLoginModal(); });
+    registerModal.addEventListener('click', (e) => { if (e.target === registerModal) closeRegisterModal(); });
+</script>
+
     
 </body>
