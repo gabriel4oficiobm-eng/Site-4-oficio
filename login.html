@@ -2,83 +2,157 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - 4º Ofício</title>
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="auth.js"></script>
+    <!-- Auth - caminho relativo -->
+    <script src="./auth.js"></script>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0;
         }
+        
         .login-box {
             background: white;
             padding: 40px;
-            border-radius: 10px;
-            width: 100%;
+            border-radius: 12px;
+            width: 90%;
             max-width: 400px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        h1 { text-align: center; color: #1e3c72; margin-bottom: 30px; }
+        
+        h1 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
         input {
             width: 100%;
             padding: 12px;
-            margin-bottom: 15px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
             font-size: 16px;
-            box-sizing: border-box;
+            transition: border-color 0.3s;
         }
+        
+        input:focus {
+            outline: none;
+            border-color: #1e3c72;
+        }
+        
         button {
             width: 100%;
             padding: 14px;
             background: #1e3c72;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
+            transition: background 0.3s;
         }
-        button:hover { background: #2a5298; }
+        
+        button:hover {
+            background: #2a5298;
+        }
+        
         .error {
             color: #e74c3c;
             text-align: center;
             margin-top: 15px;
+            padding: 10px;
+            background: #fee;
+            border-radius: 6px;
             display: none;
         }
     </style>
 </head>
 <body>
     <div class="login-box">
-        <h1>🔐 Login Admin</h1>
+        <h1>🔐 Área Administrativa</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 25px;">
+            4º Ofício de Registro de Imóveis
+        </p>
+        
         <form id="loginForm">
-            <input type="email" id="email" placeholder="E-mail" value="admin@cartorio4oficio.com">
-            <input type="password" id="password" placeholder="Senha">
-            <button type="submit">Entrar</button>
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    value="admin@cartorio4oficio.com"
+                    required
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    placeholder="Digite sua senha"
+                    required
+                >
+            </div>
+            
+            <button type="submit">Entrar no Sistema</button>
         </form>
-        <p class="error" id="errorMsg"></p>
+        
+        <div class="error" id="errorMsg"></div>
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Aguarda auth carregar
+        document.addEventListener('DOMContentLoaded', function() {
             
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('errorMsg');
+            document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const errorMsg = document.getElementById('errorMsg');
+                
+                // Verifica se Auth existe
+                if (!window.Auth) {
+                    errorMsg.textContent = 'Erro: Sistema de autenticação não carregou. Recarregue a página.';
+                    errorMsg.style.display = 'block';
+                    console.error('window.Auth não encontrado');
+                    return;
+                }
+                
+                // Tenta login
+                const result = await window.Auth.login(email, password);
+                
+                if (result.success) {
+                    window.location.href = 'admin.html';
+                } else {
+                    errorMsg.textContent = result.error || 'Erro no login';
+                    errorMsg.style.display = 'block';
+                }
+            });
             
-            const result = await window.Auth.login(email, password);
-            
-            if (result.success) {
-                window.location.href = 'admin.html';
-            } else {
-                errorMsg.textContent = result.error || 'Erro no login';
-                errorMsg.style.display = 'block';
-            }
         });
     </script>
 </body>
