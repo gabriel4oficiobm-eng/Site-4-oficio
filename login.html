@@ -6,33 +6,33 @@
     <title>Login - 4º Ofício</title>
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Auth - caminho relativo -->
-  <script src="public/js/auth.js"></script>
+    <!-- Auth - Caminho corrigido para public/js/auth.js -->
+    <script src="public/js/auth.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;<br/>
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);<br/>
+            min-height: 100vh;<br/>
+            display: flex;<br/>
+            align-items: center;<br/>
             justify-content: center;
         }
         
         .login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
+            background: white;<br/>
+            padding: 40px;<br/>
+            border-radius: 12px;<br/>
+            width: 90%;<br/>
+            max-width: 400px;<br/>
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
         
         h1 {
-            text-align: center;
-            color: #1e3c72;
-            margin-bottom: 30px;
+            text-align: center;<br/>
+            color: #1e3c72;<br/>
+            margin-bottom: 30px;<br/>
             font-size: 24px;
         }
         
@@ -41,50 +41,50 @@
         }
         
         label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
+            display: block;<br/>
+            margin-bottom: 8px;<br/>
+            color: #333;<br/>
             font-weight: 500;
         }
         
         input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
+            width: 100%;<br/>
+            padding: 12px;<br/>
+            border: 2px solid #e0e0e0;<br/>
+            border-radius: 8px;<br/>
+            font-size: 16px;<br/>
             transition: border-color 0.3s;
         }
         
-        input:focus {
-            outline: none;
+        input:focus {<br/>
+            outline: none;<br/>
             border-color: #1e3c72;
         }
         
         button {
-            width: 100%;
-            padding: 14px;
-            background: #1e3c72;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
+            width: 100%;<br/>
+            padding: 14px;<br/>
+            background: #1e3c72;<br/>
+            color: white;<br/>
+            border: none;<br/>
+            border-radius: 8px;<br/>
+            font-size: 16px;<br/>
+            font-weight: 600;<br/>
+            cursor: pointer;<br/>
             transition: background 0.3s;
         }
         
-        button:hover {
+        button:hover {<br/>
             background: #2a5298;
         }
         
         .error {
-            color: #e74c3c;
-            text-align: center;
-            margin-top: 15px;
-            padding: 10px;
-            background: #fee;
-            border-radius: 6px;
+            color: #e74c3c;<br/>
+            text-align: center;<br/>
+            margin-top: 15px;<br/>
+            padding: 10px;<br/>
+            background: #fee;<br/>
+            border-radius: 6px;<br/>
             display: none;
         }
     </style>
@@ -124,9 +124,25 @@
     </div>
 
     <script>
-        // Aguarda auth carregar
+        // Função para verificar o login e redirecionar
+        async function checkLoginAndRedirect() {
+            // Espera o Auth estar pronto
+            if (!window.Auth || !window.Auth.client) {
+                console.log('Auth não pronto, aguardando...');
+                setTimeout(checkLoginAndRedirect, 100); // Tenta novamente em 100ms
+                return;
+            }
+
+            const { user, profile, error } = await window.Auth.getCurrentUser();
+            if (user && window.Auth.isAdmin(profile)) {
+                window.location.href = 'admin.html'; // Redireciona para o dashboard
+            }
+        }
+
+        // Executa a verificação ao carregar a página
         document.addEventListener('DOMContentLoaded', function() {
-            
+            checkLoginAndRedirect(); // Verifica se já está logado
+
             document.getElementById('loginForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
@@ -134,29 +150,25 @@
                 const password = document.getElementById('password').value;
                 const errorMsg = document.getElementById('errorMsg');
                 
-                // Verifica se Auth existe
+                errorMsg.style.display = 'none'; // Esconde mensagens de erro anteriores
+
                 if (!window.Auth) {
                     errorMsg.textContent = 'Erro: Sistema de autenticação não carregou. Recarregue a página.';
                     errorMsg.style.display = 'block';
-                    console.error('window.Auth não encontrado');
+                    console.error('window.Auth não encontrado no submit.');
                     return;
                 }
                 
-                // Tenta login
                 const result = await window.Auth.login(email, password);
                 
                 if (result.success) {
-                    window.location.href = 'admin.html';
+                    window.location.href = 'admin.html'; // Redireciona para o dashboard
                 } else {
-                    errorMsg.textContent = result.error || 'Erro no login';
+                    errorMsg.textContent = result.error || 'Erro desconhecido no login.';
                     errorMsg.style.display = 'block';
                 }
             });
-            
         });
     </script>
 </body>
 </html>
-
-
-
