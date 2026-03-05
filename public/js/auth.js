@@ -9,7 +9,7 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2ppY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTQzNzksImV4cCI6MjA4Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE';
     
     // ============================================
-    // INICIALIZAÇÃO
+    // INICIALIZAÇÃO COM VERIFICAÇÃO
     // ============================================
     
     if (window.Auth && window.Auth.client) {
@@ -17,45 +17,28 @@
         return;
     }
     
-    // Criar cliente Supabase
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Verificar se supabase está disponível
+    if (typeof supabase === 'undefined') {
+        console.error('❌ Supabase SDK não carregado');
+        window.Auth = { error: 'Supabase SDK não carregado' };
+        return;
+    }
     
-    // ============================================
-    // CRIAR ADMIN AUTOMATICAMENTE
-    // ============================================
-    
-    async function setupAdmin() {
-        try {
-            const adminEmail = 'admin@cartorio4oficio.com';
-            const adminPassword = 'Admin@123456';
-            
-            // Tenta fazer login
-            const { data: loginData, error: loginError } = await client.auth.signInWithPassword({
-                email: adminEmail,
-                password: adminPassword
-            });
-            
-            if (loginError) {
-                // Se falhar, cria o usuário
-                if (loginError.message.includes('Invalid login')) {
-                    const { error: signUpError } = await client.auth.signUp({
-                        email: adminEmail,
-                        password: adminPassword
-                    });
-                    
-                    if (signUpError) {
-                        console.log('Admin pode já existir ou erro:', signUpError.message);
-                    } else {
-                        console.log('✅ Admin criado:', adminEmail);
-                    }
-                }
-            } else {
-                console.log('✅ Admin verificado');
-                await client.auth.signOut();
+    // Criar cliente
+    let client;
+    try {
+        client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                autoRefreshToken: true,
+                persistSession: true,
+                detectSessionInUrl: true
             }
-        } catch (err) {
-            console.error('Erro setup admin:', err);
-        }
+        });
+        console.log('✅ Cliente Supabase criado');
+    } catch (err) {
+        console.error('❌ Erro ao criar cliente:', err);
+        window.Auth = { error: 'Erro ao inicializar Supabase' };
+        return;
     }
     
     // ============================================
@@ -65,25 +48,37 @@
     window.Auth = {
         client: client,
         
-        // Login
+        // Login com tratamento de erro
         async login(email, password) {
             try {
+                console.log('🔐 Tentando login...');
+                
                 const { data, error } = await client.auth.signInWithPassword({
-                    email,
-                    password
+                    email: email,
+                    password: password
                 });
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('❌ Erro login:', error);
+                    return { 
+                        success: false, 
+                        error: error.message 
+                    };
+                }
                 
+                console.log('✅ Login OK');
                 return { 
                     success: true, 
                     user: data.user,
+                    session: data.session,
                     error: null 
                 };
-            } catch (error) {
+                
+            } catch (err) {
+                console.error('❌ Exceção no login:', err);
                 return { 
                     success: false, 
-                    error: error.message 
+                    error: 'Erro de conexão com o servidor' 
                 };
             }
         },
@@ -91,7 +86,8 @@
         // Logout
         async logout() {
             try {
-                await client.auth.signOut();
+                const { error } = await client.auth.signOut();
+                if (error) throw error;
                 return { success: true };
             } catch (error) {
                 return { success: false, error: error.message };
@@ -100,13 +96,15 @@
         
         // Verificar sessão
         async getCurrentUser() {
-            const { data: { user } } = await client.auth.getUser();
-            return { user };
+            try {
+                const { data: { user }, error } = await client.auth.getUser();
+                if (error) throw error;
+                return { user, error: null };
+            } catch (error) {
+                return { user: null, error: error.message };
+            }
         }
     };
-    
-    // Inicializar
-    setupAdmin();
     
     console.log('✅ Auth pronto');
 })();
