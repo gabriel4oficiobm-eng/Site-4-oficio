@@ -77,11 +77,13 @@
     </div>
 
     <script>
-        // Configuração Supabase
-        const SUPABASE_URL = 'https://cqvkfrojkicfxipwltz.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2ppY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTQzNzksImV4cCI6MjA4Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE';
-        
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ✅ CORREÇÃO: Verifica se já existe antes de criar
+        if (typeof window.supabaseClient === 'undefined') {
+            window.supabaseClient = supabase.createClient(
+                'https://cqvkfrojkicfxipwltz.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2ppY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTQzNzksImV4cCI6MjA4Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE'
+            );
+        }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -95,7 +97,7 @@
             successMsg.style.display = 'none';
             
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({
+                const { data, error } = await window.supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
