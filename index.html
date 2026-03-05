@@ -895,10 +895,14 @@ window.addEventListener('authReady', async function() {
     });
 
     function showPublicSite() {
-        publicSite.style.display = 'block';
-        dashboard.classList.remove('active');
-        loadingScreen.classList.add('hidden');
-    }
+    const loginPage = document.getElementById('loginPage');
+    const publicSite = document.getElementById('publicSite');
+    const appContainer = document.getElementById('appContainer');
+
+    if (loginPage) loginPage.style.display = 'none';
+    if (publicSite) publicSite.style.display = 'block';
+    if (appContainer) appContainer.style.display = 'none';
+}
 
     function showDashboard(user, profile) {
         publicSite.style.display = 'none';
