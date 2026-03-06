@@ -407,200 +407,161 @@
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
         <div>
             <h2 style="font-size:20px;font-weight:700;">Quadro de Casos</h2>
-            <p style="color:var(--text-light);font-size:14px;margin-top:4px;">Arraste os casos entre colunas para atualizar o status</p>
+            <p style="color:var(--text-light);font-size:14px;margin-top:4px;">Gerencie os casos por status</p>
         </div>
         <button class="btn btn-primary" onclick="openModal('newCase')">
             <i class="fas fa-plus"></i> Novo Caso
         </button>
     </div>
-
-    <!-- KANBAN BOARD -->
     <div id="kanbanBoard" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;">
-
-        <!-- COLUNA INICIADO -->
-        <div class="kanban-col" data-status="iniciado">
+        <div class="kanban-col">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
                  background:white;border-radius:10px;border-top:4px solid #3b82f6;box-shadow:var(--shadow);">
                 <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;display:inline-block;"></span>
                 <span style="font-weight:600;font-size:14px;">Iniciado</span>
-                <span id="count-iniciado" style="margin-left:auto;background:#dbeafe;color:#1d4ed8;
-                      padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+                <span id="count-iniciado" style="margin-left:auto;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
             </div>
-            <div id="col-iniciado" class="kanban-cards"
-                 ondragover="allowDrop(event)" ondrop="dropCard(event,'iniciado')"
-                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;">
-            </div>
+            <div id="col-iniciado" ondragover="allowDrop(event)" ondrop="dropCard(event,'iniciado')"
+                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;"></div>
         </div>
-
-        <!-- COLUNA PENDENTE -->
-        <div class="kanban-col" data-status="pendente">
+        <div class="kanban-col">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
                  background:white;border-radius:10px;border-top:4px solid #f59e0b;box-shadow:var(--shadow);">
                 <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
                 <span style="font-weight:600;font-size:14px;">Pendente</span>
-                <span id="count-pendente" style="margin-left:auto;background:#fef3c7;color:#d97706;
-                      padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+                <span id="count-pendente" style="margin-left:auto;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
             </div>
-            <div id="col-pendente" class="kanban-cards"
-                 ondragover="allowDrop(event)" ondrop="dropCard(event,'pendente')"
-                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;">
-            </div>
+            <div id="col-pendente" ondragover="allowDrop(event)" ondrop="dropCard(event,'pendente')"
+                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;"></div>
         </div>
-
-        <!-- COLUNA ATIVO -->
-        <div class="kanban-col" data-status="ativo">
+        <div class="kanban-col">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
                  background:white;border-radius:10px;border-top:4px solid #10b981;box-shadow:var(--shadow);">
                 <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span>
                 <span style="font-weight:600;font-size:14px;">Ativo</span>
-                <span id="count-ativo" style="margin-left:auto;background:#d1fae5;color:#065f46;
-                      padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+                <span id="count-ativo" style="margin-left:auto;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
             </div>
-            <div id="col-ativo" class="kanban-cards"
-                 ondragover="allowDrop(event)" ondrop="dropCard(event,'ativo')"
-                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;">
-            </div>
+            <div id="col-ativo" ondragover="allowDrop(event)" ondrop="dropCard(event,'ativo')"
+                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;"></div>
         </div>
-
-        <!-- COLUNA CONCLUÍDO -->
-        <div class="kanban-col" data-status="concluido">
+        <div class="kanban-col">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
                  background:white;border-radius:10px;border-top:4px solid #6b7280;box-shadow:var(--shadow);">
                 <span style="width:10px;height:10px;border-radius:50%;background:#6b7280;display:inline-block;"></span>
                 <span style="font-weight:600;font-size:14px;">Concluído</span>
-                <span id="count-concluido" style="margin-left:auto;background:#f1f5f9;color:#475569;
-                      padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+                <span id="count-concluido" style="margin-left:auto;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
             </div>
-            <div id="col-concluido" class="kanban-cards"
-                 ondragover="allowDrop(event)" ondrop="dropCard(event,'concluido')"
-                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;">
-            </div>
+            <div id="col-concluido" ondragover="allowDrop(event)" ondrop="dropCard(event,'concluido')"
+                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;"></div>
         </div>
-
     </div>
 </div>
-            
-            <!-- CASES PAGE -->
-            <div id="page-cases" class="page">
-                <div class="case-filters">
-                    <button class="filter-btn active" onclick="filterCases('all')">Todos</button>
-                    <button class="filter-btn" onclick="filterCases('iniciado')">Iniciados</button>
-                    <button class="filter-btn" onclick="filterCases('em_andamento')">Em Andamento</button>
-                    <button class="filter-btn" onclick="filterCases('aguardando')">Aguardando</button>
-                    <button class="filter-btn" onclick="filterCases('concluido')">Concluídos</button>
-                </div>
-                
-                <div class="cases-grid" id="casesList">
-                    <!-- Casos serão carregados dinamicamente -->
-                </div>
-            </div>
-            
-            <!-- TEAM PAGE -->
-            <div id="page-team" class="page">
-                <div class="team-grid" id="teamList">
-                    <!-- Equipe será carregada dinamicamente -->
-                </div>
-            </div>
-            
-            <!-- PROFILE PAGE -->
-            <div id="page-profile" class="page">
-                <div class="case-detail-header">
-                    <h2 class="case-detail-title">Meu Perfil</h2>
-                    <p class="case-detail-meta">Gerencie suas informações pessoais</p>
-                </div>
-                
-                <div class="board-card" style="padding:24px;">
-                    <form onsubmit="updateProfile(event)">
-                        <div class="form-group">
-                            <label class="form-label">Nome Completo</label>
-                            <input type="text" class="form-input" id="profileName" value="Raphael Souza">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-input" id="profileEmail" value="admin@cartorio4oficio.com" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Telefone</label>
-                            <input type="tel" class="form-input" id="profilePhone" placeholder="(24) 99999-9999">
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Salvar Alterações
-                        </button>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- SETTINGS PAGE -->
-            <div id="page-settings" class="page">
-                <div class="case-detail-header">
-                    <h2 class="case-detail-title">Configurações</h2>
-                    <p class="case-detail-meta">Configure as preferências do sistema</p>
-                </div>
-                
-                <div class="board-card" style="padding:24px;">
-                    <h3 style="margin-bottom:16px;">Notificações</h3>
-                    <div style="display:flex;flex-direction:column;gap:12px;">
-                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                            <input type="checkbox" checked> Receber notificações por email
-                        </label>
-                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                            <input type="checkbox" checked> Notificar novos casos
-                        </label>
-                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                            <input type="checkbox"> Notificar atualizações de casos
-                        </label>
-                    </div>
-                    
-                    <h3 style="margin:24px 0 16px;">Segurança</h3>
-                    <button class="btn btn-outline" onclick="changePassword()">
-                        <i class="fas fa-lock"></i> Alterar Senha
-                    </button>
-                </div>
-            </div>
-        </div>
-    </main>
+
+<!-- CASES PAGE -->
+<div id="page-cases" class="page">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+        <h2 style="font-size:20px;font-weight:700;">Casos</h2>
+        <button class="btn btn-primary" onclick="openModal('newCase')">
+            <i class="fas fa-plus"></i> Novo Caso
+        </button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+        <button class="filter-btn active" onclick="filterCases('all')">Todos</button>
+        <button class="filter-btn" onclick="filterCases('iniciado')">Iniciado</button>
+        <button class="filter-btn" onclick="filterCases('pendente')">Pendente</button>
+        <button class="filter-btn" onclick="filterCases('ativo')">Ativo</button>
+        <button class="filter-btn" onclick="filterCases('concluido')">Concluído</button>
+    </div>
+    <div id="casesList"></div>
 </div>
 
-<!-- MODALS -->
+<!-- TEAM PAGE -->
+<div id="page-team" class="page">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Equipe</h2>
+    <div id="teamList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;"></div>
+</div>
+
+<!-- PROFILE PAGE -->
+<div id="page-profile" class="page">
+    <div class="case-detail-header" style="margin-bottom:24px;">
+        <h2 class="case-detail-title">Meu Perfil</h2>
+        <p class="case-detail-meta">Gerencie suas informações pessoais</p>
+    </div>
+    <div class="board-card" style="padding:24px;">
+        <form onsubmit="updateProfile(event)">
+            <div class="form-group">
+                <label class="form-label">Nome Completo</label>
+                <input type="text" class="form-input" id="profileName">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="profileEmail" readonly>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Telefone</label>
+                <input type="tel" class="form-input" id="profilePhone" placeholder="(24) 99999-9999">
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Salvar Alterações
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div id="page-settings" class="page">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Configurações</h2>
+    <div class="board-card" style="padding:24px;">
+        <h3 style="margin-bottom:16px;">Notificações</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="checkbox" checked> Receber notificações por email
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="checkbox" checked> Notificar novos casos
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="checkbox"> Notificar atualizações de casos
+            </label>
+        </div>
+        <h3 style="margin:24px 0 16px;">Segurança</h3>
+        <button class="btn btn-outline" onclick="changePassword()">
+            <i class="fas fa-lock"></i> Alterar Senha
+        </button>
+    </div>
+</div>
+
+</div></div></main></div>
+
+<!-- MODAL -->
 <div id="modalOverlay" class="modal-overlay" onclick="closeModal(event)">
-    <!-- New Case Modal -->
     <div id="modal-newCase" class="modal" style="display:none;">
         <div class="modal-header">
             <h3 class="modal-title">Novo Caso</h3>
-            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <button class="modal-close" onclick="closeModal(event)">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <div class="modal-body">
-            <form id="newCaseForm">
-                <div class="form-group">
-                    <label class="form-label">Título do Caso</label>
-                    <input type="text" class="form-input" id="caseTitle" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Tipo</label>
-                    <select class="form-select" id="caseType">
-                        <option value="escritura">Escritura</option>
-                        <option value="divorcio">Divórcio</option>
-                        <option value="procuracao">Procuração</option>
-                        <option value="usucapiao">Usucapião</option>
-                        <option value="inventario">Inventário</option>
-                        <option value="outros">Outros</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Cliente</label>
-                    <input type="text" class="form-input" id="caseClient" placeholder="Nome do cliente">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Prioridade</label>
-                    <select class="form-select" id="casePriority">
-                        <option value="low">Baixa</option>
-                        <option value="medium" selected>Média</option>
-                        <option value="high">Alta</option>
-                        <option value="urgent">Urgente</option>
-                    </select>
-                </div>
-            </form>
-        </div>
+        <form id="newCaseForm">
+            <div class="form-group">
+                <label class="form-label">Título do Caso *</label>
+                <input type="text" class="form-input" id="caseTitle" placeholder="Ex: Escritura - João Silva" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Descrição</label>
+                <textarea class="form-input" id="caseDescription" rows="3"
+                    placeholder="Detalhes do caso..." style="resize:vertical;"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Status Inicial</label>
+                <select class="form-input" id="caseStatus">
+                    <option value="iniciado">Iniciado</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="ativo">Ativo</option>
+                    <option value="concluido">Concluído</option>
+                </select>
+            </div>
+        </form>
         <div class="modal-footer">
             <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
             <button class="btn btn-primary" onclick="createCase()">
@@ -608,38 +569,17 @@
             </button>
         </div>
     </div>
+</div>
 
 <!-- NOTIFICATION -->
 <div id="notification" class="notification">
     <span id="notificationText"></span>
 </div>
 
-<!-- SCRIPTS -->
-<script src="js/config.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/admin.js"></script>
+
 <script>
-    async function waitForAuthReady(timeoutMs = 5000) {
-    if (window.Auth?.login) return true;
-
-    await new Promise((resolve) => {
-        let settled = false;
-
-        const done = () => {
-            if (settled) return;
-            settled = true;
-            resolve();
-        };
-
-        const timer = setTimeout(done, timeoutMs);
-        document.addEventListener('authReady', () => {
-            clearTimeout(timer);
-            done();
-        }, { once: true });
-    });
-
-    return !!window.Auth?.login;
-}
-
 // ==================== TABS ====================
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -654,7 +594,6 @@ function toggleOABField() {
     if (field) field.style.display = type === 'advogado' ? 'block' : 'none';
 }
 
-// ==================== NAVEGAÇÃO PÚBLICA ====================
 function showLoginModal() {
     document.getElementById('publicSite').style.display = 'none';
     document.getElementById('loginPage').style.display  = 'flex';
@@ -676,7 +615,6 @@ function backToLogin() {
     document.getElementById('loginPage').style.display  = 'flex';
 }
 
-// ==================== NAVEGAÇÃO INTERNA ====================
 function showPage(pageName) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -685,9 +623,8 @@ function showPage(pageName) {
     if (event?.target?.closest?.('.nav-item'))
         event.target.closest('.nav-item').classList.add('active');
     const titles = {
-        dashboard: 'Dashboard', boards:   'Quadros',
-        cases:     'Casos',     team:      'Equipe',
-        profile:   'Meu Perfil',settings:  'Configurações'
+        dashboard:'Dashboard', boards:'Quadros', cases:'Casos',
+        team:'Equipe', profile:'Meu Perfil', settings:'Configurações'
     };
     const t = document.getElementById('pageTitle');
     if (t) t.textContent = titles[pageName] || pageName;
@@ -702,7 +639,7 @@ async function handleLogin(event) {
     btn.disabled  = true;
 
     if (!window.Auth?.login) {
-        showNotification('Sistema não carregado. Aguarde.', 'error');
+        showNotification('Sistema não carregado.', 'error');
         btn.innerHTML = orig; btn.disabled = false; return;
     }
 
@@ -712,7 +649,7 @@ async function handleLogin(event) {
     );
 
     if (error) {
-       showNotification(error || 'Email ou senha incorretos.', 'error');
+        showNotification('Email ou senha incorretos.', 'error');
         btn.innerHTML = orig; btn.disabled = false; return;
     }
 
@@ -731,7 +668,6 @@ async function handleLogin(event) {
     await loadDashboard();
 }
 
-// ==================== REGISTRO ====================
 async function handleRegister(event) {
     event.preventDefault();
     const btn = document.getElementById('registerBtn');
@@ -742,7 +678,7 @@ async function handleRegister(event) {
         name:     document.getElementById('regName')?.value,
         email:    document.getElementById('regEmail')?.value,
         password: document.getElementById('regPassword')?.value,
-        role:     document.getElementById('registerType')?.value,
+        role:     document.getElementById('regType')?.value || 'cliente',
         oab:      document.getElementById('registerOab')?.value
     });
 
@@ -755,7 +691,6 @@ async function handleRegister(event) {
     btn.innerHTML = 'Cadastrar'; btn.disabled = false;
 }
 
-// ==================== LOGOUT ====================
 async function logout() {
     if (window.Auth) await window.Auth.logout();
     document.getElementById('appContainer').style.display = 'none';
@@ -777,14 +712,15 @@ async function loadDashboard() {
 
     loadCasesList(all);
     loadBoardsList(all);
-    renderKanban(all);  
+    renderKanban(all);
+    loadTeam();
 }
 
 function loadCasesList(cases) {
     const c = document.getElementById('casesList');
     if (!c) return;
     if (!cases.length) {
-        c.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-light);"><i class="fas fa-folder-open" style="font-size:32px;margin-bottom:12px;display:block;"></i>Nenhum caso cadastrado ainda.</div>';
+        c.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-light);"><i class="fas fa-folder-open" style="font-size:32px;margin-bottom:12px;display:block;opacity:0.4;"></i>Nenhum caso ainda.</div>';
         return;
     }
     c.innerHTML = cases.map(x => `
@@ -811,10 +747,10 @@ function loadBoardsList(cases) {
     const c = document.getElementById('dashboardBoards');
     if (!c) return;
     const cols = [
-        { key:'iniciado',  label:'Iniciado',  color:'#3b82f6' },
-        { key:'pendente',  label:'Pendente',  color:'#f59e0b' },
-        { key:'ativo',     label:'Ativo',     color:'#10b981' },
-        { key:'concluido', label:'Concluído', color:'#6b7280' }
+        {key:'iniciado',label:'Iniciado',color:'#3b82f6'},
+        {key:'pendente',label:'Pendente',color:'#f59e0b'},
+        {key:'ativo',label:'Ativo',color:'#10b981'},
+        {key:'concluido',label:'Concluído',color:'#6b7280'}
     ];
     c.innerHTML = cols.map(col => {
         const items = cases.filter(x => x.status === col.key);
@@ -833,12 +769,114 @@ function loadBoardsList(cases) {
     }).join('');
 }
 
+// ==================== KANBAN ====================
+let draggedId = null;
+
+function renderKanban(cases) {
+    ['iniciado','pendente','ativo','concluido'].forEach(status => {
+        const col   = document.getElementById('col-' + status);
+        const count = document.getElementById('count-' + status);
+        if (!col) return;
+        const items = cases.filter(c => c.status === status);
+        if (count) count.textContent = items.length;
+        if (!items.length) {
+            col.innerHTML = `<div style="border:2px dashed var(--border);border-radius:8px;padding:24px;
+                text-align:center;color:var(--text-light);font-size:13px;">
+                <i class="fas fa-inbox" style="font-size:20px;margin-bottom:8px;display:block;"></i>Nenhum caso</div>`;
+            return;
+        }
+        col.innerHTML = items.map(c => `
+            <div class="kanban-card" draggable="true" id="card-${c.id}"
+                 ondragstart="dragStart(event,'${c.id}')" ondragend="dragEnd(event)"
+                 style="background:white;border-radius:8px;padding:14px;box-shadow:var(--shadow);
+                        border:1px solid var(--border);cursor:grab;border-left:4px solid ${statusColor(c.status)};">
+                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+                    <strong style="font-size:14px;">${c.title}</strong>
+                    <button onclick="deleteCase('${c.id}')"
+                        style="background:none;border:none;color:#cbd5e1;cursor:pointer;padding:2px 4px;"
+                        onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                ${c.description ? `<p style="color:var(--text-light);font-size:12px;margin-bottom:10px;">${c.description}</p>` : ''}
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+                    <span style="font-size:11px;color:var(--text-light);">
+                        <i class="fas fa-calendar-alt"></i> ${new Date(c.created_at).toLocaleDateString('pt-BR')}
+                    </span>
+                    <select onchange="updateCaseStatus('${c.id}',this.value)"
+                        style="font-size:11px;border:1px solid var(--border);border-radius:4px;
+                               padding:2px 6px;cursor:pointer;background:var(--bg);">
+                        <option value="iniciado"  ${c.status==='iniciado' ?'selected':''}>Iniciado</option>
+                        <option value="pendente"  ${c.status==='pendente' ?'selected':''}>Pendente</option>
+                        <option value="ativo"     ${c.status==='ativo'    ?'selected':''}>Ativo</option>
+                        <option value="concluido" ${c.status==='concluido'?'selected':''}>Concluído</option>
+                    </select>
+                </div>
+            </div>`).join('');
+    });
+}
+
+function dragStart(event, id) {
+    draggedId = id;
+    setTimeout(() => { const c = document.getElementById('card-'+id); if(c) c.style.opacity='0.4'; }, 0);
+}
+
+function dragEnd(event) {
+    const c = document.getElementById('card-'+draggedId);
+    if (c) c.style.opacity = '1';
+}
+
+function allowDrop(event) { event.preventDefault(); }
+
+async function dropCard(event, newStatus) {
+    event.preventDefault();
+    if (!draggedId) return;
+    await updateCaseStatus(draggedId, newStatus);
+    draggedId = null;
+}
+
+async function updateCaseStatus(id, newStatus) {
+    const { error } = await window.Auth.client.from('cases').update({ status: newStatus }).eq('id', id);
+    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
+    showNotification('Status atualizado! ✅', 'success');
+    await loadDashboard();
+}
+
+// ==================== EQUIPE ====================
+async function loadTeam() {
+    const container = document.getElementById('teamList');
+    if (!container) return;
+    const { data } = await window.Auth.client.from('profiles').select('*').order('name');
+    if (!data?.length) {
+        container.innerHTML = '<p style="color:var(--text-light);">Nenhum membro cadastrado ainda.</p>';
+        return;
+    }
+    const roleLabel = { admin:'Administrador', cliente:'Cliente', advogado:'Advogado' };
+    const roleColor = { admin:'#3b82f6', cliente:'#10b981', advogado:'#f59e0b' };
+    container.innerHTML = data.map(p => `
+        <div style="background:white;border-radius:10px;padding:20px;border:1px solid var(--border);
+             box-shadow:var(--shadow);text-align:center;">
+            <div style="width:56px;height:56px;border-radius:50%;background:${roleColor[p.role]||'#6b7280'};
+                 color:white;display:flex;align-items:center;justify-content:center;
+                 font-size:20px;font-weight:700;margin:0 auto 12px;">
+                ${(p.name||p.email).substring(0,2).toUpperCase()}
+            </div>
+            <strong style="display:block;margin-bottom:4px;">${p.name || 'Sem nome'}</strong>
+            <p style="color:var(--text-light);font-size:13px;margin-bottom:8px;">${p.email}</p>
+            <span style="font-size:12px;background:${roleColor[p.role]||'#6b7280'}20;
+                  color:${roleColor[p.role]||'#6b7280'};padding:3px 10px;border-radius:12px;font-weight:500;">
+                ${roleLabel[p.role]||p.role}
+            </span>
+        </div>`).join('');
+}
+
+// ==================== STATUS / CORES ====================
 function statusColor(s) {
-    return { ativo:'#10b981', pendente:'#f59e0b', iniciado:'#3b82f6', concluido:'#6b7280' }[s] || '#6b7280';
+    return {ativo:'#10b981',pendente:'#f59e0b',iniciado:'#3b82f6',concluido:'#6b7280'}[s]||'#6b7280';
 }
 
 function statusLabel(s) {
-    return { ativo:'Ativo', pendente:'Pendente', iniciado:'Iniciado', concluido:'Concluído' }[s] || s;
+    return {ativo:'Ativo',pendente:'Pendente',iniciado:'Iniciado',concluido:'Concluído'}[s]||s;
 }
 
 // ==================== CASOS ====================
@@ -853,7 +891,7 @@ async function filterCases(status) {
 
 async function createCase() {
     const title = document.getElementById('caseTitle')?.value?.trim();
-    if (!title) { showNotification('Preencha o título do caso!', 'error'); return; }
+    if (!title) { showNotification('Preencha o título!', 'error'); return; }
     const { data: { user } } = await window.Auth.client.auth.getUser();
     const { error } = await window.Auth.client.from('cases').insert([{
         title,
@@ -870,7 +908,7 @@ async function createCase() {
 }
 
 async function deleteCase(id) {
-    if (!confirm('Deseja excluir este caso permanentemente?')) return;
+    if (!confirm('Excluir este caso?')) return;
     const { error } = await window.Auth.client.from('cases').delete().eq('id', id);
     if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
     showNotification('Caso excluído!', 'success');
@@ -893,7 +931,7 @@ async function updateProfile(event) {
 async function changePassword() {
     const { data: { user } } = await window.Auth.client.auth.getUser();
     await window.Auth.client.auth.resetPasswordForEmail(user.email);
-    showNotification('Link de redefinição enviado! 📧', 'info');
+    showNotification('Link enviado para seu email! 📧', 'info');
 }
 
 // ==================== MODAIS ====================
@@ -929,8 +967,8 @@ function showNotification(message, type = 'info') {
 // ==================== HORÁRIO ====================
 function updateOpenStatus() {
     const now    = new Date();
-    const isOpen = now.getDay() >= 1 && now.getDay() <= 5
-                && now.getHours() >= 9 && now.getHours() < 17;
+    const isOpen = now.getDay() >= 1 && now.getDay() &lt;= 5
+                && now.getHours() >= 9 && now.getHours() &lt; 17;
     const badge  = document.getElementById('status-badge');
     if (badge) {
         badge.textContent      = isOpen ? '🟢 Aberto Agora' : '🔴 Fechado';
@@ -940,104 +978,6 @@ function updateOpenStatus() {
 }
 updateOpenStatus();
 setInterval(updateOpenStatus, 60000);
-
-    // ==================== KANBAN ====================
-let draggedCardId   = null;
-let draggedCardStatus = null;
-
-function renderKanban(cases) {
-    const statuses = ['iniciado','pendente','ativo','concluido'];
-    statuses.forEach(status => {
-        const col   = document.getElementById('col-' + status);
-        const count = document.getElementById('count-' + status);
-        if (!col) return;
-
-        const items = cases.filter(c => c.status === status);
-        if (count) count.textContent = items.length;
-
-        if (!items.length) {
-            col.innerHTML = `
-                <div style="border:2px dashed var(--border);border-radius:8px;padding:24px;
-                     text-align:center;color:var(--text-light);font-size:13px;">
-                    <i class="fas fa-inbox" style="font-size:20px;margin-bottom:8px;display:block;"></i>
-                    Nenhum caso
-                </div>`;
-            return;
-        }
-
-        col.innerHTML = items.map(c => `
-            <div class="kanban-card" draggable="true"
-                 id="card-${c.id}"
-                 ondragstart="dragStart(event,'${c.id}','${c.status}')"
-                 ondragend="dragEnd(event)"
-                 style="background:white;border-radius:8px;padding:14px;
-                        box-shadow:var(--shadow);border:1px solid var(--border);
-                        cursor:grab;transition:all 0.2s;border-left:4px solid ${statusColor(c.status)};">
-                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
-                    <strong style="font-size:14px;line-height:1.4;">${c.title}</strong>
-                    <button onclick="deleteCase('${c.id}')" title="Excluir"
-                        style="background:none;border:none;color:#cbd5e1;cursor:pointer;
-                               padding:2px 4px;margin-left:8px;flex-shrink:0;font-size:12px;"
-                        onmouseover="this.style.color='#ef4444'"
-                        onmouseout="this.style.color='#cbd5e1'">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                ${c.description ? `<p style="color:var(--text-light);font-size:12px;margin-bottom:10px;
-                    line-height:1.5;">${c.description}</p>` : ''}
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-                    <span style="font-size:11px;color:var(--text-light);">
-                        <i class="fas fa-calendar-alt"></i>
-                        ${new Date(c.created_at).toLocaleDateString('pt-BR')}
-                    </span>
-                    <select onchange="updateCaseStatus('${c.id}', this.value)"
-                        style="font-size:11px;border:1px solid var(--border);border-radius:4px;
-                               padding:2px 6px;cursor:pointer;background:var(--bg);color:var(--text);">
-                        <option value="iniciado"  ${c.status==='iniciado'  ? 'selected':''}>Iniciado</option>
-                        <option value="pendente"  ${c.status==='pendente'  ? 'selected':''}>Pendente</option>
-                        <option value="ativo"     ${c.status==='ativo'     ? 'selected':''}>Ativo</option>
-                        <option value="concluido" ${c.status==='concluido' ? 'selected':''}>Concluído</option>
-                    </select>
-                </div>
-            </div>`).join('');
-    });
-}
-
-function dragStart(event, id, status) {
-    draggedCardId     = id;
-    draggedCardStatus = status;
-    event.dataTransfer.effectAllowed = 'move';
-    setTimeout(() => {
-        const card = document.getElementById('card-' + id);
-        if (card) card.style.opacity = '0.4';
-    }, 0);
-}
-
-function dragEnd(event) {
-    const card = document.getElementById('card-' + draggedCardId);
-    if (card) card.style.opacity = '1';
-}
-
-function allowDrop(event) {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-}
-
-async function dropCard(event, newStatus) {
-    event.preventDefault();
-    if (!draggedCardId || draggedCardStatus === newStatus) return;
-    await updateCaseStatus(draggedCardId, newStatus);
-    draggedCardId     = null;
-    draggedCardStatus = null;
-}
-
-async function updateCaseStatus(id, newStatus) {
-    const { error } = await window.Auth.client
-        .from('cases').update({ status: newStatus }).eq('id', id);
-    if (error) { showNotification('Erro ao atualizar: ' + error.message, 'error'); return; }
-    showNotification('Status atualizado! ✅', 'success');
-    await loadDashboard();
-}
 
 // ==================== SESSÃO ====================
 document.addEventListener('authReady', async function () {
@@ -1049,9 +989,13 @@ document.addEventListener('authReady', async function () {
     const un = document.getElementById('userName');
     const ur = document.getElementById('userRole');
     const ua = document.getElementById('userAvatar');
+    const pn = document.getElementById('profileName');
+    const pe = document.getElementById('profileEmail');
     if (un) un.textContent = profile?.name || user.email;
     if (ur) ur.textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
     if (ua) ua.textContent = (profile?.name || user.email).substring(0,2).toUpperCase();
+    if (pn) pn.value = profile?.name || '';
+    if (pe) pe.value = user.email || '';
     await loadDashboard();
 });
 </script>
