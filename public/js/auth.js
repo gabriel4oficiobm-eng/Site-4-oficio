@@ -8,7 +8,7 @@
     console.error('❌ Supabase SDK não carregado');
     window.Auth = { error: 'Supabase SDK não carregado' };
     return;
-  }
+}
 
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
