@@ -43,18 +43,14 @@
         },
 
         async logout() {
-            try {
-                await client.auth.signOut();
-                return { success: true };
-            } catch (err) {
-                return { success: false, error: err.message };
-            }
+            try { await client.auth.signOut(); return { success: true }; }
+            catch (err) { return { success: false, error: err.message }; }
         },
 
         async getCurrentUser() {
             try {
-                const { data: { user }, error } = await client.auth.getUser();
-                if (error || !user) return { user: null, profile: null, error: null };
+                const { data: { user } } = await client.auth.getUser();
+                if (!user) return { user: null, profile: null, error: null };
                 const { data: profile } = await client
                     .from('profiles').select('*').eq('id', user.id).single();
                 return { user, profile: profile || {}, error: null };
