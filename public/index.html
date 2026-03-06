@@ -919,6 +919,104 @@ function updateOpenStatus() {
 updateOpenStatus();
 setInterval(updateOpenStatus, 60000);
 
+    // ==================== KANBAN ====================
+let draggedCardId   = null;
+let draggedCardStatus = null;
+
+function renderKanban(cases) {
+    const statuses = ['iniciado','pendente','ativo','concluido'];
+    statuses.forEach(status => {
+        const col   = document.getElementById('col-' + status);
+        const count = document.getElementById('count-' + status);
+        if (!col) return;
+
+        const items = cases.filter(c => c.status === status);
+        if (count) count.textContent = items.length;
+
+        if (!items.length) {
+            col.innerHTML = `
+                <div style="border:2px dashed var(--border);border-radius:8px;padding:24px;
+                     text-align:center;color:var(--text-light);font-size:13px;">
+                    <i class="fas fa-inbox" style="font-size:20px;margin-bottom:8px;display:block;"></i>
+                    Nenhum caso
+                </div>`;
+            return;
+        }
+
+        col.innerHTML = items.map(c => `
+            <div class="kanban-card" draggable="true"
+                 id="card-${c.id}"
+                 ondragstart="dragStart(event,'${c.id}','${c.status}')"
+                 ondragend="dragEnd(event)"
+                 style="background:white;border-radius:8px;padding:14px;
+                        box-shadow:var(--shadow);border:1px solid var(--border);
+                        cursor:grab;transition:all 0.2s;border-left:4px solid ${statusColor(c.status)};">
+                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+                    <strong style="font-size:14px;line-height:1.4;">${c.title}</strong>
+                    <button onclick="deleteCase('${c.id}')" title="Excluir"
+                        style="background:none;border:none;color:#cbd5e1;cursor:pointer;
+                               padding:2px 4px;margin-left:8px;flex-shrink:0;font-size:12px;"
+                        onmouseover="this.style.color='#ef4444'"
+                        onmouseout="this.style.color='#cbd5e1'">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                ${c.description ? `<p style="color:var(--text-light);font-size:12px;margin-bottom:10px;
+                    line-height:1.5;">${c.description}</p>` : ''}
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+                    <span style="font-size:11px;color:var(--text-light);">
+                        <i class="fas fa-calendar-alt"></i>
+                        ${new Date(c.created_at).toLocaleDateString('pt-BR')}
+                    </span>
+                    <select onchange="updateCaseStatus('${c.id}', this.value)"
+                        style="font-size:11px;border:1px solid var(--border);border-radius:4px;
+                               padding:2px 6px;cursor:pointer;background:var(--bg);color:var(--text);">
+                        <option value="iniciado"  ${c.status==='iniciado'  ? 'selected':''}>Iniciado</option>
+                        <option value="pendente"  ${c.status==='pendente'  ? 'selected':''}>Pendente</option>
+                        <option value="ativo"     ${c.status==='ativo'     ? 'selected':''}>Ativo</option>
+                        <option value="concluido" ${c.status==='concluido' ? 'selected':''}>Concluído</option>
+                    </select>
+                </div>
+            </div>`).join('');
+    });
+}
+
+function dragStart(event, id, status) {
+    draggedCardId     = id;
+    draggedCardStatus = status;
+    event.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => {
+        const card = document.getElementById('card-' + id);
+        if (card) card.style.opacity = '0.4';
+    }, 0);
+}
+
+function dragEnd(event) {
+    const card = document.getElementById('card-' + draggedCardId);
+    if (card) card.style.opacity = '1';
+}
+
+function allowDrop(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+}
+
+async function dropCard(event, newStatus) {
+    event.preventDefault();
+    if (!draggedCardId || draggedCardStatus === newStatus) return;
+    await updateCaseStatus(draggedCardId, newStatus);
+    draggedCardId     = null;
+    draggedCardStatus = null;
+}
+
+async function updateCaseStatus(id, newStatus) {
+    const { error } = await window.Auth.client
+        .from('cases').update({ status: newStatus }).eq('id', id);
+    if (error) { showNotification('Erro ao atualizar: ' + error.message, 'error'); return; }
+    showNotification('Status atualizado! ✅', 'success');
+    await loadDashboard();
+}
+
 // ==================== SESSÃO ====================
 document.addEventListener('authReady', async function () {
     if (!window.Auth) return;
