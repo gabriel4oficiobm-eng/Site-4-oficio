@@ -560,26 +560,23 @@
     <input type="text" id="registerOab" placeholder="RJ123456">
 </div>
 
-<!--<!-- NOTIFICATION -->
+<!-- NOTIFICATION -->
 <div id="notification" class="notification">
     <span id="notificationText"></span>
 </div>
 
-<!-- Supabase SDK -->
-<script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-<!-- Scripts -->
 <script src="js/auth.js"></script>
 <script src="js/admin.js"></script>
 
 <script>
-// ==================== TABS LOGIN ====================
+// ==================== TABS ====================
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     if (event && event.target) event.target.classList.add('active');
-    const loginForm    = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    if (loginForm)    loginForm.style.display    = tab === 'login' ? 'block' : 'none';
-    if (registerForm) registerForm.style.display = tab === 'login' ? 'none'  : 'block';
+    const lf = document.getElementById('loginForm');
+    const rf = document.getElementById('registerForm');
+    if (lf) lf.style.display = tab === 'login' ? 'block' : 'none';
+    if (rf) rf.style.display = tab === 'login' ? 'none'  : 'block';
 }
 
 function toggleOABField() {
@@ -590,33 +587,33 @@ function toggleOABField() {
 
 // ==================== NAVEGAÇÃO PÚBLICA ====================
 function showLoginModal() {
-    const loginPage  = document.getElementById('loginPage');
-    const publicSite = document.getElementById('publicSite');
-    if (publicSite) publicSite.style.display = 'none';
-    if (loginPage)  loginPage.style.display  = 'flex';
+    const lp = document.getElementById('loginPage');
+    const ps = document.getElementById('publicSite');
+    if (ps) ps.style.display = 'none';
+    if (lp) lp.style.display = 'flex';
 }
 
 function closeLoginModal() {
-    const loginPage  = document.getElementById('loginPage');
-    const publicSite = document.getElementById('publicSite');
-    if (loginPage)  loginPage.style.display  = 'none';
-    if (publicSite) publicSite.style.display = 'block';
+    const lp = document.getElementById('loginPage');
+    const ps = document.getElementById('publicSite');
+    if (lp) lp.style.display = 'none';
+    if (ps) ps.style.display = 'block';
 }
 
 function enterPublicSite() {
-    const loginPage    = document.getElementById('loginPage');
-    const publicSite   = document.getElementById('publicSite');
-    const appContainer = document.getElementById('appContainer');
-    if (loginPage)    loginPage.style.display    = 'none';
-    if (publicSite)   publicSite.style.display   = 'block';
-    if (appContainer) appContainer.style.display = 'none';
+    const lp = document.getElementById('loginPage');
+    const ps = document.getElementById('publicSite');
+    const ac = document.getElementById('appContainer');
+    if (lp) lp.style.display = 'none';
+    if (ps) ps.style.display = 'block';
+    if (ac) ac.style.display = 'none';
 }
 
 function backToLogin() {
-    const loginPage  = document.getElementById('loginPage');
-    const publicSite = document.getElementById('publicSite');
-    if (publicSite)  publicSite.style.display = 'none';
-    if (loginPage)   loginPage.style.display  = 'flex';
+    const lp = document.getElementById('loginPage');
+    const ps = document.getElementById('publicSite');
+    if (ps) ps.style.display = 'none';
+    if (lp) lp.style.display = 'flex';
 }
 
 // ==================== NAVEGAÇÃO INTERNA ====================
@@ -625,16 +622,13 @@ function showPage(pageName) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const page = document.getElementById('page-' + pageName);
     if (page) page.classList.add('active');
-    if (event && event.target && event.target.closest('.nav-item')) {
+    if (event?.target?.closest?.('.nav-item')) {
         event.target.closest('.nav-item').classList.add('active');
     }
     const titles = {
-        'dashboard': 'Dashboard',
-        'boards':    'Quadros',
-        'cases':     'Casos',
-        'team':      'Equipe',
-        'profile':   'Meu Perfil',
-        'settings':  'Configurações'
+        'dashboard': 'Dashboard', 'boards':   'Quadros',
+        'cases':     'Casos',     'team':      'Equipe',
+        'profile':   'Meu Perfil','settings':  'Configurações'
     };
     const titleEl = document.getElementById('pageTitle');
     if (titleEl) titleEl.textContent = titles[pageName] || pageName;
@@ -645,42 +639,38 @@ async function handleLogin(event) {
     event.preventDefault();
     const btn = document.getElementById('loginBtn');
     if (!btn) return;
-    const originalText = btn.innerHTML;
+    const orig = btn.innerHTML;
     btn.innerHTML = '<span class="loading"></span> Entrando...';
     btn.disabled  = true;
 
     const email    = document.getElementById('loginEmail')?.value;
     const password = document.getElementById('loginPassword')?.value;
 
-    if (!window.Auth) {
+    if (!window.Auth || !window.Auth.login) {
         showNotification('Sistema não carregado. Tente novamente.', 'error');
-        btn.innerHTML = originalText;
-        btn.disabled  = false;
-        return;
+        btn.innerHTML = orig; btn.disabled = false; return;
     }
 
     const { user, profile, error } = await window.Auth.login(email, password);
 
     if (error) {
         showNotification('Email ou senha incorretos.', 'error');
-        btn.innerHTML = originalText;
-        btn.disabled  = false;
-        return;
+        btn.innerHTML = orig; btn.disabled = false; return;
     }
 
-    const loginPage    = document.getElementById('loginPage');
-    const publicSite   = document.getElementById('publicSite');
-    const appContainer = document.getElementById('appContainer');
-    if (loginPage)    loginPage.style.display    = 'none';
-    if (publicSite)   publicSite.style.display   = 'none';
-    if (appContainer) appContainer.style.display = 'flex';
+    const lp = document.getElementById('loginPage');
+    const ps = document.getElementById('publicSite');
+    const ac = document.getElementById('appContainer');
+    if (lp) lp.style.display = 'none';
+    if (ps) ps.style.display = 'none';
+    if (ac) ac.style.display = 'flex';
 
-    const userName   = document.getElementById('userName');
-    const userRole   = document.getElementById('userRole');
-    const userAvatar = document.getElementById('userAvatar');
-    if (userName)   userName.textContent   = profile?.name || user.email;
-    if (userRole)   userRole.textContent   = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
-    if (userAvatar) userAvatar.textContent = (profile?.name || user.email).substring(0, 2).toUpperCase();
+    const un = document.getElementById('userName');
+    const ur = document.getElementById('userRole');
+    const ua = document.getElementById('userAvatar');
+    if (un) un.textContent = profile?.name || user.email;
+    if (ur) ur.textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
+    if (ua) ua.textContent = (profile?.name || user.email).substring(0, 2).toUpperCase();
 
     showNotification('Bem-vindo! 🎉', 'success');
     await loadDashboard();
@@ -693,129 +683,101 @@ async function handleRegister(event) {
     btn.innerHTML = '<span class="loading"></span> Cadastrando...';
     btn.disabled  = true;
 
-    const name     = document.getElementById('regName')?.value;
-    const email    = document.getElementById('regEmail')?.value;
-    const password = document.getElementById('regPassword')?.value;
-    const role     = document.getElementById('registerType')?.value;
-    const oab      = document.getElementById('registerOab')?.value;
-
-    if (!window.Auth) {
-        showNotification('Sistema não carregado. Tente novamente.', 'error');
-        btn.innerHTML = 'Cadastrar';
-        btn.disabled  = false;
-        return;
-    }
-
-    const { success, error } = await window.Auth.register({ name, email, password, role, oab });
+    const { success, error } = await window.Auth.register({
+        name:     document.getElementById('regName')?.value,
+        email:    document.getElementById('regEmail')?.value,
+        password: document.getElementById('regPassword')?.value,
+        role:     document.getElementById('registerType')?.value,
+        oab:      document.getElementById('registerOab')?.value
+    });
 
     if (error) {
-        showNotification('Erro no cadastro: ' + error, 'error');
-        btn.innerHTML = 'Cadastrar';
-        btn.disabled  = false;
-        return;
+        showNotification('Erro: ' + error, 'error');
+        btn.innerHTML = 'Cadastrar'; btn.disabled = false; return;
     }
-
-    showNotification('Cadastro realizado! Faça login para continuar.', 'success');
+    showNotification('Cadastro realizado! Faça login.', 'success');
     switchTab('login');
-    btn.innerHTML = 'Cadastrar';
-    btn.disabled  = false;
+    btn.innerHTML = 'Cadastrar'; btn.disabled = false;
 }
 
 async function logout() {
     if (window.Auth) await window.Auth.logout();
-    const loginPage    = document.getElementById('loginPage');
-    const appContainer = document.getElementById('appContainer');
-    if (appContainer) appContainer.style.display = 'none';
-    if (loginPage)    loginPage.style.display    = 'flex';
+    const lp = document.getElementById('loginPage');
+    const ac = document.getElementById('appContainer');
+    if (ac) ac.style.display = 'none';
+    if (lp) lp.style.display = 'flex';
     showNotification('Sessão encerrada.', 'info');
 }
 
 // ==================== DASHBOARD ====================
 async function loadDashboard() {
-    if (!window.Auth) return;
+    if (!window.Auth?.client) return;
 
-    const { data: cases } = await window.Auth.client
-        .from('cases')
-        .select('*');
-
-    const total     = cases?.length || 0;
-    const active    = cases?.filter(c => c.status === 'ativo').length    || 0;
-    const pending   = cases?.filter(c => c.status === 'pendente').length || 0;
-    const completed = cases?.filter(c => c.status === 'concluido').length || 0;
+    const { data: cases } = await window.Auth.client.from('cases').select('*');
+    const all = cases || [];
 
     const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
-    el('totalCases',     total);
-    el('activeCases',    active);
-    el('pendingCases',   pending);
-    el('completedCases', completed);
+    el('totalCases',     all.length);
+    el('activeCases',    all.filter(c => c.status === 'ativo').length);
+    el('pendingCases',   all.filter(c => c.status === 'pendente').length);
+    el('completedCases', all.filter(c => c.status === 'concluido').length);
 
-    loadCasesList(cases || []);
-    loadBoardsList(cases || []);
+    loadCasesList(all);
+    loadBoardsList(all);
 }
 
 function loadCasesList(cases) {
     const container = document.getElementById('casesList');
     if (!container) return;
-
-    if (cases.length === 0) {
+    if (!cases.length) {
         container.innerHTML = '<p style="color:#6b7280;text-align:center;padding:32px;">Nenhum caso cadastrado ainda.</p>';
         return;
     }
-
     container.innerHTML = cases.map(c => `
-        <div class="board-card" style="padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="padding:16px;margin-bottom:12px;background:white;border-radius:8px;
+             border:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
             <div>
                 <strong>${c.title || 'Sem título'}</strong>
                 <p style="color:#6b7280;font-size:13px;margin:4px 0;">${c.description || ''}</p>
-                <span style="font-size:12px;background:${statusColor(c.status)};color:white;padding:2px 8px;border-radius:12px;">
-                    ${c.status || 'indefinido'}
-                </span>
+                <span style="font-size:12px;background:${statusColor(c.status)};color:white;
+                      padding:2px 8px;border-radius:12px;">${c.status || 'indefinido'}</span>
             </div>
             <div style="display:flex;gap:8px;">
-                <button class="btn btn-outline" onclick="editCase('${c.id}')">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn" style="background:#ef4444;color:white;" onclick="deleteCase('${c.id}')">
+                <button class="btn btn-outline" onclick="deleteCase('${c.id}')">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
-        </div>
-    `).join('');
+        </div>`).join('');
 }
 
 function loadBoardsList(cases) {
     const container = document.getElementById('dashboardBoards');
     if (!container) return;
-
-    const byStatus = {
-        'iniciado':  cases.filter(c => c.status === 'iniciado'),
-        'pendente':  cases.filter(c => c.status === 'pendente'),
-        'ativo':     cases.filter(c => c.status === 'ativo'),
-        'concluido': cases.filter(c => c.status === 'concluido')
-    };
-
-    container.innerHTML = Object.entries(byStatus).map(([status, items]) => `
-        <div class="board-card" style="padding:16px;">
-            <h3 style="margin-bottom:12px;text-transform:capitalize;">${status} (${items.length})</h3>
+    const statuses = ['iniciado','pendente','ativo','concluido'];
+    container.innerHTML = statuses.map(status => {
+        const items = cases.filter(c => c.status === status);
+        return `
+        <div style="background:white;border-radius:8px;padding:16px;border:1px solid #e2e8f0;">
+            <h3 style="margin-bottom:12px;text-transform:capitalize;font-size:14px;">
+                ${status} (${items.length})
+            </h3>
             ${items.length === 0
                 ? '<p style="color:#6b7280;font-size:13px;">Nenhum caso</p>'
-                : items.map(c => `<div style="padding:8px;background:#f8fafc;border-radius:6px;margin-bottom:8px;font-size:13px;">${c.title || 'Sem título'}</div>`).join('')
+                : items.map(c => `<div style="padding:8px;background:#f8fafc;border-radius:6px;
+                    margin-bottom:8px;font-size:13px;">${c.title || 'Sem título'}</div>`).join('')
             }
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
-function statusColor(status) {
-    const map = { ativo: '#10b981', pendente: '#f59e0b', iniciado: '#3b82f6', concluido: '#6b7280' };
-    return map[status] || '#6b7280';
+function statusColor(s) {
+    return {ativo:'#10b981',pendente:'#f59e0b',iniciado:'#3b82f6',concluido:'#6b7280'}[s] || '#6b7280';
 }
 
 // ==================== CASOS ====================
 async function filterCases(status) {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    if (event && event.target) event.target.classList.add('active');
-
-    if (!window.Auth) return;
+    if (event?.target) event.target.classList.add('active');
     let query = window.Auth.client.from('cases').select('*');
     if (status !== 'all') query = query.eq('status', status);
     const { data } = await query;
@@ -823,67 +785,50 @@ async function filterCases(status) {
 }
 
 async function createCase() {
-    const title       = document.getElementById('caseTitle')?.value;
-    const description = document.getElementById('caseDescription')?.value;
-    const status      = document.getElementById('caseStatus')?.value || 'iniciado';
-
+    const title = document.getElementById('caseTitle')?.value;
     if (!title) { showNotification('Preencha o título do caso', 'error'); return; }
 
     const { data: { user } } = await window.Auth.client.auth.getUser();
-
     const { error } = await window.Auth.client.from('cases').insert([{
         title:       title,
-        description: description || '',
-        status:      status,
+        description: document.getElementById('caseDescription')?.value || '',
+        status:      document.getElementById('caseStatus')?.value || 'iniciado',
         created_by:  user?.id || null,
         created_at:  new Date().toISOString()
     }]);
 
-    if (error) {
-        showNotification('Erro ao criar caso: ' + error.message, 'error');
-        return;
-    }
-
-    showNotification('Caso criado com sucesso! ✅', 'success');
+    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
+    showNotification('Caso criado! ✅', 'success');
     closeModal();
     document.getElementById('newCaseForm')?.reset();
     await loadDashboard();
 }
 
 async function deleteCase(id) {
-    if (!confirm('Deseja excluir este caso permanentemente?')) return;
+    if (!confirm('Excluir este caso?')) return;
     const { error } = await window.Auth.client.from('cases').delete().eq('id', id);
-    if (error) { showNotification('Erro ao excluir: ' + error.message, 'error'); return; }
+    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
     showNotification('Caso excluído!', 'success');
     await loadDashboard();
-}
-
-async function editCase(id) {
-    showNotification('Em breve: edição de casos!', 'info');
 }
 
 // ==================== PERFIL ====================
 async function updateProfile(event) {
     event.preventDefault();
-    const name  = document.getElementById('profileName')?.value;
-    const phone = document.getElementById('profilePhone')?.value;
-
     const { data: { user } } = await window.Auth.client.auth.getUser();
-
-    const { error } = await window.Auth.client
-        .from('profiles')
-        .update({ name, phone, updated_at: new Date().toISOString() })
-        .eq('id', user.id);
-
-    if (error) { showNotification('Erro ao atualizar: ' + error.message, 'error'); return; }
-    showNotification('Perfil atualizado com sucesso! ✅', 'success');
+    const { error } = await window.Auth.client.from('profiles').update({
+        name:       document.getElementById('profileName')?.value,
+        phone:      document.getElementById('profilePhone')?.value,
+        updated_at: new Date().toISOString()
+    }).eq('id', user.id);
+    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
+    showNotification('Perfil atualizado! ✅', 'success');
 }
 
 async function changePassword() {
     const { data: { user } } = await window.Auth.client.auth.getUser();
-    const { error } = await window.Auth.client.auth.resetPasswordForEmail(user.email);
-    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
-    showNotification('Link de redefinição enviado para seu email! 📧', 'info');
+    await window.Auth.client.auth.resetPasswordForEmail(user.email);
+    showNotification('Link enviado para seu email! 📧', 'info');
 }
 
 // ==================== MODAIS ====================
@@ -907,48 +852,46 @@ function closeModal(event) {
 
 // ==================== NOTIFICAÇÕES ====================
 function showNotification(message, type = 'info') {
-    const notification = document.getElementById('notification');
-    const text         = document.getElementById('notificationText');
-    if (!notification || !text) return;
-    text.textContent = message;
-    notification.className = 'notification ' + type;
-    notification.classList.add('show');
-    setTimeout(() => notification.classList.remove('show'), 3000);
+    const n = document.getElementById('notification');
+    const t = document.getElementById('notificationText');
+    if (!n || !t) return;
+    t.textContent  = message;
+    n.className    = 'notification ' + type;
+    n.classList.add('show');
+    setTimeout(() => n.classList.remove('show'), 3000);
 }
 
 // ==================== HORÁRIO ====================
 function updateOpenStatus() {
     const now    = new Date();
-    const day    = now.getDay();
-    const hour   = now.getHours();
-    const isOpen = day >= 1 && day <= 5 && hour >= 9 && hour < 17;
+    const isOpen = now.getDay() >= 1 && now.getDay() <= 5 && now.getHours() >= 9 && now.getHours() < 17;
     const badge  = document.getElementById('status-badge');
     if (badge) {
         badge.textContent      = isOpen ? '🟢 Aberto Agora' : '🔴 Fechado';
         badge.style.background = isOpen ? '#d1fae5' : '#fee2e2';
-        badge.style.color      = isOpen ? '#065f46' : '#991b1b';
+        badge.style.color      = isOpen ? '#065f46'  : '#991b1b';
     }
 }
 updateOpenStatus();
 setInterval(updateOpenStatus, 60000);
 
-// ==================== VERIFICAR SESSÃO ====================
+// ==================== SESSÃO ====================
 document.addEventListener('authReady', async function () {
     if (!window.Auth) return;
     const { user, profile } = await window.Auth.getCurrentUser();
     if (!user) return;
 
-    const loginPage    = document.getElementById('loginPage');
-    const appContainer = document.getElementById('appContainer');
-    if (loginPage)    loginPage.style.display    = 'none';
-    if (appContainer) appContainer.style.display = 'flex';
+    const lp = document.getElementById('loginPage');
+    const ac = document.getElementById('appContainer');
+    if (lp) lp.style.display = 'none';
+    if (ac) ac.style.display = 'flex';
 
-    const userName   = document.getElementById('userName');
-    const userRole   = document.getElementById('userRole');
-    const userAvatar = document.getElementById('userAvatar');
-    if (userName)   userName.textContent   = profile?.name || user.email;
-    if (userRole)   userRole.textContent   = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
-    if (userAvatar) userAvatar.textContent = (profile?.name || user.email).substring(0, 2).toUpperCase();
+    const un = document.getElementById('userName');
+    const ur = document.getElementById('userRole');
+    const ua = document.getElementById('userAvatar');
+    if (un) un.textContent = profile?.name || user.email;
+    if (ur) ur.textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
+    if (ua) ua.textContent = (profile?.name || user.email).substring(0, 2).toUpperCase();
 
     await loadDashboard();
 });
