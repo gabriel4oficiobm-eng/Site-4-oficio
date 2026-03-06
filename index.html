@@ -576,46 +576,41 @@
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     event.target.classList.add('active');
-    
-    if (tab === 'login') {
-        document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('registerForm').style.display = 'none';
-    } else {
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('registerForm').style.display = 'block';
-    }
+    document.getElementById('loginForm').style.display    = tab === 'login' ? 'block' : 'none';
+    document.getElementById('registerForm').style.display = tab === 'login' ? 'none'  : 'block';
 }
 
 function enterPublicSite() {
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('publicSite').style.display = 'block';
-    document.getElementById('appContainer').style.display = 'none';
+    const loginPage    = document.getElementById('loginPage');
+    const publicSite   = document.getElementById('publicSite');
+    const appContainer = document.getElementById('appContainer');
+    if (loginPage)    loginPage.style.display    = 'none';
+    if (publicSite)   publicSite.style.display   = 'block';
+    if (appContainer) appContainer.style.display = 'none';
 }
 
 function backToLogin() {
-    document.getElementById('publicSite').style.display = 'none';
-    document.getElementById('loginPage').style.display = 'flex';
+    const loginPage  = document.getElementById('loginPage');
+    const publicSite = document.getElementById('publicSite');
+    if (publicSite)  publicSite.style.display  = 'none';
+    if (loginPage)   loginPage.style.display   = 'flex';
 }
 
 function showPage(pageName) {
-    // Esconder todas as páginas
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    
-    // Mostrar página selecionada
-    document.getElementById('page-' + pageName).classList.add('active');
-    event.target.closest('.nav-item').classList.add('active');
-    
-    // Atualizar título
+    const page = document.getElementById('page-' + pageName);
+    if (page) page.classList.add('active');
+    if (event && event.target && event.target.closest('.nav-item')) {
+        event.target.closest('.nav-item').classList.add('active');
+    }
     const titles = {
-        'dashboard': 'Dashboard',
-        'boards': 'Quadros',
-        'cases': 'Casos',
-        'team': 'Equipe',
-        'profile': 'Meu Perfil',
-        'settings': 'Configurações'
+        'dashboard': 'Dashboard', 'boards': 'Quadros',
+        'cases': 'Casos', 'team': 'Equipe',
+        'profile': 'Meu Perfil', 'settings': 'Configurações'
     };
-    document.getElementById('pageTitle').textContent = titles[pageName] || pageName;
+    const titleEl = document.getElementById('pageTitle');
+    if (titleEl) titleEl.textContent = titles[pageName] || pageName;
 }
 
 // ==================== AUTENTICAÇÃO ====================
@@ -626,37 +621,42 @@ async function handleLogin(event) {
     const originalText = btn.innerHTML;
     btn.innerHTML = '<span class="loading"></span> Entrando...';
     btn.disabled = true;
-    
-    const email = document.getElementById('loginEmail').value;
+
+    const email    = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
-    
-    if (window.Auth) {
-        const { user, profile, error } = await window.Auth.login(email, password);
-        
-        if (error) {
-            showNotification('Email ou senha incorretos', 'error');
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            return;
-        }
-        
-        // Entrar no sistema
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('publicSite').style.display = 'none';
-        document.getElementById('appContainer').style.display = 'flex';
-        
-        // Atualizar info do usuário
-        document.getElementById('userName').textContent = profile?.name || user.email;
-        document.getElementById('userRole').textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
-        document.getElementById('userAvatar').textContent = (profile?.name || user.email).substring(0, 2).toUpperCase();
-        
-        showNotification('Bem-vindo ao sistema!', 'success');
-        loadDashboard();
-    } else {
+
+    if (!window.Auth) {
         showNotification('Sistema não carregado. Tente novamente.', 'error');
         btn.innerHTML = originalText;
         btn.disabled = false;
+        return;
     }
+
+    const { user, profile, error } = await window.Auth.login(email, password);
+
+    if (error) {
+        showNotification('Email ou senha incorretos', 'error');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        return;
+    }
+
+    const loginPage    = document.getElementById('loginPage');
+    const publicSite   = document.getElementById('publicSite');
+    const appContainer = document.getElementById('appContainer');
+    const userName     = document.getElementById('userName');
+    const userRole     = document.getElementById('userRole');
+    const userAvatar   = document.getElementById('userAvatar');
+
+    if (loginPage)    loginPage.style.display    = 'none';
+    if (publicSite)   publicSite.style.display   = 'none';
+    if (appContainer) appContainer.style.display = 'flex';
+    if (userName)     userName.textContent  = profile?.name || user.email;
+    if (userRole)     userRole.textContent  = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
+    if (userAvatar)   userAvatar.textContent = (profile?.name || user.email).substring(0, 2).toUpperCase();
+
+    showNotification('Bem-vindo ao sistema! 🎉', 'success');
+    loadDashboard();
 }
 
 async function handleRegister(event) {
@@ -664,193 +664,102 @@ async function handleRegister(event) {
     const btn = document.getElementById('registerBtn');
     btn.innerHTML = '<span class="loading"></span> Cadastrando...';
     btn.disabled = true;
-    
-    // Simulação de cadastro
     setTimeout(() => {
         showNotification('Cadastro realizado! Aguarde aprovação.', 'success');
-        btn.innerHTML = '<i class="fas fa-user-plus"></i><span>Cadastrar</span>';
+        btn.innerHTML = 'Cadastrar';
         btn.disabled = false;
-        switchTab('login');
     }, 1500);
 }
 
-function logout() {
-    if (window.Auth) {
-        window.Auth.logout();
-    }
-    document.getElementById('appContainer').style.display = 'none';
-    document.getElementById('publicSite').style.display = 'none';
-    document.getElementById('loginPage').style.display = 'flex';
-    showNotification('Você saiu do sistema', 'info');
-}
-
-// ==================== DASHBOARD ====================
-
-function loadDashboard() {
-    // Dados mockados para demonstração
-    document.getElementById('totalCases').textContent = '24';
-    document.getElementById('activeCases').textContent = '12';
-    document.getElementById('pendingCases').textContent = '8';
-    document.getElementById('completedCases').textContent = '4';
-    
-    // Carregar quadros
-    const boardsContainer = document.getElementById('dashboardBoards');
-    boardsContainer.innerHTML = `
-        <div class="board-card" onclick="showPage('cases')">
-            <div class="board-header">
-                <div class="board-title">Escrituras</div>
-                <div class="board-desc">8 casos ativos</div>
-            </div>
-            <div class="board-actions">
-                <button class="btn-board">Ver Casos</button>
-            </div>
-        </div>
-        <div class="board-card" onclick="showPage('cases')">
-            <div class="board-header">
-                <div class="board-title">Divórcios</div>
-                <div class="board-desc">5 casos ativos</div>
-            </div>
-            <div class="board-actions">
-                <button class="btn-board">Ver Casos</button>
-            </div>
-        </div>
-        <div class="board-card" onclick="showPage('cases')">
-            <div class="board-header">
-                <div class="board-title">Inventários</div>
-                <div class="board-desc">3 casos ativos</div>
-            </div>
-            <div class="board-actions">
-                <button class="btn-board">Ver Casos</button>
-            </div>
-        </div>
-        <button class="board-card btn-new-board" onclick="openModal('newBoard')">
-            <i class="fas fa-plus"></i>
-            <span>Novo Quadro</span>
-        </button>
-    `;
-}
-
-// ==================== MODAIS ====================
-
-function openModal(modalName) {
-    document.getElementById('modalOverlay').classList.add('active');
-    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    document.getElementById('modal-' + modalName).style.display = 'block';
-}
-
-function closeModal(event) {
-    if (!event || event.target === document.getElementById('modalOverlay') || event.target.closest('.modal-close')) {
-        document.getElementById('modalOverlay').classList.remove('active');
-        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    }
-}
-
-function createCase() {
-    const title = document.getElementById('caseTitle').value;
-    if (!title) {
-        showNotification('Preencha o título do caso', 'error');
-        return;
-    }
-    
-    showNotification('Caso criado com sucesso!', 'success');
-    closeModal();
-    
-    // Limpar formulário
-    document.getElementById('newCaseForm').reset();
+async function handleLogout() {
+    if (window.Auth) await window.Auth.logout();
+    const loginPage    = document.getElementById('loginPage');
+    const appContainer = document.getElementById('appContainer');
+    if (appContainer) appContainer.style.display = 'none';
+    if (loginPage)    loginPage.style.display    = 'flex';
+    showNotification('Sessão encerrada', 'info');
 }
 
 // ==================== NOTIFICAÇÕES ====================
 
 function showNotification(message, type = 'info') {
     const notification = document.getElementById('notification');
-    const text = document.getElementById('notificationText');
-    
+    const text         = document.getElementById('notificationText');
+    if (!notification || !text) return;
     text.textContent = message;
     notification.className = 'notification ' + type;
     notification.classList.add('show');
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
+    setTimeout(() => notification.classList.remove('show'), 3000);
 }
 
-// ==================== DOWNLOAD DE REQUERIMENTOS ====================
+// ==================== MODAIS ====================
 
-function downloadRequirement(type) {
-    // Simulação de download
-    const requirements = {
-        'escritura': 'requerimento_escritura.pdf',
-        'divorcio': 'requerimento_divorcio.pdf',
-        'procuracao': 'requerimento_procuracao.pdf',
-        'usucapiao': 'requerimento_usucapiao.pdf'
-    };
-    
-    showNotification('Iniciando download: ' + requirements[type], 'info');
-    
-    // Aqui você implementaria o download real do Supabase Storage
-    setTimeout(() => {
-        showNotification('Download concluído!', 'success');
-    }, 1500);
+function openModal(modalName) {
+    const overlay = document.getElementById('modalOverlay');
+    const modal   = document.getElementById('modal-' + modalName);
+    if (!overlay || !modal) return;
+    overlay.classList.add('active');
+    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    modal.style.display = 'block';
 }
 
-// ==================== FILTROS DE CASOS ====================
-
-function filterCases(status) {
-    // Atualizar botões ativos
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    // Aqui você filtraria os casos na interface
-    showNotification('Filtrando casos: ' + status, 'info');
+function closeModal(event) {
+    const overlay = document.getElementById('modalOverlay');
+    if (!overlay) return;
+    if (!event || event.target === overlay || event.target.closest?.('.modal-close')) {
+        overlay.classList.remove('active');
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    }
 }
 
-// ==================== PERFIL ====================
-
-function updateProfile(event) {
-    event.preventDefault();
-    showNotification('Perfil atualizado com sucesso!', 'success');
-}
-
-function changePassword() {
-    showNotification('Funcionalidade em desenvolvimento', 'info');
+function createCase() {
+    const title = document.getElementById('caseTitle')?.value;
+    if (!title) { showNotification('Preencha o título do caso', 'error'); return; }
+    showNotification('Caso criado com sucesso! ✅', 'success');
+    closeModal();
+    document.getElementById('newCaseForm')?.reset();
 }
 
 // ==================== STATUS DO HORÁRIO ====================
 
 function updateOpenStatus() {
-    const now = new Date();
-    const day = now.getDay();
-    const hour = now.getHours();
+    const now    = new Date();
+    const day    = now.getDay();
+    const hour   = now.getHours();
     const isOpen = day >= 1 && day <= 5 && hour >= 9 && hour < 17;
-    
-    const badge = document.getElementById('status-badge');
+    const badge  = document.getElementById('status-badge');
     if (badge) {
-        badge.textContent = isOpen ? '🟢 Aberto Agora' : '🔴 Fechado';
-        badge.style.background = isOpen ? '#d1fae5' : '#fee2e2';
-        badge.style.color = isOpen ? '#065f46' : '#991b1b';
+        badge.textContent       = isOpen ? '🟢 Aberto Agora' : '🔴 Fechado';
+        badge.style.background  = isOpen ? '#d1fae5' : '#fee2e2';
+        badge.style.color       = isOpen ? '#065f46' : '#991b1b';
     }
 }
 
-// Inicializar
 updateOpenStatus();
 setInterval(updateOpenStatus, 60000);
 
-// Verificar sessão ao carregar
-document.addEventListener('authReady', async function() {
-    if (window.Auth) {
-        const { user } = await window.Auth.getCurrentUser();
-        if (user) {
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('appContainer').style.display = 'flex';
-            loadDashboard();
-        }
+// ==================== VERIFICAR SESSÃO ====================
+// ✅ Corrigido: document.addEventListener em vez de window.addEventListener
+document.addEventListener('authReady', async function () {
+    if (!window.Auth) return;
+    const { user, profile } = await window.Auth.getCurrentUser();
+    if (user) {
+        const loginPage    = document.getElementById('loginPage');
+        const appContainer = document.getElementById('appContainer');
+        if (loginPage)    loginPage.style.display    = 'none';
+        if (appContainer) appContainer.style.display = 'flex';
+
+        const userName   = document.getElementById('userName');
+        const userRole   = document.getElementById('userRole');
+        const userAvatar = document.getElementById('userAvatar');
+        if (userName)   userName.textContent   = profile?.name || user.email;
+        if (userRole)   userRole.textContent   = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
+        if (userAvatar) userAvatar.textContent = (profile?.name || user.email).substring(0, 2).toUpperCase();
+
+        loadDashboard();
     }
-})
 </script>
 
-<!-- Dentro do <head> ou antes de </body> no index.html -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="public/js/auth.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', async function() {
         // Espera o Auth estar pronto
