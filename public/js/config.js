@@ -1,329 +1,346 @@
-<script src="js/auth.js"></script>
-<script src="js/admin.js"></script>
-
-<script>
-// ==================== TABS ====================
-function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    if (event?.target) event.target.classList.add('active');
-    document.getElementById('loginForm').style.display    = tab === 'login' ? 'block' : 'none';
-    document.getElementById('registerForm').style.display = tab === 'login' ? 'none'  : 'block';
-}
-
-function toggleOABField() {
-    const field = document.getElementById('oabField');
-    const type  = document.getElementById('registerType')?.value;
-    if (field) field.style.display = type === 'advogado' ? 'block' : 'none';
-}
-
-// ==================== NAVEGAÇÃO PÚBLICA ====================
-function showLoginModal() {
-    document.getElementById('publicSite').style.display = 'none';
-    document.getElementById('loginPage').style.display  = 'flex';
-}
-
-function closeLoginModal() {
-    document.getElementById('loginPage').style.display  = 'none';
-    document.getElementById('publicSite').style.display = 'block';
-}
-
-function enterPublicSite() {
-    document.getElementById('loginPage').style.display    = 'none';
-    document.getElementById('publicSite').style.display   = 'block';
-    document.getElementById('appContainer').style.display = 'none';
-}
-
-function backToLogin() {
-    document.getElementById('publicSite').style.display = 'none';
-    document.getElementById('loginPage').style.display  = 'flex';
-}
-
-// ==================== NAVEGAÇÃO INTERNA ====================
-function showPage(pageName) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const page = document.getElementById('page-' + pageName);
-    if (page) page.classList.add('active');
-    if (event?.target?.closest?.('.nav-item'))
-        event.target.closest('.nav-item').classList.add('active');
-    const titles = {
-        dashboard: 'Dashboard', boards:   'Quadros',
-        cases:     'Casos',     team:      'Equipe',
-        profile:   'Meu Perfil',settings:  'Configurações'
-    };
-    const t = document.getElementById('pageTitle');
-    if (t) t.textContent = titles[pageName] || pageName;
-}
-
-// ==================== LOGIN ====================
-async function handleLogin(event) {
-    event.preventDefault();
-    const btn  = document.getElementById('loginBtn');
-    const orig = btn.innerHTML;
-    btn.innerHTML = '<span class="loading"></span> Entrando...';
-    btn.disabled  = true;
-
-    if (!window.Auth?.login) {
-        showNotification('Sistema não carregado. Aguarde.', 'error');
-        btn.innerHTML = orig; btn.disabled = false; return;
-    }
-
-    const { user, profile, error } = await window.Auth.login(
-        document.getElementById('loginEmail').value,
-        document.getElementById('loginPassword').value
-    );
-
-    if (error) {
-        showNotification('Email ou senha incorretos.', 'error');
-        btn.innerHTML = orig; btn.disabled = false; return;
-    }
-
-    document.getElementById('loginPage').style.display    = 'none';
-    document.getElementById('publicSite').style.display   = 'none';
-    document.getElementById('appContainer').style.display = 'flex';
-
-    const un = document.getElementById('userName');
-    const ur = document.getElementById('userRole');
-    const ua = document.getElementById('userAvatar');
-    if (un) un.textContent = profile?.name || user.email;
-    if (ur) ur.textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
-    if (ua) ua.textContent = (profile?.name || user.email).substring(0,2).toUpperCase();
-
-    showNotification('Bem-vindo! 🎉', 'success');
-    await loadDashboard();
-}
-
-// ==================== REGISTRO ====================
-async function handleRegister(event) {
-    event.preventDefault();
-    const btn = document.getElementById('registerBtn');
-    btn.innerHTML = '<span class="loading"></span> Cadastrando...';
-    btn.disabled  = true;
-
-    const { error } = await window.Auth.register({
-        name:     document.getElementById('regName')?.value,
-        email:    document.getElementById('regEmail')?.value,
-        password: document.getElementById('regPassword')?.value,
-        role:     document.getElementById('registerType')?.value,
-        oab:      document.getElementById('registerOab')?.value
-    });
-
-    if (error) {
-        showNotification('Erro: ' + error, 'error');
-        btn.innerHTML = 'Cadastrar'; btn.disabled = false; return;
-    }
-    showNotification('Cadastro realizado! Faça login.', 'success');
-    switchTab('login');
-    btn.innerHTML = 'Cadastrar'; btn.disabled = false;
-}
-
-// ==================== LOGOUT ====================
-async function logout() {
-    if (window.Auth) await window.Auth.logout();
-    document.getElementById('appContainer').style.display = 'none';
-    document.getElementById('loginPage').style.display    = 'flex';
-    showNotification('Sessão encerrada.', 'info');
-}
-
-// ==================== DASHBOARD ====================
-async function loadDashboard() {
-    if (!window.Auth?.client) return;
-    const { data: cases } = await window.Auth.client.from('cases').select('*');
-    const all = cases || [];
-
-    const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
-    el('totalCases',     all.length);
-    el('activeCases',    all.filter(c => c.status === 'ativo').length);
-    el('pendingCases',   all.filter(c => c.status === 'pendente').length);
-    el('completedCases', all.filter(c => c.status === 'concluido').length);
-
-    loadCasesList(all);
-    loadBoardsList(all);
-}
-
-function loadCasesList(cases) {
-    const c = document.getElementById('casesList');
-    if (!c) return;
-    if (!cases.length) {
-        c.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><p>Nenhum caso cadastrado ainda.</p></div>';
-        return;
-    }
-    c.innerHTML = cases.map(x => `
-        <div style="padding:16px;margin-bottom:12px;background:white;border-radius:8px;
-             border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;
-             box-shadow:var(--shadow);">
-            <div>
-                <strong style="font-size:15px;">${x.title || 'Sem título'}</strong>
-                <p style="color:var(--text-light);font-size:13px;margin:4px 0 8px;">${x.description || ''}</p>
-                <span style="font-size:12px;background:${statusColor(x.status)};color:white;
-                      padding:3px 10px;border-radius:12px;font-weight:500;">${statusLabel(x.status)}</span>
-            </div>
-            <button onclick="deleteCase('${x.id}')"
-                style="background:none;color:#ef4444;border:1px solid #fecaca;padding:8px 12px;
-                       border-radius:6px;cursor:pointer;transition:all 0.2s;"
-                onmouseover="this.style.background='#ef4444';this.style.color='white'"
-                onmouseout="this.style.background='none';this.style.color='#ef4444'">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>`).join('');
-}
-
-function loadBoardsList(cases) {
-    const c = document.getElementById('dashboardBoards');
-    if (!c) return;
-    const cols = [
-        { key: 'iniciado',  label: 'Iniciado',  color: '#3b82f6' },
-        { key: 'pendente',  label: 'Pendente',  color: '#f59e0b' },
-        { key: 'ativo',     label: 'Ativo',     color: '#10b981' },
-        { key: 'concluido', label: 'Concluído', color: '#6b7280' }
-    ];
-    c.innerHTML = cols.map(col => {
-        const items = cases.filter(x => x.status === col.key);
-        return `
-        <div style="background:white;border-radius:8px;padding:16px;border:1px solid var(--border);
-             box-shadow:var(--shadow);">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-                <span style="width:10px;height:10px;border-radius:50%;background:${col.color};
-                      display:inline-block;"></span>
-                <h3 style="font-size:14px;font-weight:600;">${col.label}</h3>
-                <span style="margin-left:auto;background:var(--bg);padding:2px 8px;border-radius:10px;
-                      font-size:12px;font-weight:500;">${items.length}</span>
-            </div>
-            ${items.length
-                ? items.map(x => `
-                    <div style="padding:10px;background:var(--bg);border-radius:6px;margin-bottom:8px;
-                         font-size:13px;border-left:3px solid ${col.color};">
-                        ${x.title}
-                    </div>`).join('')
-                : '<p style="color:var(--text-light);font-size:13px;text-align:center;padding:16px 0;">Nenhum caso</p>'
-            }
-        </div>`;
-    }).join('');
-}
-
-function statusColor(s) {
-    return { ativo:'#10b981', pendente:'#f59e0b', iniciado:'#3b82f6', concluido:'#6b7280' }[s] || '#6b7280';
-}
-
-function statusLabel(s) {
-    return { ativo:'Ativo', pendente:'Pendente', iniciado:'Iniciado', concluido:'Concluído' }[s] || s;
-}
-
-// ==================== CASOS ====================
-async function filterCases(status) {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    if (event?.target) event.target.classList.add('active');
-    let q = window.Auth.client.from('cases').select('*');
-    if (status !== 'all') q = q.eq('status', status);
-    const { data } = await q;
-    loadCasesList(data || []);
-}
-
-async function createCase() {
-    const title = document.getElementById('caseTitle')?.value?.trim();
-    if (!title) { showNotification('Preencha o título do caso!', 'error'); return; }
-    const { data: { user } } = await window.Auth.client.auth.getUser();
-    const { error } = await window.Auth.client.from('cases').insert([{
-        title,
-        description: document.getElementById('caseDescription')?.value || '',
-        status:      document.getElementById('caseStatus')?.value || 'iniciado',
-        created_by:  user?.id || null,
-        created_at:  new Date().toISOString()
-    }]);
-    if (error) { showNotification('Erro ao criar: ' + error.message, 'error'); return; }
-    showNotification('Caso criado com sucesso! ✅', 'success');
-    closeModal();
-    document.getElementById('newCaseForm')?.reset();
-    await loadDashboard();
-}
-
-async function deleteCase(id) {
-    if (!confirm('Deseja excluir este caso permanentemente?')) return;
-    const { error } = await window.Auth.client.from('cases').delete().eq('id', id);
-    if (error) { showNotification('Erro ao excluir: ' + error.message, 'error'); return; }
-    showNotification('Caso excluído!', 'success');
-    await loadDashboard();
-}
-
-// ==================== PERFIL ====================
-async function updateProfile(event) {
-    event.preventDefault();
-    const { data: { user } } = await window.Auth.client.auth.getUser();
-    const { error } = await window.Auth.client.from('profiles').update({
-        name:       document.getElementById('profileName')?.value,
-        phone:      document.getElementById('profilePhone')?.value,
-        updated_at: new Date().toISOString()
-    }).eq('id', user.id);
-    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
-    showNotification('Perfil atualizado! ✅', 'success');
-}
-
-async function changePassword() {
-    const { data: { user } } = await window.Auth.client.auth.getUser();
-    await window.Auth.client.auth.resetPasswordForEmail(user.email);
-    showNotification('Link de redefinição enviado para seu email! 📧', 'info');
-}
-
-// ==================== MODAIS ====================
-function openModal(modalName) {
-    const overlay = document.getElementById('modalOverlay');
-    const modal   = document.getElementById('modal-' + modalName);
-    if (!overlay || !modal) return;
-    overlay.classList.add('active');
-    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    modal.style.display = 'block';
-}
-
-function closeModal(event) {
-    const overlay = document.getElementById('modalOverlay');
-    if (!overlay) return;
-    if (!event || event.target === overlay || event.target.closest?.('.modal-close')) {
-        overlay.classList.remove('active');
-        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    }
-}
-
-// ==================== NOTIFICAÇÕES ====================
-function showNotification(message, type = 'info') {
-    const n = document.getElementById('notification');
-    const t = document.getElementById('notificationText');
-    if (!n || !t) return;
-    t.textContent = message;
-    n.className   = 'notification ' + type;
-    n.classList.add('show');
-    setTimeout(() => n.classList.remove('show'), 3500);
-}
-
-// ==================== HORÁRIO ====================
-function updateOpenStatus() {
-    const now    = new Date();
-    const isOpen = now.getDay() >= 1 && now.getDay() <= 5
-                && now.getHours() >= 9 && now.getHours() < 17;
-    const badge  = document.getElementById('status-badge');
-    if (badge) {
-        badge.textContent      = isOpen ? '🟢 Aberto Agora' : '🔴 Fechado';
-        badge.style.background = isOpen ? '#d1fae5' : '#fee2e2';
-        badge.style.color      = isOpen ? '#065f46'  : '#991b1b';
-    }
-}
-updateOpenStatus();
-setInterval(updateOpenStatus, 60000);
-
-// ==================== SESSÃO ====================
-document.addEventListener('authReady', async function () {
-    if (!window.Auth) return;
-    const { user, profile } = await window.Auth.getCurrentUser();
-    if (!user) return;
-    document.getElementById('loginPage').style.display    = 'none';
-    document.getElementById('appContainer').style.display = 'flex';
-    const un = document.getElementById('userName');
-    const ur = document.getElementById('userRole');
-    const ua = document.getElementById('userAvatar');
-    if (un) un.textContent = profile?.name || user.email;
-    if (ur) ur.textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
-    if (ua) ua.textContent = (profile?.name || user.email).substring(0,2).toUpperCase();
-    await loadDashboard();
-});
-</script>
-</body>
-</html>
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/public/js/config.js b/public/js/config.js
+index 788bee844a849506710fb99c54cfda00adb48182..d51744d69ba088cc10e32cad5350a6247208dd70 100644
+--- a/public/js/config.js
++++ b/public/js/config.js
+@@ -1,329 +1,8 @@
+-<script src="js/auth.js"></script>
+-<script src="js/admin.js"></script>
+-
+-<script>
+-// ==================== TABS ====================
+-function switchTab(tab) {
+-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+-    if (event?.target) event.target.classList.add('active');
+-    document.getElementById('loginForm').style.display    = tab === 'login' ? 'block' : 'none';
+-    document.getElementById('registerForm').style.display = tab === 'login' ? 'none'  : 'block';
+-}
+-
+-function toggleOABField() {
+-    const field = document.getElementById('oabField');
+-    const type  = document.getElementById('registerType')?.value;
+-    if (field) field.style.display = type === 'advogado' ? 'block' : 'none';
+-}
+-
+-// ==================== NAVEGAÇÃO PÚBLICA ====================
+-function showLoginModal() {
+-    document.getElementById('publicSite').style.display = 'none';
+-    document.getElementById('loginPage').style.display  = 'flex';
+-}
+-
+-function closeLoginModal() {
+-    document.getElementById('loginPage').style.display  = 'none';
+-    document.getElementById('publicSite').style.display = 'block';
+-}
+-
+-function enterPublicSite() {
+-    document.getElementById('loginPage').style.display    = 'none';
+-    document.getElementById('publicSite').style.display   = 'block';
+-    document.getElementById('appContainer').style.display = 'none';
+-}
+-
+-function backToLogin() {
+-    document.getElementById('publicSite').style.display = 'none';
+-    document.getElementById('loginPage').style.display  = 'flex';
+-}
+-
+-// ==================== NAVEGAÇÃO INTERNA ====================
+-function showPage(pageName) {
+-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+-    const page = document.getElementById('page-' + pageName);
+-    if (page) page.classList.add('active');
+-    if (event?.target?.closest?.('.nav-item'))
+-        event.target.closest('.nav-item').classList.add('active');
+-    const titles = {
+-        dashboard: 'Dashboard', boards:   'Quadros',
+-        cases:     'Casos',     team:      'Equipe',
+-        profile:   'Meu Perfil',settings:  'Configurações'
+-    };
+-    const t = document.getElementById('pageTitle');
+-    if (t) t.textContent = titles[pageName] || pageName;
+-}
+-
+-// ==================== LOGIN ====================
+-async function handleLogin(event) {
+-    event.preventDefault();
+-    const btn  = document.getElementById('loginBtn');
+-    const orig = btn.innerHTML;
+-    btn.innerHTML = '<span class="loading"></span> Entrando...';
+-    btn.disabled  = true;
+-
+-    if (!window.Auth?.login) {
+-        showNotification('Sistema não carregado. Aguarde.', 'error');
+-        btn.innerHTML = orig; btn.disabled = false; return;
+-    }
+-
+-    const { user, profile, error } = await window.Auth.login(
+-        document.getElementById('loginEmail').value,
+-        document.getElementById('loginPassword').value
+-    );
+-
+-    if (error) {
+-        showNotification('Email ou senha incorretos.', 'error');
+-        btn.innerHTML = orig; btn.disabled = false; return;
+-    }
+-
+-    document.getElementById('loginPage').style.display    = 'none';
+-    document.getElementById('publicSite').style.display   = 'none';
+-    document.getElementById('appContainer').style.display = 'flex';
+-
+-    const un = document.getElementById('userName');
+-    const ur = document.getElementById('userRole');
+-    const ua = document.getElementById('userAvatar');
+-    if (un) un.textContent = profile?.name || user.email;
+-    if (ur) ur.textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
+-    if (ua) ua.textContent = (profile?.name || user.email).substring(0,2).toUpperCase();
+-
+-    showNotification('Bem-vindo! 🎉', 'success');
+-    await loadDashboard();
+-}
+-
+-// ==================== REGISTRO ====================
+-async function handleRegister(event) {
+-    event.preventDefault();
+-    const btn = document.getElementById('registerBtn');
+-    btn.innerHTML = '<span class="loading"></span> Cadastrando...';
+-    btn.disabled  = true;
+-
+-    const { error } = await window.Auth.register({
+-        name:     document.getElementById('regName')?.value,
+-        email:    document.getElementById('regEmail')?.value,
+-        password: document.getElementById('regPassword')?.value,
+-        role:     document.getElementById('registerType')?.value,
+-        oab:      document.getElementById('registerOab')?.value
+-    });
+-
+-    if (error) {
+-        showNotification('Erro: ' + error, 'error');
+-        btn.innerHTML = 'Cadastrar'; btn.disabled = false; return;
+-    }
+-    showNotification('Cadastro realizado! Faça login.', 'success');
+-    switchTab('login');
+-    btn.innerHTML = 'Cadastrar'; btn.disabled = false;
+-}
+-
+-// ==================== LOGOUT ====================
+-async function logout() {
+-    if (window.Auth) await window.Auth.logout();
+-    document.getElementById('appContainer').style.display = 'none';
+-    document.getElementById('loginPage').style.display    = 'flex';
+-    showNotification('Sessão encerrada.', 'info');
+-}
+-
+-// ==================== DASHBOARD ====================
+-async function loadDashboard() {
+-    if (!window.Auth?.client) return;
+-    const { data: cases } = await window.Auth.client.from('cases').select('*');
+-    const all = cases || [];
+-
+-    const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+-    el('totalCases',     all.length);
+-    el('activeCases',    all.filter(c => c.status === 'ativo').length);
+-    el('pendingCases',   all.filter(c => c.status === 'pendente').length);
+-    el('completedCases', all.filter(c => c.status === 'concluido').length);
+-
+-    loadCasesList(all);
+-    loadBoardsList(all);
+-}
+-
+-function loadCasesList(cases) {
+-    const c = document.getElementById('casesList');
+-    if (!c) return;
+-    if (!cases.length) {
+-        c.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><p>Nenhum caso cadastrado ainda.</p></div>';
+-        return;
+-    }
+-    c.innerHTML = cases.map(x => `
+-        <div style="padding:16px;margin-bottom:12px;background:white;border-radius:8px;
+-             border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;
+-             box-shadow:var(--shadow);">
+-            <div>
+-                <strong style="font-size:15px;">${x.title || 'Sem título'}</strong>
+-                <p style="color:var(--text-light);font-size:13px;margin:4px 0 8px;">${x.description || ''}</p>
+-                <span style="font-size:12px;background:${statusColor(x.status)};color:white;
+-                      padding:3px 10px;border-radius:12px;font-weight:500;">${statusLabel(x.status)}</span>
+-            </div>
+-            <button onclick="deleteCase('${x.id}')"
+-                style="background:none;color:#ef4444;border:1px solid #fecaca;padding:8px 12px;
+-                       border-radius:6px;cursor:pointer;transition:all 0.2s;"
+-                onmouseover="this.style.background='#ef4444';this.style.color='white'"
+-                onmouseout="this.style.background='none';this.style.color='#ef4444'">
+-                <i class="fas fa-trash"></i>
+-            </button>
+-        </div>`).join('');
+-}
+-
+-function loadBoardsList(cases) {
+-    const c = document.getElementById('dashboardBoards');
+-    if (!c) return;
+-    const cols = [
+-        { key: 'iniciado',  label: 'Iniciado',  color: '#3b82f6' },
+-        { key: 'pendente',  label: 'Pendente',  color: '#f59e0b' },
+-        { key: 'ativo',     label: 'Ativo',     color: '#10b981' },
+-        { key: 'concluido', label: 'Concluído', color: '#6b7280' }
+-    ];
+-    c.innerHTML = cols.map(col => {
+-        const items = cases.filter(x => x.status === col.key);
+-        return `
+-        <div style="background:white;border-radius:8px;padding:16px;border:1px solid var(--border);
+-             box-shadow:var(--shadow);">
+-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+-                <span style="width:10px;height:10px;border-radius:50%;background:${col.color};
+-                      display:inline-block;"></span>
+-                <h3 style="font-size:14px;font-weight:600;">${col.label}</h3>
+-                <span style="margin-left:auto;background:var(--bg);padding:2px 8px;border-radius:10px;
+-                      font-size:12px;font-weight:500;">${items.length}</span>
+-            </div>
+-            ${items.length
+-                ? items.map(x => `
+-                    <div style="padding:10px;background:var(--bg);border-radius:6px;margin-bottom:8px;
+-                         font-size:13px;border-left:3px solid ${col.color};">
+-                        ${x.title}
+-                    </div>`).join('')
+-                : '<p style="color:var(--text-light);font-size:13px;text-align:center;padding:16px 0;">Nenhum caso</p>'
+-            }
+-        </div>`;
+-    }).join('');
+-}
+-
+-function statusColor(s) {
+-    return { ativo:'#10b981', pendente:'#f59e0b', iniciado:'#3b82f6', concluido:'#6b7280' }[s] || '#6b7280';
+-}
+-
+-function statusLabel(s) {
+-    return { ativo:'Ativo', pendente:'Pendente', iniciado:'Iniciado', concluido:'Concluído' }[s] || s;
+-}
+-
+-// ==================== CASOS ====================
+-async function filterCases(status) {
+-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+-    if (event?.target) event.target.classList.add('active');
+-    let q = window.Auth.client.from('cases').select('*');
+-    if (status !== 'all') q = q.eq('status', status);
+-    const { data } = await q;
+-    loadCasesList(data || []);
+-}
+-
+-async function createCase() {
+-    const title = document.getElementById('caseTitle')?.value?.trim();
+-    if (!title) { showNotification('Preencha o título do caso!', 'error'); return; }
+-    const { data: { user } } = await window.Auth.client.auth.getUser();
+-    const { error } = await window.Auth.client.from('cases').insert([{
+-        title,
+-        description: document.getElementById('caseDescription')?.value || '',
+-        status:      document.getElementById('caseStatus')?.value || 'iniciado',
+-        created_by:  user?.id || null,
+-        created_at:  new Date().toISOString()
+-    }]);
+-    if (error) { showNotification('Erro ao criar: ' + error.message, 'error'); return; }
+-    showNotification('Caso criado com sucesso! ✅', 'success');
+-    closeModal();
+-    document.getElementById('newCaseForm')?.reset();
+-    await loadDashboard();
+-}
+-
+-async function deleteCase(id) {
+-    if (!confirm('Deseja excluir este caso permanentemente?')) return;
+-    const { error } = await window.Auth.client.from('cases').delete().eq('id', id);
+-    if (error) { showNotification('Erro ao excluir: ' + error.message, 'error'); return; }
+-    showNotification('Caso excluído!', 'success');
+-    await loadDashboard();
+-}
+-
+-// ==================== PERFIL ====================
+-async function updateProfile(event) {
+-    event.preventDefault();
+-    const { data: { user } } = await window.Auth.client.auth.getUser();
+-    const { error } = await window.Auth.client.from('profiles').update({
+-        name:       document.getElementById('profileName')?.value,
+-        phone:      document.getElementById('profilePhone')?.value,
+-        updated_at: new Date().toISOString()
+-    }).eq('id', user.id);
+-    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
+-    showNotification('Perfil atualizado! ✅', 'success');
+-}
+-
+-async function changePassword() {
+-    const { data: { user } } = await window.Auth.client.auth.getUser();
+-    await window.Auth.client.auth.resetPasswordForEmail(user.email);
+-    showNotification('Link de redefinição enviado para seu email! 📧', 'info');
+-}
+-
+-// ==================== MODAIS ====================
+-function openModal(modalName) {
+-    const overlay = document.getElementById('modalOverlay');
+-    const modal   = document.getElementById('modal-' + modalName);
+-    if (!overlay || !modal) return;
+-    overlay.classList.add('active');
+-    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+-    modal.style.display = 'block';
+-}
+-
+-function closeModal(event) {
+-    const overlay = document.getElementById('modalOverlay');
+-    if (!overlay) return;
+-    if (!event || event.target === overlay || event.target.closest?.('.modal-close')) {
+-        overlay.classList.remove('active');
+-        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+-    }
+-}
+-
+-// ==================== NOTIFICAÇÕES ====================
+-function showNotification(message, type = 'info') {
+-    const n = document.getElementById('notification');
+-    const t = document.getElementById('notificationText');
+-    if (!n || !t) return;
+-    t.textContent = message;
+-    n.className   = 'notification ' + type;
+-    n.classList.add('show');
+-    setTimeout(() => n.classList.remove('show'), 3500);
+-}
+-
+-// ==================== HORÁRIO ====================
+-function updateOpenStatus() {
+-    const now    = new Date();
+-    const isOpen = now.getDay() >= 1 && now.getDay() <= 5
+-                && now.getHours() >= 9 && now.getHours() < 17;
+-    const badge  = document.getElementById('status-badge');
+-    if (badge) {
+-        badge.textContent      = isOpen ? '🟢 Aberto Agora' : '🔴 Fechado';
+-        badge.style.background = isOpen ? '#d1fae5' : '#fee2e2';
+-        badge.style.color      = isOpen ? '#065f46'  : '#991b1b';
+-    }
+-}
+-updateOpenStatus();
+-setInterval(updateOpenStatus, 60000);
+-
+-// ==================== SESSÃO ====================
+-document.addEventListener('authReady', async function () {
+-    if (!window.Auth) return;
+-    const { user, profile } = await window.Auth.getCurrentUser();
+-    if (!user) return;
+-    document.getElementById('loginPage').style.display    = 'none';
+-    document.getElementById('appContainer').style.display = 'flex';
+-    const un = document.getElementById('userName');
+-    const ur = document.getElementById('userRole');
+-    const ua = document.getElementById('userAvatar');
+-    if (un) un.textContent = profile?.name || user.email;
+-    if (ur) ur.textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
+-    if (ua) ua.textContent = (profile?.name || user.email).substring(0,2).toUpperCase();
+-    await loadDashboard();
+-});
+-</script>
+-</body>
+-</html>
++(function () {
++  'use strict';
++
++  window.AppConfig = {
++    supabaseUrl: 'https://cqvkfrojkjicfxipwltz.supabase.co',
++    supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2ppY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTQzNzksImV4cCI6MjA4Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE'
++  };
++})();
+ 
+EOF
+)
