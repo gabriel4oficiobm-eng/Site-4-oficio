@@ -589,11 +589,18 @@ function enterPublicSite() {
     if (appContainer) appContainer.style.display = 'none';
 }
 
-function backToLogin() {
+function showLoginModal() {
     const loginPage  = document.getElementById('loginPage');
     const publicSite = document.getElementById('publicSite');
-    if (publicSite)  publicSite.style.display  = 'none';
-    if (loginPage)   loginPage.style.display   = 'flex';
+    if (publicSite) publicSite.style.display = 'none';
+    if (loginPage)  loginPage.style.display  = 'flex';
+}
+
+function closeLoginModal() {
+    const loginPage  = document.getElementById('loginPage');
+    const publicSite = document.getElementById('publicSite');
+    if (loginPage)  loginPage.style.display  = 'none';
+    if (publicSite) publicSite.style.display = 'block';
 }
 
 function showPage(pageName) {
