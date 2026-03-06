@@ -1,12 +1,8 @@
 (function () {
   'use strict';
 
-  // SUPABASE_ANON_KEY é pública por design (segura para o front-end).
-  // ⚠️ NUNCA coloque senha, email de admin ou qualquer credencial sensível aqui.
-  // O usuário admin deve ser criado UMA VEZ manualmente no painel do Supabase:
-  // Authentication → Users → Invite User
-  const SUPABASE_URL = 'https://cqvkfrojkjicfxipwltz.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2ppY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTQzNzksImV4cCI6MjA4Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE';
+  const SUPABASE_URL = 'https://cqvkfrojkicfxipwltz.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdmtmcm9qa2lpY2Z4aXB3bHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzOTQzNzksImV4cCI6MjA1Nzk3MDM3OX0.THdrIPT1L9l3WPD3ltuI4oR0ggAn-MUi_FCqPfBobDE';
 
   if (typeof supabase === 'undefined') {
     console.error('❌ Supabase SDK não carregado');
@@ -19,7 +15,6 @@
   window.Auth = {
     client: client,
 
-    // Login com email e senha
     async login(email, password) {
       try {
         const { data, error } = await client.auth.signInWithPassword({ email, password });
@@ -35,24 +30,24 @@
 
         return { success: true, user: data.user, profile: profile, error: null };
       } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, user: null, profile: null, error: error.message };
       }
     },
 
-    // Cadastro de novo usuário
     async register(userData) {
       try {
         const { email, password, name, cpf, role, oab } = userData;
+
         const { data: authData, error: authError } = await client.auth.signUp({ email, password });
         if (authError) throw authError;
 
         const { error: profileError } = await client.from('profiles').insert([{
-          id: authData.user.id,
-          name: name,
-          email: email,
-          cpf: cpf,
-          role: role,
-          oab: oab || null,
+          id:         authData.user.id,
+          name:       name,
+          email:      email,
+          cpf:        cpf || null,
+          role:       role,
+          oab:        oab || null,
           created_at: new Date().toISOString()
         }]);
 
@@ -64,7 +59,6 @@
       }
     },
 
-    // Logout
     async logout() {
       try {
         await client.auth.signOut();
@@ -74,7 +68,6 @@
       }
     },
 
-    // Obter usuário logado e seu perfil
     async getCurrentUser() {
       try {
         const { data: { user }, error: userError } = await client.auth.getUser();
@@ -100,7 +93,6 @@
     isLawyer: (profile) => profile?.role === 'advogado'
   };
 
-  // Avisa o resto da aplicação que o Auth está pronto
   document.dispatchEvent(new CustomEvent('authReady'));
 
 })();
