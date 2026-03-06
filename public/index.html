@@ -51,7 +51,7 @@
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required>
+                    <input type="email" class="form-input" id="loginEmail" value="admin@4oficio.com" placeholder="seu@email.com" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Senha</label>
@@ -617,9 +617,29 @@
 <!-- SCRIPTS -->
 <script src="js/config.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/admin.js"></script>
-
 <script>
+    async function waitForAuthReady(timeoutMs = 5000) {
+    if (window.Auth?.login) return true;
+
+    await new Promise((resolve) => {
+        let settled = false;
+
+        const done = () => {
+            if (settled) return;
+            settled = true;
+            resolve();
+        };
+
+        const timer = setTimeout(done, timeoutMs);
+        document.addEventListener('authReady', () => {
+            clearTimeout(timer);
+            done();
+        }, { once: true });
+    });
+
+    return !!window.Auth?.login;
+}
+
 // ==================== TABS ====================
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -692,7 +712,7 @@ async function handleLogin(event) {
     );
 
     if (error) {
-        showNotification('Email ou senha incorretos.', 'error');
+       showNotification(error || 'Email ou senha incorretos.', 'error');
         btn.innerHTML = orig; btn.disabled = false; return;
     }
 
