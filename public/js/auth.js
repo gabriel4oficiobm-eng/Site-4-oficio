@@ -43,8 +43,12 @@
         },
 
         async logout() {
-            try { await client.auth.signOut(); return { success: true }; }
-            catch (err) { return { success: false, error: err.message }; }
+            try {
+                await client.auth.signOut();
+                return { success: true };
+            } catch (err) {
+                return { success: false, error: err.message };
+            }
         },
 
         async getCurrentUser() {
