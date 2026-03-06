@@ -403,11 +403,82 @@
             </div>
             
             <!-- BOARDS PAGE -->
-            <div id="page-boards" class="page">
-                <div class="boards-grid" id="boardsList">
-                    <!-- Quadros serão carregados dinamicamente -->
-                </div>
+<div id="page-boards" class="page">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+        <div>
+            <h2 style="font-size:20px;font-weight:700;">Quadro de Casos</h2>
+            <p style="color:var(--text-light);font-size:14px;margin-top:4px;">Arraste os casos entre colunas para atualizar o status</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('newCase')">
+            <i class="fas fa-plus"></i> Novo Caso
+        </button>
+    </div>
+
+    <!-- KANBAN BOARD -->
+    <div id="kanbanBoard" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;">
+
+        <!-- COLUNA INICIADO -->
+        <div class="kanban-col" data-status="iniciado">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
+                 background:white;border-radius:10px;border-top:4px solid #3b82f6;box-shadow:var(--shadow);">
+                <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;display:inline-block;"></span>
+                <span style="font-weight:600;font-size:14px;">Iniciado</span>
+                <span id="count-iniciado" style="margin-left:auto;background:#dbeafe;color:#1d4ed8;
+                      padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
             </div>
+            <div id="col-iniciado" class="kanban-cards"
+                 ondragover="allowDrop(event)" ondrop="dropCard(event,'iniciado')"
+                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;">
+            </div>
+        </div>
+
+        <!-- COLUNA PENDENTE -->
+        <div class="kanban-col" data-status="pendente">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
+                 background:white;border-radius:10px;border-top:4px solid #f59e0b;box-shadow:var(--shadow);">
+                <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+                <span style="font-weight:600;font-size:14px;">Pendente</span>
+                <span id="count-pendente" style="margin-left:auto;background:#fef3c7;color:#d97706;
+                      padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+            </div>
+            <div id="col-pendente" class="kanban-cards"
+                 ondragover="allowDrop(event)" ondrop="dropCard(event,'pendente')"
+                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;">
+            </div>
+        </div>
+
+        <!-- COLUNA ATIVO -->
+        <div class="kanban-col" data-status="ativo">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
+                 background:white;border-radius:10px;border-top:4px solid #10b981;box-shadow:var(--shadow);">
+                <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span>
+                <span style="font-weight:600;font-size:14px;">Ativo</span>
+                <span id="count-ativo" style="margin-left:auto;background:#d1fae5;color:#065f46;
+                      padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+            </div>
+            <div id="col-ativo" class="kanban-cards"
+                 ondragover="allowDrop(event)" ondrop="dropCard(event,'ativo')"
+                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;">
+            </div>
+        </div>
+
+        <!-- COLUNA CONCLUÍDO -->
+        <div class="kanban-col" data-status="concluido">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
+                 background:white;border-radius:10px;border-top:4px solid #6b7280;box-shadow:var(--shadow);">
+                <span style="width:10px;height:10px;border-radius:50%;background:#6b7280;display:inline-block;"></span>
+                <span style="font-weight:600;font-size:14px;">Concluído</span>
+                <span id="count-concluido" style="margin-left:auto;background:#f1f5f9;color:#475569;
+                      padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+            </div>
+            <div id="col-concluido" class="kanban-cards"
+                 ondragover="allowDrop(event)" ondrop="dropCard(event,'concluido')"
+                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;">
+            </div>
+        </div>
+
+    </div>
+</div>
             
             <!-- CASES PAGE -->
             <div id="page-cases" class="page">
