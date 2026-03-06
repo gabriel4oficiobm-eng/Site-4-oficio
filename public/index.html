@@ -565,14 +565,13 @@
     <span id="notificationText"></span>
 </div>
 
-<!-- SCRIPTS -->
+<!-- SCRIPTS — ordem importa! -->
 <script src="js/config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/admin.js"></script>
 
 <script>
-// ==================== NAVEGAÇÃO ====================
-
+// ==================== TABS LOGIN ====================
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     event.target.classList.add('active');
@@ -580,15 +579,13 @@ function switchTab(tab) {
     document.getElementById('registerForm').style.display = tab === 'login' ? 'none'  : 'block';
 }
 
-function enterPublicSite() {
-    const loginPage    = document.getElementById('loginPage');
-    const publicSite   = document.getElementById('publicSite');
-    const appContainer = document.getElementById('appContainer');
-    if (loginPage)    loginPage.style.display    = 'none';
-    if (publicSite)   publicSite.style.display   = 'block';
-    if (appContainer) appContainer.style.display = 'none';
+function toggleOABField() {
+    const type  = document.getElementById('registerType')?.value;
+    const field = document.getElementById('oabField');
+    if (field) field.style.display = type === 'advogado' ? 'block' : 'none';
 }
 
+// ==================== NAVEGAÇÃO PÚBLICA ====================
 function showLoginModal() {
     const loginPage  = document.getElementById('loginPage');
     const publicSite = document.getElementById('publicSite');
@@ -603,6 +600,23 @@ function closeLoginModal() {
     if (publicSite) publicSite.style.display = 'block';
 }
 
+function enterPublicSite() {
+    const loginPage    = document.getElementById('loginPage');
+    const publicSite   = document.getElementById('publicSite');
+    const appContainer = document.getElementById('appContainer');
+    if (loginPage)    loginPage.style.display    = 'none';
+    if (publicSite)   publicSite.style.display   = 'block';
+    if (appContainer) appContainer.style.display = 'none';
+}
+
+function backToLogin() {
+    const loginPage  = document.getElementById('loginPage');
+    const publicSite = document.getElementById('publicSite');
+    if (publicSite)  publicSite.style.display  = 'none';
+    if (loginPage)   loginPage.style.display   = 'flex';
+}
+
+// ==================== NAVEGAÇÃO INTERNA ====================
 function showPage(pageName) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -621,7 +635,6 @@ function showPage(pageName) {
 }
 
 // ==================== AUTENTICAÇÃO ====================
-
 async function handleLogin(event) {
     event.preventDefault();
     const btn = document.getElementById('loginBtn');
@@ -635,7 +648,7 @@ async function handleLogin(event) {
     if (!window.Auth) {
         showNotification('Sistema não carregado. Tente novamente.', 'error');
         btn.innerHTML = originalText;
-        btn.disabled = false;
+        btn.disabled  = false;
         return;
     }
 
@@ -644,25 +657,25 @@ async function handleLogin(event) {
     if (error) {
         showNotification('Email ou senha incorretos', 'error');
         btn.innerHTML = originalText;
-        btn.disabled = false;
+        btn.disabled  = false;
         return;
     }
 
     const loginPage    = document.getElementById('loginPage');
     const publicSite   = document.getElementById('publicSite');
     const appContainer = document.getElementById('appContainer');
-    const userName     = document.getElementById('userName');
-    const userRole     = document.getElementById('userRole');
-    const userAvatar   = document.getElementById('userAvatar');
-
     if (loginPage)    loginPage.style.display    = 'none';
     if (publicSite)   publicSite.style.display   = 'none';
     if (appContainer) appContainer.style.display = 'flex';
-    if (userName)     userName.textContent  = profile?.name || user.email;
-    if (userRole)     userRole.textContent  = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
-    if (userAvatar)   userAvatar.textContent = (profile?.name || user.email).substring(0, 2).toUpperCase();
 
-    showNotification('Bem-vindo ao sistema! 🎉', 'success');
+    const userName   = document.getElementById('userName');
+    const userRole   = document.getElementById('userRole');
+    const userAvatar = document.getElementById('userAvatar');
+    if (userName)   userName.textContent   = profile?.name || user.email;
+    if (userRole)   userRole.textContent   = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
+    if (userAvatar) userAvatar.textContent = (profile?.name || user.email).substring(0, 2).toUpperCase();
+
+    showNotification('Bem-vindo! 🎉', 'success');
     loadDashboard();
 }
 
@@ -671,11 +684,26 @@ async function handleRegister(event) {
     const btn = document.getElementById('registerBtn');
     btn.innerHTML = '<span class="loading"></span> Cadastrando...';
     btn.disabled = true;
-    setTimeout(() => {
-        showNotification('Cadastro realizado! Aguarde aprovação.', 'success');
+
+    const name     = document.getElementById('regName')?.value;
+    const email    = document.getElementById('regEmail')?.value;
+    const password = document.getElementById('regPassword')?.value;
+    const role     = document.getElementById('regType')?.value;
+    const oab      = document.getElementById('registerOab')?.value;
+
+    const { success, error } = await window.Auth.register({ name, email, password, role, oab });
+
+    if (error) {
+        showNotification('Erro no cadastro: ' + error, 'error');
         btn.innerHTML = 'Cadastrar';
-        btn.disabled = false;
-    }, 1500);
+        btn.disabled  = false;
+        return;
+    }
+
+    showNotification('Cadastro realizado! Faça login para continuar.', 'success');
+    switchTab('login');
+    btn.innerHTML = 'Cadastrar';
+    btn.disabled  = false;
 }
 
 async function handleLogout() {
@@ -687,20 +715,32 @@ async function handleLogout() {
     showNotification('Sessão encerrada', 'info');
 }
 
-// ==================== NOTIFICAÇÕES ====================
+function loadDashboard() {
+    const totalCases     = document.getElementById('totalCases');
+    const activeCases    = document.getElementById('activeCases');
+    const pendingCases   = document.getElementById('pendingCases');
+    const completedCases = document.getElementById('completedCases');
+    if (totalCases)     totalCases.textContent     = '0';
+    if (activeCases)    activeCases.textContent    = '0';
+    if (pendingCases)   pendingCases.textContent   = '0';
+    if (completedCases) completedCases.textContent = '0';
+}
 
-function showNotification(message, type = 'info') {
-    const notification = document.getElementById('notification');
-    const text         = document.getElementById('notificationText');
-    if (!notification || !text) return;
-    text.textContent = message;
-    notification.className = 'notification ' + type;
-    notification.classList.add('show');
-    setTimeout(() => notification.classList.remove('show'), 3000);
+function filterCases(status) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    if (event && event.target) event.target.classList.add('active');
+}
+
+function updateProfile(event) {
+    event.preventDefault();
+    showNotification('Perfil atualizado com sucesso!', 'success');
+}
+
+function changePassword() {
+    showNotification('Link de redefinição enviado para seu email!', 'info');
 }
 
 // ==================== MODAIS ====================
-
 function openModal(modalName) {
     const overlay = document.getElementById('modalOverlay');
     const modal   = document.getElementById('modal-' + modalName);
@@ -727,8 +767,18 @@ function createCase() {
     document.getElementById('newCaseForm')?.reset();
 }
 
-// ==================== STATUS DO HORÁRIO ====================
+// ==================== NOTIFICAÇÕES ====================
+function showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    const text         = document.getElementById('notificationText');
+    if (!notification || !text) return;
+    text.textContent = message;
+    notification.className = 'notification ' + type;
+    notification.classList.add('show');
+    setTimeout(() => notification.classList.remove('show'), 3000);
+}
 
+// ==================== HORÁRIO ====================
 function updateOpenStatus() {
     const now    = new Date();
     const day    = now.getDay();
@@ -736,17 +786,15 @@ function updateOpenStatus() {
     const isOpen = day >= 1 && day <= 5 && hour >= 9 && hour < 17;
     const badge  = document.getElementById('status-badge');
     if (badge) {
-        badge.textContent       = isOpen ? '🟢 Aberto Agora' : '🔴 Fechado';
-        badge.style.background  = isOpen ? '#d1fae5' : '#fee2e2';
-        badge.style.color       = isOpen ? '#065f46' : '#991b1b';
+        badge.textContent      = isOpen ? '🟢 Aberto Agora' : '🔴 Fechado';
+        badge.style.background = isOpen ? '#d1fae5' : '#fee2e2';
+        badge.style.color      = isOpen ? '#065f46' : '#991b1b';
     }
 }
-
 updateOpenStatus();
 setInterval(updateOpenStatus, 60000);
 
 // ==================== VERIFICAR SESSÃO ====================
-// ✅ Corrigido: document.addEventListener em vez de window.addEventListener
 document.addEventListener('authReady', async function () {
     if (!window.Auth) return;
     const { user, profile } = await window.Auth.getCurrentUser();
@@ -765,167 +813,7 @@ document.addEventListener('authReady', async function () {
 
         loadDashboard();
     }
+});
 </script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', async function() {
-        // Espera o Auth estar pronto
-        if (!window.Auth || !window.Auth.client) {
-            console.log('Auth não pronto no index.html, aguardando...');
-            setTimeout(arguments.callee, 100); // Tenta novamente em 100ms
-            return;
-        }
-
-        const { user, profile, error } = await window.Auth.getCurrentUser();
-        if (user && window.Auth.isAdmin(profile)) {
-            window.location.href = 'admin.html'; // Redireciona admin logado
-        }
-    });
-</script>
-
-    <script>
-    const loadingScreen = document.getElementById('loadingScreen');
-    const publicSite = document.getElementById('publicSite');
-    const loginModal = document.getElementById('loginModal');
-    const registerModal = document.getElementById('registerModal');
-    const dashboard = document.getElementById('dashboard');
-
-    // Verifica autenticação ao carregar
-    document.addEventListener('DOMContentLoaded', () => {
-        let attempts = 0;
-        const checkAuth = setInterval(async () => {
-            attempts++;
-            if (window.Auth && !window.Auth.error) {
-                clearInterval(checkAuth);
-                const { user, profile } = await window.Auth.getCurrentUser();
-                if (user && profile) {
-                    showDashboard(user, profile);
-                } else {
-                    showPublicSite();
-                }
-            } else if (attempts >= 50) {
-                clearInterval(checkAuth);
-                showPublicSite();
-            }
-        }, 100);
-    });
-
-    function showPublicSite() {
-    const loginPage = document.getElementById('loginPage');
-    const publicSite = document.getElementById('publicSite');
-    const appContainer = document.getElementById('appContainer');
-
-    if (loginPage) loginPage.style.display = 'none';
-    if (publicSite) publicSite.style.display = 'block';
-    if (appContainer) appContainer.style.display = 'none';
-}
-
-    function showDashboard(user, profile) {
-        publicSite.style.display = 'none';
-        dashboard.classList.add('active');
-        loadingScreen.classList.add('hidden');
-
-        // Atualiza informações do usuário
-        document.getElementById('userName').textContent = profile.name || user.email.split('@')[0];
-        document.getElementById('userEmail').textContent = user.email;
-        document.getElementById('userRoleDisplay').textContent = profile.role.toUpperCase();
-
-        // APLICA PERMISSÕES
-        const isAdmin = window.Auth.isAdmin(profile);
-        const isClient = window.Auth.isClient(profile);
-        const isLawyer = window.Auth.isLawyer(profile);
-
-        // Admin vê tudo
-        document.getElementById('adminMenu').style.display = isAdmin ? 'list-item' : 'none';
-        document.getElementById('btnNewCase').style.display = isAdmin ? 'block' : 'none';
-        document.getElementById('btnEditCase').style.display = isAdmin ? 'block' : 'none';
-        document.getElementById('sectionAdmin').style.display = isAdmin ? 'block' : 'none';
-
-        // Cliente e Advogado não veem botões de criar/editar
-        if (isClient || isLawyer) {
-            // Esconde elementos de administração
-            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-        }
-    }
-
-    // Login
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        
-        const result = await window.Auth.login(email, password);
-        if (result.success) {
-            closeLoginModal();
-            showDashboard(result.user, result.profile);
-        } else {
-            document.getElementById('loginError').textContent = result.error;
-            document.getElementById('loginError').style.display = 'block';
-        }
-    });
-
-    // Registro
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const userData = {
-            name: document.getElementById('registerName').value,
-            email: document.getElementById('registerEmail').value,
-            password: document.getElementById('registerPassword').value,
-            cpf: document.getElementById('registerCpf').value,
-            role: document.getElementById('registerType').value,
-            oab: document.getElementById('registerType').value === 'advogado' 
-                ? document.getElementById('registerOab').value 
-                : null
-        };
-
-        const result = await window.Auth.register(userData);
-        if (result.success) {
-            alert('Cadastro realizado! Faça login.');
-            closeRegisterModal();
-            openLoginModal();
-        } else {
-            document.getElementById('registerError').textContent = result.error;
-            document.getElementById('registerError').style.display = 'block';
-        }
-    });
-
-    async function logout() {
-        await window.Auth.logout();
-        showPublicSite();
-    }
-
-    function openLoginModal() { loginModal.classList.add('active'); }
-    function closeLoginModal() { loginModal.classList.remove('active'); }
-    function openRegisterModal() { registerModal.classList.add('active'); closeLoginModal(); }
-    function closeRegisterModal() { registerModal.classList.remove('active'); }
-
-    // Fechar modais ao clicar fora
-    loginModal.addEventListener('click', (e) => { if (e.target === loginModal) closeLoginModal(); });
-    registerModal.addEventListener('click', (e) => { if (e.target === registerModal) closeRegisterModal(); });
-</script>
-
-    <script>
-    // Simples alternância entre abas de login
-    document.addEventListener('DOMContentLoaded', function() {
-        const loginTab = document.getElementById('loginTab');
-        const registerTab = document.getElementById('registerTab');
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
-        
-        loginTab.addEventListener('click', function() {
-            loginTab.classList.add('active');
-            registerTab.classList.remove('active');
-            loginForm.classList.add('active');
-            registerForm.classList.remove('active');
-        });
-        
-        registerTab.addEventListener('click', function() {
-            registerTab.classList.add('active');
-            loginTab.classList.remove('active');
-            registerForm.classList.add('active');
-            loginForm.classList.remove('active');
-        });
-    });
-</script>
-    
 </body>
+</html>
