@@ -150,5 +150,3 @@
 
   initializeAuth();
 })();
-public/js/config.js
-public/js/config.js
