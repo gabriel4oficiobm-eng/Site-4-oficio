@@ -1,6 +1,9 @@
 {
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/((?!js/|css/|images/|assets/|favicon).*)",
+      "destination": "/index.html"
+    }
   ]
 }
