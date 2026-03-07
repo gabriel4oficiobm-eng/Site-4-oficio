@@ -42,7 +42,7 @@
                 <p>Barra Mansa - RJ</p>
             </div>
             
-           <div class="tabs">
+        <div class="tabs">
                 <button class="tab active" onclick="switchTab('login', event)">Entrar</button>
                 <button class="tab" onclick="switchTab('register', event)">Cadastrar</button>
             </div>
@@ -300,7 +300,7 @@
         <nav class="nav-menu">
             <div class="nav-section">
                 <div class="nav-section-title">Menu Principal</div>
-              <a href="#" class="nav-item active" onclick="showPage('dashboard', event); return false;">
+                <a href="#" class="nav-item active" onclick="showPage('dashboard', event); return false;">
                     <i class="fas fa-chart-line"></i> Dashboard
                 </a>
                 <a href="#" class="nav-item" onclick="showPage('boards', event); return false;">
@@ -314,6 +314,12 @@
                 </a>
             </div>
             
+            <div class="nav-section">
+                <div class="nav-section-title">Configurações</div>
+                <a href="#" class="nav-item" onclick="showPage('profile', event); return false;">
+                    <i class="fas fa-user"></i> Meu Perfil
+                </a>
+                <a href="#" class="nav-item" onclick="showPage('settings', event); return false;">
             <div class="nav-section">
                 <div class="nav-section-title">Configurações</div>
                 <a href="#" class="nav-item" onclick="showPage('profile', event); return false;">
@@ -411,7 +417,7 @@
             <!-- CASES PAGE -->
             <div id="page-cases" class="page">
                 <div class="case-filters">
-                   <button class="filter-btn active" onclick="filterCases('all', event)">Todos</button>
+                    <button class="filter-btn active" onclick="filterCases('all', event)">Todos</button>
                     <button class="filter-btn" onclick="filterCases('iniciado', event)">Iniciados</button>
                     <button class="filter-btn" onclick="filterCases('em_andamento', event)">Em Andamento</button>
                     <button class="filter-btn" onclick="filterCases('aguardando', event)">Aguardando</button>
@@ -557,6 +563,31 @@
         </div>
     </div>
 </div>
+            <div id="modal-newBoard" class="modal" style="display:none;">
+        <div class="modal-header">
+            <h3 class="modal-title">Novo Quadro</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="newBoardForm">
+                <div class="form-group">
+                    <label class="form-label">Nome do Quadro</label>
+                    <input type="text" class="form-input" id="boardTitle" placeholder="Ex: Escrituras" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <input type="text" class="form-input" id="boardDescription" placeholder="Ex: Casos de escritura em andamento">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="createBoard()">
+                <i class="fas fa-columns"></i> Criar Quadro
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- NOTIFICATION -->
 <div id="notification" class="notification">
@@ -667,7 +698,7 @@ async function handleLogin(event) {
         document.getElementById('userAvatar').textContent = (profile?.name || user.email).substring(0, 2).toUpperCase();
         
         showNotification('Bem-vindo ao sistema!', 'success');
-        loadDashboard();
+await loadDashboard();
     } else {
         showNotification('Sistema não carregado. Tente novamente.', 'error');
         btn.innerHTML = originalText;
@@ -700,50 +731,192 @@ function logout() {
     showNotification('Você saiu do sistema', 'info');
 }
 
-// ==================== DASHBOARD ====================
+// ==================== DADOS (SUPABASE) ====================
 
-function loadDashboard() {
-    // Dados mockados para demonstração
-    document.getElementById('totalCases').textContent = '24';
-    document.getElementById('activeCases').textContent = '12';
-    document.getElementById('pendingCases').textContent = '8';
-    document.getElementById('completedCases').textContent = '4';
-    
-    // Carregar quadros
-    const boardsContainer = document.getElementById('dashboardBoards');
-    boardsContainer.innerHTML = `
+const AppState = {
+    boards: [],
+    cases: [],
+    currentFilter: 'all'
+};
+
+let hasShownSchemaWarning = false;
+
+function getSupabaseClient() {
+    return window.Auth?.client || null;
+}
+
+function isTableMissingError(error) {
+    if (!error) return false;
+    const message = String(error.message || '').toLowerCase();
+    return error.code === '42P01' || message.includes('does not exist') || message.includes('relation') && message.includes('does not exist');
+}
+
+function warnMissingSchema(tableName) {
+    if (hasShownSchemaWarning) return;
+    hasShownSchemaWarning = true;
+    showNotification(`Tabela "${tableName}" não encontrada no Supabase. Vou usar dados locais temporários.`, 'info');
+    console.warn(`[Supabase] Tabela ausente: ${tableName}. Crie a tabela para persistir os dados.`);
+}
+
+async function fetchBoards() {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    const { data, error } = await client
+        .from('boards')
+        .select('id,name,description,color,order_num,created_at')
+        .order('order_num', { ascending: true });
+
+    if (error) {
+        if (isTableMissingError(error)) {
+            warnMissingSchema('boards');
+            return [];
+        }
+        throw error;
+    }
+
+    return data || [];
+}
+
+async function fetchCases() {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    const { data, error } = await client
+        .from('cases')
+        .select('id,title,description,status,created_by,created_at,updated_at')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        if (isTableMissingError(error)) {
+            warnMissingSchema('cases');
+            return [];
+        }
+        throw error;
+    }
+
+    return data || [];
+}
+
+function formatCaseStatus(status) {
+    const labels = {
+        iniciado: 'Iniciado',
+        pendente: 'Pendente',
+        ativo: 'Ativo',
+        concluido: 'Concluído',
+        em_andamento: 'Em Andamento',
+        aguardando: 'Aguardando'
+    };
+    return labels[status] || 'Iniciado';
+}
+
+
+function renderBoards() {
+    const dashboardBoards = document.getElementById('dashboardBoards');
+    const boardsList = document.getElementById('boardsList');
+
+    const boards = AppState.boards.length ? AppState.boards : [
+        { name: 'Não Iniciado', description: 'Casos aguardando início' },
+        { name: 'Em Andamento', description: 'Casos em execução' },
+        { name: 'Concluído', description: 'Casos finalizados' }
+    ];
+
+    const boardsMarkup = boards.map(board => `
         <div class="board-card" onclick="showPage('cases')">
             <div class="board-header">
-                <div class="board-title">Escrituras</div>
-                <div class="board-desc">8 casos ativos</div>
-            </div>
-            <div class="board-actions">
-               <button class="btn-board" onclick="event.stopPropagation(); showPage('cases');">Ver Casos</button>
-            </div>
-        </div>
-        <div class="board-card" onclick="showPage('cases')">
-            <div class="board-header">
-                <div class="board-title">Divórcios</div>
-                <div class="board-desc">5 casos ativos</div>
+                <div class="board-title">${board.name}</div>
+                <div class="board-desc">${board.description || 'Sem descrição'}</div>
             </div>
             <div class="board-actions">
                 <button class="btn-board" onclick="event.stopPropagation(); showPage('cases');">Ver Casos</button>
             </div>
         </div>
-        <div class="board-card" onclick="showPage('cases')">
-            <div class="board-header">
-                <div class="board-title">Inventários</div>
-                <div class="board-desc">3 casos ativos</div>
-            </div>
-            <div class="board-actions">
-                <button class="btn-board" onclick="event.stopPropagation(); showPage('cases');">Ver Casos</button>
-            </div>
-        </div>
+    `).join('');
+
+    const newBoardButton = `
         <button type="button" class="board-card btn-new-board" onclick="openModal('newBoard')">
             <i class="fas fa-plus"></i>
             <span>Novo Quadro</span>
         </button>
     `;
+
+    if (dashboardBoards) dashboardBoards.innerHTML = boardsMarkup + newBoardButton;
+    if (boardsList) boardsList.innerHTML = boardsMarkup + newBoardButton;
+}
+
+function renderCases() {
+    const casesList = document.getElementById('casesList');
+    if (!casesList) return;
+
+    const selectedStatus = AppState.currentFilter;
+    const filteredCases = AppState.cases.filter(c => {
+        if (selectedStatus === 'all') return true;
+        const normalized = c.status === 'ativo' ? 'em_andamento' : c.status === 'pendente' ? 'aguardando' : c.status;
+        return normalized === selectedStatus;
+    });
+
+    if (!filteredCases.length) {
+        casesList.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <p>Nenhum caso encontrado para o filtro selecionado.</p>
+            </div>
+        `;
+        return;
+    }
+
+    casesList.innerHTML = filteredCases.map(c => {
+        const statusClass = c.status === 'concluido'
+            ? 'completed'
+            : (c.status === 'ativo' || c.status === 'em_andamento')
+                ? 'processing'
+                : 'pending';
+
+        return `
+            <div class="board-card" style="padding:18px;">
+                <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+                    <div>
+                        <h3 style="margin-bottom:6px;">${c.title}</h3>
+                        <p style="color:var(--text-light);font-size:14px;">${c.description || 'Sem descrição'}</p>
+                    </div>
+                    <span class="status ${statusClass}">${formatCaseStatus(c.status)}</span>
+                </div>
+                <div style="margin-top:12px;color:var(--text-light);font-size:13px;">Criado em: ${new Date(c.created_at).toLocaleDateString('pt-BR')}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderStats() {
+    const total = AppState.cases.length;
+    const active = AppState.cases.filter(c => c.status === 'iniciado' || c.status === 'ativo' || c.status === 'em_andamento').length;
+    const pending = AppState.cases.filter(c => c.status === 'pendente' || c.status === 'aguardando').length;
+    const completed = AppState.cases.filter(c => c.status === 'concluido').length;
+
+    document.getElementById('totalCases').textContent = String(total);
+    document.getElementById('activeCases').textContent = String(active);
+    document.getElementById('pendingCases').textContent = String(pending);
+    document.getElementById('completedCases').textContent = String(completed);
+}
+
+async function reloadAppData() {
+    AppState.boards = await fetchBoards();
+    AppState.cases = await fetchCases();
+
+    renderStats();
+    renderBoards();
+    renderCases();
+}
+
+// ==================== DASHBOARD ====================
+
+async function loadDashboard() {
+    try {
+        await reloadAppData();
+    } catch (error) {
+        console.error('Erro ao carregar dashboard:', error);
+        showNotification('Não foi possível carregar dados do Supabase.', 'error');
+    }
 }
 
 // ==================== MODAIS ====================
@@ -761,21 +934,65 @@ function closeModal(event) {
     }
 }
 
-function createCase() {
-    const title = document.getElementById('caseTitle').value;
+async function createCase() {
+    const title = document.getElementById('caseTitle').value.trim();
+    const type = document.getElementById('caseType').value;
+    const clientName = document.getElementById('caseClient').value.trim();
+
     if (!title) {
         showNotification('Preencha o título do caso', 'error');
         return;
     }
-    
-    showNotification('Caso criado com sucesso!', 'success');
-    closeModal();
-    
-    // Limpar formulário
-    document.getElementById('newCaseForm').reset();
+
+    const client = getSupabaseClient();
+    if (!client) {
+        showNotification('Supabase ainda não está pronto.', 'error');
+        return;
+    }
+
+    try {
+        const { data: authData } = await client.auth.getUser();
+        const userId = authData?.user?.id || null;
+        const details = [
+            `Tipo: ${type}`,
+            clientName ? `Cliente: ${clientName}` : null
+        ].filter(Boolean).join(' • ');
+
+        const payload = {
+            title,
+            description: details || null,
+            status: 'iniciado',
+            created_by: userId
+        };
+
+        const { error } = await client.from('cases').insert([payload]);
+        if (error) {
+            if (isTableMissingError(error)) {
+                warnMissingSchema('cases');
+                AppState.cases.unshift({ ...payload, id: crypto.randomUUID?.() || String(Date.now()), created_at: new Date().toISOString() });
+                renderStats();
+                renderCases();
+                showNotification('Caso criado localmente (tabela cases ausente).', 'info');
+            } else if (error.code === '42501') {
+                showNotification('Seu usuário não tem permissão para criar casos.', 'error');
+                return;
+            } else {
+                throw error;
+            }
+        } else {
+            showNotification('Caso criado com sucesso!', 'success');
+            await reloadAppData();
+        }
+
+        closeModal();
+        document.getElementById('newCaseForm').reset();
+    } catch (error) {
+        console.error('Erro ao criar caso:', error);
+        showNotification('Erro ao criar caso no Supabase.', 'error');
+    }
 }
 
-    function createBoard() {
+async function createBoard() {
     const boardTitle = document.getElementById('boardTitle')?.value.trim();
     const boardDescription = document.getElementById('boardDescription')?.value.trim();
 
@@ -784,27 +1001,50 @@ function createCase() {
         return;
     }
 
-    const dashboardBoards = document.getElementById('dashboardBoards');
-    const boardsList = document.getElementById('boardsList');
-    const boardMarkup = `
-        <div class="board-card" onclick="showPage('cases')">
-            <div class="board-header">
-                <div class="board-title">${boardTitle}</div>
-                <div class="board-desc">${boardDescription || '0 casos ativos'}</div>
-            </div>
-            <div class="board-actions">
-                <button class="btn-board" onclick="event.stopPropagation(); showPage('cases');">Ver Casos</button>
-            </div>
-        </div>`;
+    const client = getSupabaseClient();
+    if (!client) {
+        showNotification('Supabase ainda não está pronto.', 'error');
+        return;
+    }
 
-    dashboardBoards?.insertAdjacentHTML('afterbegin', boardMarkup);
-    boardsList?.insertAdjacentHTML('afterbegin', boardMarkup);
+    try {
+        const { data: authData } = await client.auth.getUser();
+        const userId = authData?.user?.id || null;
+        const maxOrder = AppState.boards.reduce((max, board) => Math.max(max, Number(board.order_num || 0)), 0);
 
-    showNotification('Quadro criado com sucesso!', 'success');
-    closeModal();
-    document.getElementById('newBoardForm')?.reset();
+        const payload = {
+            name: boardTitle,
+            description: boardDescription || null,
+            color: '#3b82f6',
+            order_num: maxOrder + 1,
+            created_by: userId
+        };
+
+        const { error } = await client.from('boards').insert([payload]);
+        if (error) {
+            if (isTableMissingError(error)) {
+                warnMissingSchema('boards');
+                AppState.boards.push({ ...payload, id: crypto.randomUUID?.() || String(Date.now()), created_at: new Date().toISOString() });
+                renderBoards();
+                showNotification('Quadro criado localmente (tabela boards ausente).', 'info');
+            } else if (error.code === '42501') {
+                showNotification('Apenas admin pode criar quadros (RLS).', 'error');
+                return;
+            } else {
+                throw error;
+            }
+        } else {
+            showNotification('Quadro criado com sucesso!', 'success');
+            await reloadAppData();
+        }
+
+        closeModal();
+        document.getElementById('newBoardForm')?.reset();
+    } catch (error) {
+        console.error('Erro ao criar quadro:', error);
+        showNotification('Erro ao criar quadro no Supabase.', 'error');
+    }
 }
-
 
 // ==================== NOTIFICAÇÕES ====================
 
@@ -843,14 +1083,13 @@ function downloadRequirement(type) {
 // ==================== FILTROS DE CASOS ====================
 
 function filterCases(status, event) {
-    // Atualizar botões ativos
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
     if (event?.target) {
         event.target.classList.add('active');
     }
-    
-    // Aqui você filtraria os casos na interface
-    showNotification('Filtrando casos: ' + status, 'info');
+
+    AppState.currentFilter = status;
+    renderCases();
 }
 
 // ==================== PERFIL ====================
@@ -892,30 +1131,28 @@ window.addEventListener('authReady', async function() {
             // Usuário já logado
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('appContainer').style.display = 'flex';
-            loadDashboard();
+           await loadDashboard();
         }
     }
 });
 </script>
 
-<!-- Dentro do <head> ou antes de </body> no index.html -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="public/js/auth.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-        // Espera o Auth estar pronto
-        if (!window.Auth || !window.Auth.client) {
-            console.log('Auth não pronto no index.html, aguardando...');
-            setTimeout(arguments.callee, 100); // Tenta novamente em 100ms
-            return;
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+        const waitForAuth = async () => {
+            if (!window.Auth || !window.Auth.client) {
+                setTimeout(waitForAuth, 100);
+                return;
+            }
 
-        const { user, profile, error } = await window.Auth.getCurrentUser();
-        if (user && window.Auth.isAdmin(profile)) {
-            window.location.href = 'admin.html'; // Redireciona admin logado
-        }
+            const { user, profile } = await window.Auth.getCurrentUser();
+            if (user && window.Auth.isAdmin(profile)) {
+                window.location.href = 'admin.html';
+            }
+        };
+
+        waitForAuth();
     });
 </script>
-
-    
+            
 </body>
