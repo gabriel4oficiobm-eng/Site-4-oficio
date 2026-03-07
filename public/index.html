@@ -42,9 +42,9 @@
                 <p>Barra Mansa - RJ</p>
             </div>
             
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('login')">Entrar</button>
-                <button class="tab" onclick="switchTab('register')">Cadastrar</button>
+           <div class="tabs">
+                <button class="tab active" onclick="switchTab('login', event)">Entrar</button>
+                <button class="tab" onclick="switchTab('register', event)">Cadastrar</button>
             </div>
             
             <form id="loginForm" onsubmit="handleLogin(event)">
@@ -300,26 +300,26 @@
         <nav class="nav-menu">
             <div class="nav-section">
                 <div class="nav-section-title">Menu Principal</div>
-                <a href="#" class="nav-item active" onclick="showPage('dashboard'); return false;">
+              <a href="#" class="nav-item active" onclick="showPage('dashboard', event); return false;">
                     <i class="fas fa-chart-line"></i> Dashboard
                 </a>
-                <a href="#" class="nav-item" onclick="showPage('boards'); return false;">
+                <a href="#" class="nav-item" onclick="showPage('boards', event); return false;">
                     <i class="fas fa-columns"></i> Quadros
                 </a>
-                <a href="#" class="nav-item" onclick="showPage('cases'); return false;">
+                <a href="#" class="nav-item" onclick="showPage('cases', event); return false;">
                     <i class="fas fa-briefcase"></i> Casos
                 </a>
-                <a href="#" class="nav-item" onclick="showPage('team'); return false;">
+                <a href="#" class="nav-item" onclick="showPage('team', event); return false;">
                     <i class="fas fa-users"></i> Equipe
                 </a>
             </div>
             
             <div class="nav-section">
                 <div class="nav-section-title">Configurações</div>
-                <a href="#" class="nav-item" onclick="showPage('profile'); return false;">
+                <a href="#" class="nav-item" onclick="showPage('profile', event); return false;">
                     <i class="fas fa-user"></i> Meu Perfil
                 </a>
-                <a href="#" class="nav-item" onclick="showPage('settings'); return false;">
+                <a href="#" class="nav-item" onclick="showPage('settings', event); return false;">
                     <i class="fas fa-cog"></i> Configurações
                 </a>
             </div>
@@ -411,17 +411,12 @@
             <!-- CASES PAGE -->
             <div id="page-cases" class="page">
                 <div class="case-filters">
-                    <button class="filter-btn active" onclick="filterCases('all')">Todos</button>
-                    <button class="filter-btn" onclick="filterCases('iniciado')">Iniciados</button>
-                    <button class="filter-btn" onclick="filterCases('em_andamento')">Em Andamento</button>
-                    <button class="filter-btn" onclick="filterCases('aguardando')">Aguardando</button>
-                    <button class="filter-btn" onclick="filterCases('concluido')">Concluídos</button>
+                   <button class="filter-btn active" onclick="filterCases('all', event)">Todos</button>
+                    <button class="filter-btn" onclick="filterCases('iniciado', event)">Iniciados</button>
+                    <button class="filter-btn" onclick="filterCases('em_andamento', event)">Em Andamento</button>
+                    <button class="filter-btn" onclick="filterCases('aguardando', event)">Aguardando</button>
+                    <button class="filter-btn" onclick="filterCases('concluido', event)">Concluídos</button>
                 </div>
-                
-                <div class="cases-grid" id="casesList">
-                    <!-- Casos serão carregados dinamicamente -->
-                </div>
-            </div>
             
             <!-- TEAM PAGE -->
             <div id="page-team" class="page">
@@ -536,6 +531,31 @@
             </button>
         </div>
     </div>
+</div> 
+    <div id="modal-newBoard" class="modal" style="display:none;">
+        <div class="modal-header">
+            <h3 class="modal-title">Novo Quadro</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="newBoardForm">
+                <div class="form-group">
+                    <label class="form-label">Nome do Quadro</label>
+                    <input type="text" class="form-input" id="boardTitle" placeholder="Ex: Escrituras" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <input type="text" class="form-input" id="boardDescription" placeholder="Ex: Casos de escritura em andamento">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="createBoard()">
+                <i class="fas fa-columns"></i> Criar Quadro
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- NOTIFICATION -->
@@ -550,10 +570,11 @@
 
 <script>
 // ==================== NAVEGAÇÃO ====================
-
-function switchTab(tab) {
+function switchTab(tab, event) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
+    if (event?.target) {
+        event.target.classList.add('active');
+    }
     
     if (tab === 'login') {
         document.getElementById('loginForm').style.display = 'block';
@@ -584,14 +605,22 @@ function backToLogin() {
     document.getElementById('loginPage').style.display = 'flex';
 }
 
-function showPage(pageName) {
+function showPage(pageName, event) {
     // Esconder todas as páginas
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     
     // Mostrar página selecionada
-    document.getElementById('page-' + pageName).classList.add('active');
-    event.target.closest('.nav-item').classList.add('active');
+    const targetPage = document.getElementById('page-' + pageName);
+    if (targetPage) {
+        targetPage.classList.add('active');
+    }
+
+    const navItem = event?.target?.closest('.nav-item') ||
+        document.querySelector(`.nav-item[onclick*="showPage('${pageName}'"]`);
+    if (navItem) {
+        navItem.classList.add('active');
+    }
     
     // Atualizar título
     const titles = {
@@ -689,7 +718,7 @@ function loadDashboard() {
                 <div class="board-desc">8 casos ativos</div>
             </div>
             <div class="board-actions">
-                <button class="btn-board">Ver Casos</button>
+               <button class="btn-board" onclick="event.stopPropagation(); showPage('cases');">Ver Casos</button>
             </div>
         </div>
         <div class="board-card" onclick="showPage('cases')">
@@ -698,7 +727,7 @@ function loadDashboard() {
                 <div class="board-desc">5 casos ativos</div>
             </div>
             <div class="board-actions">
-                <button class="btn-board">Ver Casos</button>
+                <button class="btn-board" onclick="event.stopPropagation(); showPage('cases');">Ver Casos</button>
             </div>
         </div>
         <div class="board-card" onclick="showPage('cases')">
@@ -707,10 +736,10 @@ function loadDashboard() {
                 <div class="board-desc">3 casos ativos</div>
             </div>
             <div class="board-actions">
-                <button class="btn-board">Ver Casos</button>
+                <button class="btn-board" onclick="event.stopPropagation(); showPage('cases');">Ver Casos</button>
             </div>
         </div>
-        <button class="board-card btn-new-board" onclick="openModal('newBoard')">
+        <button type="button" class="board-card btn-new-board" onclick="openModal('newBoard')">
             <i class="fas fa-plus"></i>
             <span>Novo Quadro</span>
         </button>
@@ -745,6 +774,37 @@ function createCase() {
     // Limpar formulário
     document.getElementById('newCaseForm').reset();
 }
+
+    function createBoard() {
+    const boardTitle = document.getElementById('boardTitle')?.value.trim();
+    const boardDescription = document.getElementById('boardDescription')?.value.trim();
+
+    if (!boardTitle) {
+        showNotification('Informe um nome para o quadro', 'error');
+        return;
+    }
+
+    const dashboardBoards = document.getElementById('dashboardBoards');
+    const boardsList = document.getElementById('boardsList');
+    const boardMarkup = `
+        <div class="board-card" onclick="showPage('cases')">
+            <div class="board-header">
+                <div class="board-title">${boardTitle}</div>
+                <div class="board-desc">${boardDescription || '0 casos ativos'}</div>
+            </div>
+            <div class="board-actions">
+                <button class="btn-board" onclick="event.stopPropagation(); showPage('cases');">Ver Casos</button>
+            </div>
+        </div>`;
+
+    dashboardBoards?.insertAdjacentHTML('afterbegin', boardMarkup);
+    boardsList?.insertAdjacentHTML('afterbegin', boardMarkup);
+
+    showNotification('Quadro criado com sucesso!', 'success');
+    closeModal();
+    document.getElementById('newBoardForm')?.reset();
+}
+
 
 // ==================== NOTIFICAÇÕES ====================
 
@@ -782,10 +842,12 @@ function downloadRequirement(type) {
 
 // ==================== FILTROS DE CASOS ====================
 
-function filterCases(status) {
+function filterCases(status, event) {
     // Atualizar botões ativos
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (event?.target) {
+        event.target.classList.add('active');
+    }
     
     // Aqui você filtraria os casos na interface
     showNotification('Filtrando casos: ' + status, 'info');
