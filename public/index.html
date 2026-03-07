@@ -563,6 +563,15 @@ function switchTab(tab) {
         document.getElementById('registerForm').style.display = 'block';
     }
 }
+    function ensurePublicSectionOrder() {
+    const publicSite = document.getElementById('publicSite');
+    const requerimentos = document.getElementById('requerimentos');
+    const contato = document.getElementById('contato');
+
+    if (publicSite && requerimentos && contato && requerimentos.nextElementSibling !== contato) {
+        publicSite.insertBefore(requerimentos, contato);
+    }
+}
 
 function enterPublicSite() {
     document.getElementById('loginPage').style.display = 'none';
