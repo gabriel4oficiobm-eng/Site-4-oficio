@@ -11,9 +11,7 @@
 
         window.Admin = {
 
-            isAdmin(profile) {
-                return profile?.role === 'admin';
-            },
+            isAdmin: (p) => p?.role === 'admin',
 
             getFileUrl(filePath) {
                 const { data } = window.Auth.client.storage
@@ -22,15 +20,17 @@
             },
 
             formatCategory(cat) {
-                return { escritura:'Escritura', divorcio:'Divórcio',
-                         procuracao:'Procuração', usucapiao:'Usucapião',
-                         inventario:'Inventário', outros:'Outros' }[cat] || cat;
+                return {
+                    escritura: 'Escritura', divorcio: 'Divórcio',
+                    procuracao: 'Procuração', usucapiao: 'Usucapião',
+                    inventario: 'Inventário', outros: 'Outros'
+                }[cat] || cat;
             },
 
             formatSize(bytes) {
                 if (!bytes) return '0 B';
                 const k = 1024;
-                const sizes = ['B','KB','MB','GB'];
+                const sizes = ['B', 'KB', 'MB', 'GB'];
                 const i = Math.floor(Math.log(bytes) / Math.log(k));
                 return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
             },
@@ -39,11 +39,10 @@
                 const container = document.getElementById(containerId);
                 if (!container) return;
                 if (!this.isAdmin(profile)) { container.style.display = 'none'; return; }
-
                 container.innerHTML = `
                     <div style="background:#f8fafc;border:2px dashed #3b82f6;border-radius:12px;padding:24px;margin:20px 0;">
                         <h3 style="color:#1e40af;margin-bottom:16px;">
-                            <i class="fas fa-cloud-upload-alt"></i> Área do Administrador — Requerimentos
+                            <i class="fas fa-cloud-upload-alt"></i> Área do Administrador
                         </h3>
                         <div style="margin-bottom:16px;">
                             <label style="display:block;margin-bottom:8px;font-weight:500;">Categoria:</label>
@@ -71,7 +70,6 @@
                             <div id="adminFilesList"><p style="color:#6b7280;">Carregando...</p></div>
                         </div>
                     </div>`;
-
                 this.loadFilesList();
             },
 
@@ -119,18 +117,14 @@
             const category  = document.getElementById('uploadCategory')?.value;
             const status    = document.getElementById('uploadStatus');
             const file      = fileInput?.files[0];
-
             if (!file) { status.innerHTML = '<span style="color:#ef4444;">⚠️ Selecione um arquivo PDF!</span>'; return; }
             if (file.type !== 'application/pdf') { status.innerHTML = '<span style="color:#ef4444;">⚠️ Apenas PDF!</span>'; return; }
-
             status.innerHTML = '<span style="color:#3b82f6;">⏳ Enviando...</span>';
-
             try {
-                const fileName = `${category}_${Date.now()}_${file.name.replace(/\s+/g,'_')}`;
+                const fileName = `${category}_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
                 const { error: uploadError } = await window.Auth.client.storage
                     .from('requirements').upload(fileName, file, { contentType: 'application/pdf' });
                 if (uploadError) throw uploadError;
-
                 const { data: { user } } = await window.Auth.client.auth.getUser();
                 const { error: dbError } = await window.Auth.client.from('requirement_files').insert([{
                     name: file.name, file_path: fileName, category,
@@ -138,7 +132,6 @@
                     uploaded_by: user?.id || null, created_at: new Date().toISOString()
                 }]);
                 if (dbError) throw dbError;
-
                 status.innerHTML = '<span style="color:#10b981;">✅ Enviado com sucesso!</span>';
                 fileInput.value = '';
                 window.Admin.loadFilesList();
