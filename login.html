@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - 4º Ofício</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="public/js/config.js"></script>
     <script src="public/js/auth.js"></script>
@@ -13,47 +16,49 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Source Sans 3', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #002147 0%, #153a63 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
-        
+
         .login-container {
-            background: white;
+            background: #ffffff;
             padding: 40px;
             border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 24px 60px rgba(0,33,71,0.28); border: 1px solid rgba(197,160,89,0.35);
             width: 100%;
             max-width: 400px;
             text-align: center;
         }
-        
+
         .logo {
             margin-bottom: 30px;
         }
-        
+
         .logo h1 {
-            color: #1e3c72;
+            color: #002147;
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: .3px;
             font-size: 24px;
             margin-bottom: 5px;
         }
-        
+
         .logo p {
-            color: #666;
+            color: #5b6470;
             font-size: 14px;
         }
-        
+
         .form-group {
             margin-bottom: 20px;
             text-align: left;
         }
-        
+
         label {
             display: block;
             margin-bottom: 8px;
@@ -61,28 +66,28 @@
             font-weight: 600;
             font-size: 14px;
         }
-        
+
         input {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #e0e0e0;
+            border: 1px solid #d8dee7;
             border-radius: 8px;
             font-size: 16px;
             transition: all 0.3s;
         }
-        
+
         input:focus {
             outline: none;
-            border-color: #1e3c72;
-            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
+            border-color: #C5A059;
+            box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.2);
         }
-        
+
         button {
             width: 100%;
             padding: 14px;
-            background: #1e3c72;
+            background: linear-gradient(135deg, #002147, #153a63);
             color: white;
-            border: none;
+            border: 1px solid #001735;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
@@ -90,19 +95,19 @@
             transition: all 0.3s;
             margin-top: 10px;
         }
-        
+
         button:hover {
-            background: #2a5298;
+            background: linear-gradient(135deg, #001735, #0f3054);
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(30, 60, 114, 0.3);
         }
-        
+
         button:disabled {
-            background: #ccc;
+            background: #94a3b8;
             cursor: not-allowed;
             transform: none;
         }
-        
+
         .error {
             color: #e74c3c;
             background: #fee;
@@ -112,14 +117,14 @@
             display: none;
             font-size: 14px;
         }
-        
+
         .loading {
             display: none;
             margin-top: 15px;
-            color: #1e3c72;
+            color: #002147;
             font-size: 14px;
         }
-        
+
         .icon {
             font-size: 48px;
             margin-bottom: 10px;
@@ -133,33 +138,33 @@
             <h1>Área Administrativa</h1>
             <p>4º Ofício de Registro de Imóveis</p>
         </div>
-        
+
         <form id="loginForm">
             <div class="form-group">
                 <label for="email">E-mail</label>
-                <input 
-                    type="email" 
-                    id="email" 
+                <input
+                    type="email"
+                    id="email"
                     value="admin@cartorio4oficio.com"
                     required
                 >
             </div>
-            
+
             <div class="form-group">
                 <label for="password">Senha</label>
-                <input 
-                    type="password" 
-                    id="password" 
+                <input
+                    type="password"
+                    id="password"
                     placeholder="Digite sua senha"
                     required
                 >
             </div>
-            
+
             <button type="submit" id="btnLogin">
                 Entrar no Sistema
             </button>
         </form>
-        
+
         <div class="loading" id="loading">Carregando...</div>
         <div class="error" id="errorMsg"></div>
     </div>
@@ -170,7 +175,7 @@
             const btnLogin = document.getElementById('btnLogin');
             const loading = document.getElementById('loading');
             const errorMsg = document.getElementById('errorMsg');
-            
+
             // Verifica se Auth carregou
             if (!window.Auth || window.Auth.error) {
                 console.error('Auth não disponível:', window.Auth?.error);
@@ -179,27 +184,27 @@
                 btnLogin.disabled = true;
                 return;
             }
-            
+
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                
+
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
-                
+
                 // UI de loading
                 btnLogin.disabled = true;
                 btnLogin.textContent = 'Entrando...';
                 loading.style.display = 'block';
                 errorMsg.style.display = 'none';
-                
+
                 // Tenta login
                 const result = await window.Auth.login(email, password);
-                
+
                 // Reset UI
                 btnLogin.disabled = false;
                 btnLogin.textContent = 'Entrar no Sistema';
                 loading.style.display = 'none';
-                
+
                 if (result.success) {
                     console.log('✅ Login OK, redirecionando...');
                     window.location.href = 'admin.html';
