@@ -488,15 +488,7 @@
                 <a href="#" class="nav-item" onclick="showPage('profile', event); return false;">
                     <i class="fas fa-user"></i> Meu Perfil
                 </a>
-                <a href="#" class="nav-item" onclick="showPage('settings', event); return false;">
-            <div class="nav-section">
-                <div class="nav-section-title">Configurações</div>
-                <a href="#" class="nav-item" onclick="showPage('profile', event); return false;">
-                    <i class="fas fa-user"></i> Meu Perfil
-                </a>
-                <a href="#" class="nav-item" onclick="showPage('settings', event); return false;">
-                    <i class="fas fa-cog"></i> Configurações
-                </a>
+            
             </div>
         </nav>
         
@@ -593,68 +585,53 @@
                     <button class="filter-btn" onclick="filterCases('concluido', event)">Concluídos</button>
                 </div>
             
+           <div class="cases-grid" id="casesList"></div>
+            </div>
+
             <!-- TEAM PAGE -->
             <div id="page-team" class="page">
-                <div class="team-grid" id="teamList">
-                    <!-- Equipe será carregada dinamicamente -->
+                <div class="case-detail-header">
+                    <h2 class="case-detail-title">Equipe</h2>
+                    <p class="case-detail-meta">Membros com e-mail @4oficiobm e usuario4oficiobm@gmail.com</p>
                 </div>
+                <div class="team-grid" id="teamList"></div>
             </div>
-            
+
             <!-- PROFILE PAGE -->
             <div id="page-profile" class="page">
                 <div class="case-detail-header">
                     <h2 class="case-detail-title">Meu Perfil</h2>
-                    <p class="case-detail-meta">Gerencie suas informações pessoais</p>
+                    <p class="case-detail-meta">Foto, função, email e senha</p>
                 </div>
-                
+
                 <div class="board-card" style="padding:24px;">
                     <form onsubmit="updateProfile(event)">
+                        <div class="form-group">
+                            <label class="form-label">Foto do Perfil</label>
+                            <input type="file" class="form-input" id="profilePhoto" accept="image/*">
+                        </div>
                         <div class="form-group">
                             <label class="form-label">Nome Completo</label>
                             <input type="text" class="form-input" id="profileName" value="Raphael Souza">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-input" id="profileEmail" value="admin@cartorio4oficio.com" readonly>
+                            <label class="form-label">Função</label>
+                            <input type="text" class="form-input" id="profileFunction" placeholder="Ex: Escrevente">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Telefone</label>
-                            <input type="tel" class="form-input" id="profilePhone" placeholder="(24) 99999-9999">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="profileEmail" value="admin@cartorio4oficio.com">
                         </div>
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Salvar Alterações
+                        </button>
+                        <button type="button" class="btn btn-outline" style="margin-left:8px;" onclick="changePassword()">
+                            <i class="fas fa-lock"></i> Alterar Senha
                         </button>
                     </form>
                 </div>
             </div>
             
-            <!-- SETTINGS PAGE -->
-            <div id="page-settings" class="page">
-                <div class="case-detail-header">
-                    <h2 class="case-detail-title">Configurações</h2>
-                    <p class="case-detail-meta">Configure as preferências do sistema</p>
-                </div>
-                
-                <div class="board-card" style="padding:24px;">
-                    <h3 style="margin-bottom:16px;">Notificações</h3>
-                    <div style="display:flex;flex-direction:column;gap:12px;">
-                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                            <input type="checkbox" checked> Receber notificações por email
-                        </label>
-                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                            <input type="checkbox" checked> Notificar novos casos
-                        </label>
-                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                            <input type="checkbox"> Notificar atualizações de casos
-                        </label>
-                    </div>
-                    
-                    <h3 style="margin:24px 0 16px;">Segurança</h3>
-                    <button class="btn btn-outline" onclick="changePassword()">
-                        <i class="fas fa-lock"></i> Alterar Senha
-                    </button>
-                </div>
-            </div>
         </div>
     </main>
 </div>
@@ -706,24 +683,7 @@
             </button>
         </div>
     </div>
-</div> 
-    <div id="modal-newBoard" class="modal" style="display:none;">
-        <div class="modal-header">
-            <h3 class="modal-title">Novo Quadro</h3>
-            <button class="modal-close" onclick="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <form id="newBoardForm">
-                <div class="form-group">
-                    <label class="form-label">Nome do Quadro</label>
-                    <input type="text" class="form-input" id="boardTitle" placeholder="Ex: Escrituras" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Descrição</label>
-                    <input type="text" class="form-input" id="boardDescription" placeholder="Ex: Casos de escritura em andamento">
-                </div>
-            </form>
-        </div>
+    
         <div class="modal-footer">
             <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
             <button class="btn btn-primary" onclick="createBoard()">
@@ -829,7 +789,6 @@ function showPage(pageName, event) {
         'cases': 'Casos',
         'team': 'Equipe',
         'profile': 'Meu Perfil',
-        'settings': 'Configurações'
     };
     document.getElementById('pageTitle').textContent = titles[pageName] || pageName;
 }
@@ -863,11 +822,12 @@ async function handleLogin(event) {
         
         // Atualizar info do usuário
         document.getElementById('userName').textContent = profile?.name || user.email;
-        document.getElementById('userRole').textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
+       document.getElementById('userRole').textContent = profile?.role || (window.Auth.isAdmin(profile) ? 'Administrador' : 'Usuário');
         document.getElementById('userAvatar').textContent = (profile?.name || user.email).substring(0, 2).toUpperCase();
         
         showNotification('Bem-vindo ao sistema!', 'success');
 await loadDashboard();
+         await syncProfileIntoForm();
     } else {
         showNotification('Sistema não carregado. Tente novamente.', 'error');
         btn.innerHTML = originalText;
@@ -905,7 +865,10 @@ function logout() {
 const AppState = {
     boards: [],
     cases: [],
-    currentFilter: 'all'
+    team: [],
+    currentFilter: 'all',
+    currentUser: null,
+    currentProfile: null
 };
 
 let hasShownSchemaWarning = false;
@@ -947,6 +910,30 @@ async function fetchBoards() {
     return data || [];
 }
 
+async function fetchTeamMembers() {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    const { data, error } = await client
+        .from('profiles')
+        .select('id,name,email,role,oab,created_at')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        if (isTableMissingError(error)) {
+            warnMissingSchema('profiles');
+            return [];
+        }
+        throw error;
+    }
+
+    return (data || []).filter((member) => {
+        const email = String(member.email || '').toLowerCase();
+        return email === 'usuario4oficiobm@gmail.com' || email.endsWith('@4oficio.com') || email.endsWith('@4oficiobm.com');
+    });
+}
+
+    
 async function fetchCases() {
     const client = getSupabaseClient();
     if (!client) return [];
@@ -996,8 +983,9 @@ function renderBoards() {
                 <div class="board-title">${board.name}</div>
                 <div class="board-desc">${board.description || 'Sem descrição'}</div>
             </div>
-            <div class="board-actions">
+            <div class="board-actions" style="display:flex;gap:8px;justify-content:flex-end;">
                 <button class="btn-board" onclick="event.stopPropagation(); showPage('cases');">Ver Casos</button>
+                <button class="btn-board" style="background:#fee2e2;color:#991b1b;" onclick="event.stopPropagation(); deleteBoard('${board.id || ''}')">Excluir</button>
             </div>
         </div>
     `).join('');
@@ -1050,10 +1038,36 @@ function renderCases() {
                     </div>
                     <span class="status ${statusClass}">${formatCaseStatus(c.status)}</span>
                 </div>
-                <div style="margin-top:12px;color:var(--text-light);font-size:13px;">Criado em: ${new Date(c.created_at).toLocaleDateString('pt-BR')}</div>
+             <div style="margin-top:12px;color:var(--text-light);font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                    <span>Criado em: ${new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
+                    <button class="btn btn-outline" style="padding:6px 10px;" onclick="deleteCase('${c.id}')">Excluir</button>
+                </div>
             </div>
         `;
     }).join('');
+}
+
+function renderTeam() {
+    const teamList = document.getElementById('teamList');
+    if (!teamList) return;
+
+    if (!AppState.team.length) {
+        teamList.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-users"></i>
+                <p>Nenhum membro da equipe com os e-mails configurados.</p>
+            </div>
+        `;
+        return;
+    }
+
+    teamList.innerHTML = AppState.team.map(member => `
+        <div class="board-card" style="padding:18px;">
+            <h3 style="margin-bottom:8px;">${member.name || 'Sem nome'}</h3>
+            <p style="color:var(--text-light);font-size:14px;">${member.email}</p>
+            <p style="color:var(--text-light);font-size:13px;margin-top:6px;">Função: ${member.role || 'Não definida'}</p>
+        </div>
+    `).join('');
 }
 
 function renderStats() {
@@ -1071,10 +1085,12 @@ function renderStats() {
 async function reloadAppData() {
     AppState.boards = await fetchBoards();
     AppState.cases = await fetchCases();
+    AppState.team = await fetchTeamMembers();
 
     renderStats();
     renderBoards();
     renderCases();
+    renderTeam();
 }
 
 // ==================== DASHBOARD ====================
@@ -1214,7 +1230,66 @@ async function createBoard() {
         showNotification('Erro ao criar quadro no Supabase.', 'error');
     }
 }
+async function deleteCase(caseId) {
+    if (!caseId || !confirm('Deseja excluir este caso?')) return;
 
+    const client = getSupabaseClient();
+    if (!client) return;
+
+    try {
+        const { error } = await client.from('cases').delete().eq('id', caseId);
+        if (error) {
+            if (isTableMissingError(error)) {
+                AppState.cases = AppState.cases.filter((item) => item.id !== caseId);
+                renderStats();
+                renderCases();
+                showNotification('Caso removido localmente.', 'info');
+                return;
+            }
+            throw error;
+        }
+
+        AppState.cases = AppState.cases.filter((item) => item.id !== caseId);
+        renderStats();
+        renderCases();
+        showNotification('Caso excluído com sucesso!', 'success');
+    } catch (error) {
+        console.error('Erro ao excluir caso:', error);
+        showNotification('Não foi possível excluir o caso.', 'error');
+    }
+}
+
+async function deleteBoard(boardId) {
+    if (!boardId) {
+        showNotification('Este quadro não foi persistido ainda.', 'info');
+        return;
+    }
+
+    if (!confirm('Deseja excluir este quadro?')) return;
+
+    const client = getSupabaseClient();
+    if (!client) return;
+
+    try {
+        const { error } = await client.from('boards').delete().eq('id', boardId);
+        if (error) {
+            if (isTableMissingError(error)) {
+                AppState.boards = AppState.boards.filter((item) => item.id !== boardId);
+                renderBoards();
+                showNotification('Quadro removido localmente.', 'info');
+                return;
+            }
+            throw error;
+        }
+
+        AppState.boards = AppState.boards.filter((item) => item.id !== boardId);
+        renderBoards();
+        showNotification('Quadro excluído com sucesso!', 'success');
+    } catch (error) {
+        console.error('Erro ao excluir quadro:', error);
+        showNotification('Não foi possível excluir o quadro.', 'error');
+    }
+}
 // ==================== NOTIFICAÇÕES ====================
 
 function showNotification(message, type = 'info') {
@@ -1262,15 +1337,98 @@ function filterCases(status, event) {
 }
 
 // ==================== PERFIL ====================
-
-function updateProfile(event) {
+async function updateProfile(event) {
     event.preventDefault();
-    showNotification('Perfil atualizado com sucesso!', 'success');
+
+    const client = getSupabaseClient();
+    if (!client) return;
+
+    const name = document.getElementById('profileName')?.value?.trim();
+    const role = document.getElementById('profileFunction')?.value?.trim();
+    const email = document.getElementById('profileEmail')?.value?.trim();
+    const photoFile = document.getElementById('profilePhoto')?.files?.[0] || null;
+
+    try {
+        const { data: authData } = await client.auth.getUser();
+        const userId = authData?.user?.id;
+        if (!userId) {
+            showNotification('Sessão inválida.', 'error');
+            return;
+        }
+
+        let avatarUrl = AppState.currentProfile?.avatar_url || null;
+        if (photoFile) {
+            const fileName = `${userId}_${Date.now()}_${photoFile.name.replace(/\s+/g, '_')}`;
+            const { error: uploadError } = await client.storage
+                .from('avatars')
+                .upload(fileName, photoFile, { upsert: true });
+            if (!uploadError) {
+                const { data } = client.storage.from('avatars').getPublicUrl(fileName);
+                avatarUrl = data?.publicUrl || avatarUrl;
+            }
+        }
+
+        const { error: profileError } = await client
+            .from('profiles')
+            .update({ name, role, email, avatar_url: avatarUrl, updated_at: new Date().toISOString() })
+            .eq('id', userId);
+
+        if (profileError && !isTableMissingError(profileError)) {
+            throw profileError;
+        }
+
+        if (email && email !== authData.user.email) {
+            const { error: authError } = await client.auth.updateUser({ email });
+            if (authError) {
+                showNotification('Perfil salvo. Confirme o novo e-mail no link enviado.', 'info');
+            }
+        }
+
+        document.getElementById('userName').textContent = name || email || 'Usuário';
+        document.getElementById('userRole').textContent = role || 'Usuário';
+        document.getElementById('userAvatar').textContent = (name || email || 'U').substring(0, 2).toUpperCase();
+        AppState.currentProfile = { ...(AppState.currentProfile || {}), name, role, email, avatar_url: avatarUrl };
+        showNotification('Perfil atualizado com sucesso!', 'success');
+    } catch (error) {
+        console.error('Erro ao atualizar perfil:', error);
+        showNotification('Erro ao atualizar perfil.', 'error');
+    }
+}
+    async function changePassword() {
+    const client = getSupabaseClient();
+    if (!client) return;
+
+    const newPassword = prompt('Digite a nova senha (mínimo 6 caracteres):');
+    if (!newPassword) return;
+    if (newPassword.length < 6) {
+        showNotification('A senha precisa ter no mínimo 6 caracteres.', 'error');
+        return;
+    }
+
+    const { error } = await client.auth.updateUser({ password: newPassword });
+    if (error) {
+        showNotification('Não foi possível alterar a senha.', 'error');
+        return;
+    }
+
+    showNotification('Senha alterada com sucesso!', 'success');
 }
 
-function changePassword() {
-    showNotification('Funcionalidade em desenvolvimento', 'info');
+async function syncProfileIntoForm() {
+    const client = getSupabaseClient();
+    if (!client) return;
+
+    const { user, profile } = await window.Auth.getCurrentUser();
+    if (!user) return;
+
+    AppState.currentUser = user;
+    AppState.currentProfile = profile || {};
+
+    document.getElementById('profileName').value = profile?.name || '';
+    document.getElementById('profileFunction').value = profile?.role || '';
+    document.getElementById('profileEmail').value = user.email || profile?.email || '';
 }
+
 
 // ==================== STATUS DO HORÁRIO ====================
 
@@ -1301,6 +1459,7 @@ window.addEventListener('authReady', async function() {
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('appContainer').style.display = 'flex';
            await loadDashboard();
+           await syncProfileIntoForm();
         }
     }
 });
