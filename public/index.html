@@ -63,7 +63,100 @@
     }
 }
 
+/* Responsividade do site público */
+@media (max-width: 1024px) {
+    .public-nav {
+        padding: 12px 16px;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
 
+    .public-nav .logo span {
+        font-size: 16px;
+    }
+
+    .public-nav-links {
+        order: 3;
+        width: 100%;
+        gap: 14px;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 4px;
+    }
+
+    .public-nav .btn {
+        margin-left: auto;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .public-hero {
+        padding: 56px 20px;
+    }
+
+    .public-hero h1 {
+        font-size: 34px;
+        line-height: 1.2;
+    }
+
+    .public-hero p {
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+    .public-content {
+        padding: 40px 16px;
+    }
+
+    .section-title {
+        font-size: 28px;
+        margin-bottom: 28px;
+    }
+
+    .acesso-rapido,
+    #requerimentos,
+    #contato {
+        padding: 40px 16px !important;
+    }
+
+    .acesso-grid,
+    .boards-grid,
+    .contato-grid,
+    .footer-content {
+        grid-template-columns: 1fr !important;
+    }
+
+    .acesso-card {
+        padding: 24px;
+    }
+
+    .mapa-container iframe {
+        height: 280px;
+    }
+
+    .public-footer {
+        padding: 40px 16px;
+        margin-top: 48px;
+    }
+}
+
+@media (max-width: 480px) {
+    .public-hero h1 {
+        font-size: 28px;
+    }
+
+    .public-hero p {
+        font-size: 16px;
+    }
+
+    .section-title {
+        font-size: 24px;
+    }
+
+    .acesso-card h3 {
+        font-size: 15px;
+    }
+}
 
         
 </style>
