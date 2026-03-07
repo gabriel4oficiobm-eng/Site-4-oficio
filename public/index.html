@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <link rel="icon" href="data:,">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cartório do 4º Ofício - Sistema Completo</title>
@@ -51,7 +50,7 @@
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-input" id="loginEmail" value="admin@4oficio.com" placeholder="seu@email.com" required>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Senha</label>
@@ -109,13 +108,13 @@
             <a href="#requerimentos">Requerimentos</a>
             <a href="#contato">Contato</a>
         </div>
-      <a href="#" class="btn" onclick="showLoginModal(); return false;">
-    <i class="fas fa-lock"></i> Área Restrita
-</a>
+        <button class="btn btn-primary" onclick="backToLogin()">
+            <i class="fas fa-lock"></i> Área Restrita
+        </button>
     </nav>
     
     <section class="public-hero" id="inicio">
-        <h1>Cartório do 4º Ofício<br>e Registro de Imóveis</h1>
+        <h1>Cartório do 4º Ofício de Notas<br>e Registro de Imóveis</h1>
         <p>Barra Mansa - Rio de Janeiro</p>
         <p style="font-size:16px;margin-top:16px;opacity:0.8;">Excelência e tradição no serviço notarial e de registro</p>
     </section>
@@ -257,7 +256,7 @@
             <div class="footer-section">
                 <h4>Contato</h4>
                 <p><i class="fas fa-phone"></i> (24) 3323-0620</p>
-                <p><i class="fas fa-envelope"></i> 4oficiobm@gmail.com</p>
+                <p><i class="fas fa-envelope"></i> contato@4oficiobm.com.br</p>
                 <p><i class="fas fa-map-marker-alt"></i> R. Nilo Peçanha, 5 - Centro</p>
             </div>
             
@@ -403,165 +402,133 @@
             </div>
             
             <!-- BOARDS PAGE -->
-<div id="page-boards" class="page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-        <div>
-            <h2 style="font-size:20px;font-weight:700;">Quadro de Casos</h2>
-            <p style="color:var(--text-light);font-size:14px;margin-top:4px;">Gerencie os casos por status</p>
-        </div>
-        <button class="btn btn-primary" onclick="openModal('newCase')">
-            <i class="fas fa-plus"></i> Novo Caso
-        </button>
-    </div>
-    <div id="kanbanBoard" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;">
-        <div class="kanban-col">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
-                 background:white;border-radius:10px;border-top:4px solid #3b82f6;box-shadow:var(--shadow);">
-                <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;display:inline-block;"></span>
-                <span style="font-weight:600;font-size:14px;">Iniciado</span>
-                <span id="count-iniciado" style="margin-left:auto;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+            <div id="page-boards" class="page">
+                <div class="boards-grid" id="boardsList">
+                    <!-- Quadros serão carregados dinamicamente -->
+                </div>
             </div>
-            <div id="col-iniciado" ondragover="allowDrop(event)" ondrop="dropCard(event,'iniciado')"
-                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;"></div>
-        </div>
-        <div class="kanban-col">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
-                 background:white;border-radius:10px;border-top:4px solid #f59e0b;box-shadow:var(--shadow);">
-                <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
-                <span style="font-weight:600;font-size:14px;">Pendente</span>
-                <span id="count-pendente" style="margin-left:auto;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+            
+            <!-- CASES PAGE -->
+            <div id="page-cases" class="page">
+                <div class="case-filters">
+                    <button class="filter-btn active" onclick="filterCases('all')">Todos</button>
+                    <button class="filter-btn" onclick="filterCases('iniciado')">Iniciados</button>
+                    <button class="filter-btn" onclick="filterCases('em_andamento')">Em Andamento</button>
+                    <button class="filter-btn" onclick="filterCases('aguardando')">Aguardando</button>
+                    <button class="filter-btn" onclick="filterCases('concluido')">Concluídos</button>
+                </div>
+                
+                <div class="cases-grid" id="casesList">
+                    <!-- Casos serão carregados dinamicamente -->
+                </div>
             </div>
-            <div id="col-pendente" ondragover="allowDrop(event)" ondrop="dropCard(event,'pendente')"
-                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;"></div>
-        </div>
-        <div class="kanban-col">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
-                 background:white;border-radius:10px;border-top:4px solid #10b981;box-shadow:var(--shadow);">
-                <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span>
-                <span style="font-weight:600;font-size:14px;">Ativo</span>
-                <span id="count-ativo" style="margin-left:auto;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+            
+            <!-- TEAM PAGE -->
+            <div id="page-team" class="page">
+                <div class="team-grid" id="teamList">
+                    <!-- Equipe será carregada dinamicamente -->
+                </div>
             </div>
-            <div id="col-ativo" ondragover="allowDrop(event)" ondrop="dropCard(event,'ativo')"
-                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;"></div>
-        </div>
-        <div class="kanban-col">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
-                 background:white;border-radius:10px;border-top:4px solid #6b7280;box-shadow:var(--shadow);">
-                <span style="width:10px;height:10px;border-radius:50%;background:#6b7280;display:inline-block;"></span>
-                <span style="font-weight:600;font-size:14px;">Concluído</span>
-                <span id="count-concluido" style="margin-left:auto;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+            
+            <!-- PROFILE PAGE -->
+            <div id="page-profile" class="page">
+                <div class="case-detail-header">
+                    <h2 class="case-detail-title">Meu Perfil</h2>
+                    <p class="case-detail-meta">Gerencie suas informações pessoais</p>
+                </div>
+                
+                <div class="board-card" style="padding:24px;">
+                    <form onsubmit="updateProfile(event)">
+                        <div class="form-group">
+                            <label class="form-label">Nome Completo</label>
+                            <input type="text" class="form-input" id="profileName" value="Raphael Souza">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="profileEmail" value="admin@cartorio4oficio.com" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telefone</label>
+                            <input type="tel" class="form-input" id="profilePhone" placeholder="(24) 99999-9999">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Alterações
+                        </button>
+                    </form>
+                </div>
             </div>
-            <div id="col-concluido" ondragover="allowDrop(event)" ondrop="dropCard(event,'concluido')"
-                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;"></div>
+            
+            <!-- SETTINGS PAGE -->
+            <div id="page-settings" class="page">
+                <div class="case-detail-header">
+                    <h2 class="case-detail-title">Configurações</h2>
+                    <p class="case-detail-meta">Configure as preferências do sistema</p>
+                </div>
+                
+                <div class="board-card" style="padding:24px;">
+                    <h3 style="margin-bottom:16px;">Notificações</h3>
+                    <div style="display:flex;flex-direction:column;gap:12px;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" checked> Receber notificações por email
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" checked> Notificar novos casos
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox"> Notificar atualizações de casos
+                        </label>
+                    </div>
+                    
+                    <h3 style="margin:24px 0 16px;">Segurança</h3>
+                    <button class="btn btn-outline" onclick="changePassword()">
+                        <i class="fas fa-lock"></i> Alterar Senha
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
+    </main>
 </div>
 
-<!-- CASES PAGE -->
-<div id="page-cases" class="page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-        <h2 style="font-size:20px;font-weight:700;">Casos</h2>
-        <button class="btn btn-primary" onclick="openModal('newCase')">
-            <i class="fas fa-plus"></i> Novo Caso
-        </button>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
-        <button class="filter-btn active" onclick="filterCases('all')">Todos</button>
-        <button class="filter-btn" onclick="filterCases('iniciado')">Iniciado</button>
-        <button class="filter-btn" onclick="filterCases('pendente')">Pendente</button>
-        <button class="filter-btn" onclick="filterCases('ativo')">Ativo</button>
-        <button class="filter-btn" onclick="filterCases('concluido')">Concluído</button>
-    </div>
-    <div id="casesList"></div>
-</div>
-
-<!-- TEAM PAGE -->
-<div id="page-team" class="page">
-    <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Equipe</h2>
-    <div id="teamList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;"></div>
-</div>
-
-<!-- PROFILE PAGE -->
-<div id="page-profile" class="page">
-    <div class="case-detail-header" style="margin-bottom:24px;">
-        <h2 class="case-detail-title">Meu Perfil</h2>
-        <p class="case-detail-meta">Gerencie suas informações pessoais</p>
-    </div>
-    <div class="board-card" style="padding:24px;">
-        <form onsubmit="updateProfile(event)">
-            <div class="form-group">
-                <label class="form-label">Nome Completo</label>
-                <input type="text" class="form-input" id="profileName">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="profileEmail" readonly>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Telefone</label>
-                <input type="tel" class="form-input" id="profilePhone" placeholder="(24) 99999-9999">
-            </div>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Salvar Alterações
-            </button>
-        </form>
-    </div>
-</div>
-
-<!-- SETTINGS PAGE -->
-<div id="page-settings" class="page">
-    <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Configurações</h2>
-    <div class="board-card" style="padding:24px;">
-        <h3 style="margin-bottom:16px;">Notificações</h3>
-        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px;">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="checkbox" checked> Receber notificações por email
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="checkbox" checked> Notificar novos casos
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="checkbox"> Notificar atualizações de casos
-            </label>
-        </div>
-        <h3 style="margin:24px 0 16px;">Segurança</h3>
-        <button class="btn btn-outline" onclick="changePassword()">
-            <i class="fas fa-lock"></i> Alterar Senha
-        </button>
-    </div>
-</div>
-
-</div></div></main></div>
-
-<!-- MODAL -->
+<!-- MODALS -->
 <div id="modalOverlay" class="modal-overlay" onclick="closeModal(event)">
+    <!-- New Case Modal -->
     <div id="modal-newCase" class="modal" style="display:none;">
         <div class="modal-header">
             <h3 class="modal-title">Novo Caso</h3>
-            <button class="modal-close" onclick="closeModal(event)">
-                <i class="fas fa-times"></i>
-            </button>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
         </div>
-        <form id="newCaseForm">
-            <div class="form-group">
-                <label class="form-label">Título do Caso *</label>
-                <input type="text" class="form-input" id="caseTitle" placeholder="Ex: Escritura - João Silva" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Descrição</label>
-                <textarea class="form-input" id="caseDescription" rows="3"
-                    placeholder="Detalhes do caso..." style="resize:vertical;"></textarea>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Status Inicial</label>
-                <select class="form-input" id="caseStatus">
-                    <option value="iniciado">Iniciado</option>
-                    <option value="pendente">Pendente</option>
-                    <option value="ativo">Ativo</option>
-                    <option value="concluido">Concluído</option>
-                </select>
-            </div>
-        </form>
+        <div class="modal-body">
+            <form id="newCaseForm">
+                <div class="form-group">
+                    <label class="form-label">Título do Caso</label>
+                    <input type="text" class="form-input" id="caseTitle" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo</label>
+                    <select class="form-select" id="caseType">
+                        <option value="escritura">Escritura</option>
+                        <option value="divorcio">Divórcio</option>
+                        <option value="procuracao">Procuração</option>
+                        <option value="usucapiao">Usucapião</option>
+                        <option value="inventario">Inventário</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cliente</label>
+                    <input type="text" class="form-input" id="caseClient" placeholder="Nome do cliente">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prioridade</label>
+                    <select class="form-select" id="casePriority">
+                        <option value="low">Baixa</option>
+                        <option value="medium" selected>Média</option>
+                        <option value="high">Alta</option>
+                        <option value="urgent">Urgente</option>
+                    </select>
+                </div>
+            </form>
+        </div>
         <div class="modal-footer">
             <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
             <button class="btn btn-primary" onclick="createCase()">
@@ -576,428 +543,308 @@
     <span id="notificationText"></span>
 </div>
 
+<!-- SCRIPTS -->
+<script src="js/config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/admin.js"></script>
 
 <script>
-// ==================== TABS ====================
+// ==================== NAVEGAÇÃO ====================
+
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    if (event?.target) event.target.classList.add('active');
-    document.getElementById('loginForm').style.display    = tab === 'login' ? 'block' : 'none';
-    document.getElementById('registerForm').style.display = tab === 'login' ? 'none'  : 'block';
-}
-
-function toggleOABField() {
-    const field = document.getElementById('oabField');
-    const type  = document.getElementById('registerType')?.value;
-    if (field) field.style.display = type === 'advogado' ? 'block' : 'none';
-}
-
-function showLoginModal() {
-    document.getElementById('publicSite').style.display = 'none';
-    document.getElementById('loginPage').style.display  = 'flex';
-}
-
-function closeLoginModal() {
-    document.getElementById('loginPage').style.display  = 'none';
-    document.getElementById('publicSite').style.display = 'block';
+    event.target.classList.add('active');
+    
+    if (tab === 'login') {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('registerForm').style.display = 'none';
+    } else {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('registerForm').style.display = 'block';
+    }
 }
 
 function enterPublicSite() {
-    document.getElementById('loginPage').style.display    = 'none';
-    document.getElementById('publicSite').style.display   = 'block';
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('publicSite').style.display = 'block';
     document.getElementById('appContainer').style.display = 'none';
 }
 
 function backToLogin() {
     document.getElementById('publicSite').style.display = 'none';
-    document.getElementById('loginPage').style.display  = 'flex';
+    document.getElementById('loginPage').style.display = 'flex';
 }
 
 function showPage(pageName) {
+    // Esconder todas as páginas
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const page = document.getElementById('page-' + pageName);
-    if (page) page.classList.add('active');
-    if (event?.target?.closest?.('.nav-item'))
-        event.target.closest('.nav-item').classList.add('active');
+    
+    // Mostrar página selecionada
+    document.getElementById('page-' + pageName).classList.add('active');
+    event.target.closest('.nav-item').classList.add('active');
+    
+    // Atualizar título
     const titles = {
-        dashboard:'Dashboard', boards:'Quadros', cases:'Casos',
-        team:'Equipe', profile:'Meu Perfil', settings:'Configurações'
+        'dashboard': 'Dashboard',
+        'boards': 'Quadros',
+        'cases': 'Casos',
+        'team': 'Equipe',
+        'profile': 'Meu Perfil',
+        'settings': 'Configurações'
     };
-    const t = document.getElementById('pageTitle');
-    if (t) t.textContent = titles[pageName] || pageName;
+    document.getElementById('pageTitle').textContent = titles[pageName] || pageName;
 }
 
-// ==================== LOGIN ====================
+// ==================== AUTENTICAÇÃO ====================
+
 async function handleLogin(event) {
     event.preventDefault();
-    const btn  = document.getElementById('loginBtn');
-    const orig = btn.innerHTML;
+    const btn = document.getElementById('loginBtn');
+    const originalText = btn.innerHTML;
     btn.innerHTML = '<span class="loading"></span> Entrando...';
-    btn.disabled  = true;
-
-    if (!window.Auth?.login) {
-        showNotification('Sistema não carregado.', 'error');
-        btn.innerHTML = orig; btn.disabled = false; return;
+    btn.disabled = true;
+    
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    if (window.Auth) {
+        const { user, profile, error } = await window.Auth.login(email, password);
+        
+        if (error) {
+            showNotification('Email ou senha incorretos', 'error');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            return;
+        }
+        
+        // Entrar no sistema
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('publicSite').style.display = 'none';
+        document.getElementById('appContainer').style.display = 'flex';
+        
+        // Atualizar info do usuário
+        document.getElementById('userName').textContent = profile?.name || user.email;
+        document.getElementById('userRole').textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
+        document.getElementById('userAvatar').textContent = (profile?.name || user.email).substring(0, 2).toUpperCase();
+        
+        showNotification('Bem-vindo ao sistema!', 'success');
+        loadDashboard();
+    } else {
+        showNotification('Sistema não carregado. Tente novamente.', 'error');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
-
-    const { user, profile, error } = await window.Auth.login(
-        document.getElementById('loginEmail').value,
-        document.getElementById('loginPassword').value
-    );
-
-    if (error) {
-        showNotification('Email ou senha incorretos.', 'error');
-        btn.innerHTML = orig; btn.disabled = false; return;
-    }
-
-    document.getElementById('loginPage').style.display    = 'none';
-    document.getElementById('publicSite').style.display   = 'none';
-    document.getElementById('appContainer').style.display = 'flex';
-
-    const un = document.getElementById('userName');
-    const ur = document.getElementById('userRole');
-    const ua = document.getElementById('userAvatar');
-    if (un) un.textContent = profile?.name || user.email;
-    if (ur) ur.textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
-    if (ua) ua.textContent = (profile?.name || user.email).substring(0,2).toUpperCase();
-
-    showNotification('Bem-vindo! 🎉', 'success');
-    await loadDashboard();
 }
 
 async function handleRegister(event) {
     event.preventDefault();
     const btn = document.getElementById('registerBtn');
     btn.innerHTML = '<span class="loading"></span> Cadastrando...';
-    btn.disabled  = true;
-
-    const { error } = await window.Auth.register({
-        name:     document.getElementById('regName')?.value,
-        email:    document.getElementById('regEmail')?.value,
-        password: document.getElementById('regPassword')?.value,
-        role:     document.getElementById('regType')?.value || 'cliente',
-        oab:      document.getElementById('registerOab')?.value
-    });
-
-    if (error) {
-        showNotification('Erro: ' + error, 'error');
-        btn.innerHTML = 'Cadastrar'; btn.disabled = false; return;
-    }
-    showNotification('Cadastro realizado! Faça login.', 'success');
-    switchTab('login');
-    btn.innerHTML = 'Cadastrar'; btn.disabled = false;
+    btn.disabled = true;
+    
+    // Simulação de cadastro
+    setTimeout(() => {
+        showNotification('Cadastro realizado! Aguarde aprovação.', 'success');
+        btn.innerHTML = '<i class="fas fa-user-plus"></i><span>Cadastrar</span>';
+        btn.disabled = false;
+        switchTab('login');
+    }, 1500);
 }
 
-async function logout() {
-    if (window.Auth) await window.Auth.logout();
+function logout() {
+    if (window.Auth) {
+        window.Auth.logout();
+    }
     document.getElementById('appContainer').style.display = 'none';
-    document.getElementById('loginPage').style.display    = 'flex';
-    showNotification('Sessão encerrada.', 'info');
+    document.getElementById('publicSite').style.display = 'none';
+    document.getElementById('loginPage').style.display = 'flex';
+    showNotification('Você saiu do sistema', 'info');
 }
 
 // ==================== DASHBOARD ====================
-async function loadDashboard() {
-    if (!window.Auth?.client) return;
-    const { data: cases } = await window.Auth.client.from('cases').select('*');
-    const all = cases || [];
 
-    const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
-    el('totalCases',     all.length);
-    el('activeCases',    all.filter(c => c.status === 'ativo').length);
-    el('pendingCases',   all.filter(c => c.status === 'pendente').length);
-    el('completedCases', all.filter(c => c.status === 'concluido').length);
-
-    loadCasesList(all);
-    loadBoardsList(all);
-    renderKanban(all);
-    loadTeam();
-}
-
-function loadCasesList(cases) {
-    const c = document.getElementById('casesList');
-    if (!c) return;
-    if (!cases.length) {
-        c.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-light);"><i class="fas fa-folder-open" style="font-size:32px;margin-bottom:12px;display:block;opacity:0.4;"></i>Nenhum caso ainda.</div>';
-        return;
-    }
-    c.innerHTML = cases.map(x => `
-        <div style="padding:16px;margin-bottom:12px;background:white;border-radius:8px;
-             border:1px solid var(--border);display:flex;justify-content:space-between;
-             align-items:center;box-shadow:var(--shadow);">
-            <div>
-                <strong style="font-size:15px;">${x.title || 'Sem título'}</strong>
-                <p style="color:var(--text-light);font-size:13px;margin:4px 0 8px;">${x.description || ''}</p>
-                <span style="font-size:12px;background:${statusColor(x.status)};color:white;
-                      padding:3px 10px;border-radius:12px;font-weight:500;">${statusLabel(x.status)}</span>
+function loadDashboard() {
+    // Dados mockados para demonstração
+    document.getElementById('totalCases').textContent = '24';
+    document.getElementById('activeCases').textContent = '12';
+    document.getElementById('pendingCases').textContent = '8';
+    document.getElementById('completedCases').textContent = '4';
+    
+    // Carregar quadros
+    const boardsContainer = document.getElementById('dashboardBoards');
+    boardsContainer.innerHTML = `
+        <div class="board-card" onclick="showPage('cases')">
+            <div class="board-header">
+                <div class="board-title">Escrituras</div>
+                <div class="board-desc">8 casos ativos</div>
             </div>
-            <button onclick="deleteCase('${x.id}')"
-                style="background:none;color:#ef4444;border:1px solid #fecaca;padding:8px 12px;
-                       border-radius:6px;cursor:pointer;"
-                onmouseover="this.style.background='#ef4444';this.style.color='white'"
-                onmouseout="this.style.background='none';this.style.color='#ef4444'">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>`).join('');
-}
-
-function loadBoardsList(cases) {
-    const c = document.getElementById('dashboardBoards');
-    if (!c) return;
-    const cols = [
-        {key:'iniciado',label:'Iniciado',color:'#3b82f6'},
-        {key:'pendente',label:'Pendente',color:'#f59e0b'},
-        {key:'ativo',label:'Ativo',color:'#10b981'},
-        {key:'concluido',label:'Concluído',color:'#6b7280'}
-    ];
-    c.innerHTML = cols.map(col => {
-        const items = cases.filter(x => x.status === col.key);
-        return `
-        <div style="background:white;border-radius:8px;padding:16px;border:1px solid var(--border);box-shadow:var(--shadow);">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-                <span style="width:10px;height:10px;border-radius:50%;background:${col.color};display:inline-block;"></span>
-                <h3 style="font-size:14px;font-weight:600;">${col.label}</h3>
-                <span style="margin-left:auto;background:var(--bg);padding:2px 8px;border-radius:10px;font-size:12px;">${items.length}</span>
+            <div class="board-actions">
+                <button class="btn-board">Ver Casos</button>
             </div>
-            ${items.length
-                ? items.map(x => `<div style="padding:10px;background:var(--bg);border-radius:6px;margin-bottom:8px;font-size:13px;border-left:3px solid ${col.color};">${x.title}</div>`).join('')
-                : '<p style="color:var(--text-light);font-size:13px;text-align:center;padding:16px 0;">Nenhum caso</p>'
-            }
-        </div>`;
-    }).join('');
-}
-
-// ==================== KANBAN ====================
-let draggedId = null;
-
-function renderKanban(cases) {
-    ['iniciado','pendente','ativo','concluido'].forEach(status => {
-        const col   = document.getElementById('col-' + status);
-        const count = document.getElementById('count-' + status);
-        if (!col) return;
-        const items = cases.filter(c => c.status === status);
-        if (count) count.textContent = items.length;
-        if (!items.length) {
-            col.innerHTML = `<div style="border:2px dashed var(--border);border-radius:8px;padding:24px;
-                text-align:center;color:var(--text-light);font-size:13px;">
-                <i class="fas fa-inbox" style="font-size:20px;margin-bottom:8px;display:block;"></i>Nenhum caso</div>`;
-            return;
-        }
-        col.innerHTML = items.map(c => `
-            <div class="kanban-card" draggable="true" id="card-${c.id}"
-                 ondragstart="dragStart(event,'${c.id}')" ondragend="dragEnd(event)"
-                 style="background:white;border-radius:8px;padding:14px;box-shadow:var(--shadow);
-                        border:1px solid var(--border);cursor:grab;border-left:4px solid ${statusColor(c.status)};">
-                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
-                    <strong style="font-size:14px;">${c.title}</strong>
-                    <button onclick="deleteCase('${c.id}')"
-                        style="background:none;border:none;color:#cbd5e1;cursor:pointer;padding:2px 4px;"
-                        onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                ${c.description ? `<p style="color:var(--text-light);font-size:12px;margin-bottom:10px;">${c.description}</p>` : ''}
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-                    <span style="font-size:11px;color:var(--text-light);">
-                        <i class="fas fa-calendar-alt"></i> ${new Date(c.created_at).toLocaleDateString('pt-BR')}
-                    </span>
-                    <select onchange="updateCaseStatus('${c.id}',this.value)"
-                        style="font-size:11px;border:1px solid var(--border);border-radius:4px;
-                               padding:2px 6px;cursor:pointer;background:var(--bg);">
-                        <option value="iniciado"  ${c.status==='iniciado' ?'selected':''}>Iniciado</option>
-                        <option value="pendente"  ${c.status==='pendente' ?'selected':''}>Pendente</option>
-                        <option value="ativo"     ${c.status==='ativo'    ?'selected':''}>Ativo</option>
-                        <option value="concluido" ${c.status==='concluido'?'selected':''}>Concluído</option>
-                    </select>
-                </div>
-            </div>`).join('');
-    });
-}
-
-function dragStart(event, id) {
-    draggedId = id;
-    setTimeout(() => { const c = document.getElementById('card-'+id); if(c) c.style.opacity='0.4'; }, 0);
-}
-
-function dragEnd(event) {
-    const c = document.getElementById('card-'+draggedId);
-    if (c) c.style.opacity = '1';
-}
-
-function allowDrop(event) { event.preventDefault(); }
-
-async function dropCard(event, newStatus) {
-    event.preventDefault();
-    if (!draggedId) return;
-    await updateCaseStatus(draggedId, newStatus);
-    draggedId = null;
-}
-
-async function updateCaseStatus(id, newStatus) {
-    const { error } = await window.Auth.client.from('cases').update({ status: newStatus }).eq('id', id);
-    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
-    showNotification('Status atualizado! ✅', 'success');
-    await loadDashboard();
-}
-
-// ==================== EQUIPE ====================
-async function loadTeam() {
-    const container = document.getElementById('teamList');
-    if (!container) return;
-    const { data } = await window.Auth.client.from('profiles').select('*').order('name');
-    if (!data?.length) {
-        container.innerHTML = '<p style="color:var(--text-light);">Nenhum membro cadastrado ainda.</p>';
-        return;
-    }
-    const roleLabel = { admin:'Administrador', cliente:'Cliente', advogado:'Advogado' };
-    const roleColor = { admin:'#3b82f6', cliente:'#10b981', advogado:'#f59e0b' };
-    container.innerHTML = data.map(p => `
-        <div style="background:white;border-radius:10px;padding:20px;border:1px solid var(--border);
-             box-shadow:var(--shadow);text-align:center;">
-            <div style="width:56px;height:56px;border-radius:50%;background:${roleColor[p.role]||'#6b7280'};
-                 color:white;display:flex;align-items:center;justify-content:center;
-                 font-size:20px;font-weight:700;margin:0 auto 12px;">
-                ${(p.name||p.email).substring(0,2).toUpperCase()}
+        </div>
+        <div class="board-card" onclick="showPage('cases')">
+            <div class="board-header">
+                <div class="board-title">Divórcios</div>
+                <div class="board-desc">5 casos ativos</div>
             </div>
-            <strong style="display:block;margin-bottom:4px;">${p.name || 'Sem nome'}</strong>
-            <p style="color:var(--text-light);font-size:13px;margin-bottom:8px;">${p.email}</p>
-            <span style="font-size:12px;background:${roleColor[p.role]||'#6b7280'}20;
-                  color:${roleColor[p.role]||'#6b7280'};padding:3px 10px;border-radius:12px;font-weight:500;">
-                ${roleLabel[p.role]||p.role}
-            </span>
-        </div>`).join('');
-}
-
-// ==================== STATUS / CORES ====================
-function statusColor(s) {
-    return {ativo:'#10b981',pendente:'#f59e0b',iniciado:'#3b82f6',concluido:'#6b7280'}[s]||'#6b7280';
-}
-
-function statusLabel(s) {
-    return {ativo:'Ativo',pendente:'Pendente',iniciado:'Iniciado',concluido:'Concluído'}[s]||s;
-}
-
-// ==================== CASOS ====================
-async function filterCases(status) {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    if (event?.target) event.target.classList.add('active');
-    let q = window.Auth.client.from('cases').select('*');
-    if (status !== 'all') q = q.eq('status', status);
-    const { data } = await q;
-    loadCasesList(data || []);
-}
-
-async function createCase() {
-    const title = document.getElementById('caseTitle')?.value?.trim();
-    if (!title) { showNotification('Preencha o título!', 'error'); return; }
-    const { data: { user } } = await window.Auth.client.auth.getUser();
-    const { error } = await window.Auth.client.from('cases').insert([{
-        title,
-        description: document.getElementById('caseDescription')?.value || '',
-        status:      document.getElementById('caseStatus')?.value || 'iniciado',
-        created_by:  user?.id || null,
-        created_at:  new Date().toISOString()
-    }]);
-    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
-    showNotification('Caso criado! ✅', 'success');
-    closeModal();
-    document.getElementById('newCaseForm')?.reset();
-    await loadDashboard();
-}
-
-async function deleteCase(id) {
-    if (!confirm('Excluir este caso?')) return;
-    const { error } = await window.Auth.client.from('cases').delete().eq('id', id);
-    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
-    showNotification('Caso excluído!', 'success');
-    await loadDashboard();
-}
-
-// ==================== PERFIL ====================
-async function updateProfile(event) {
-    event.preventDefault();
-    const { data: { user } } = await window.Auth.client.auth.getUser();
-    const { error } = await window.Auth.client.from('profiles').update({
-        name:       document.getElementById('profileName')?.value,
-        phone:      document.getElementById('profilePhone')?.value,
-        updated_at: new Date().toISOString()
-    }).eq('id', user.id);
-    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
-    showNotification('Perfil atualizado! ✅', 'success');
-}
-
-async function changePassword() {
-    const { data: { user } } = await window.Auth.client.auth.getUser();
-    await window.Auth.client.auth.resetPasswordForEmail(user.email);
-    showNotification('Link enviado para seu email! 📧', 'info');
+            <div class="board-actions">
+                <button class="btn-board">Ver Casos</button>
+            </div>
+        </div>
+        <div class="board-card" onclick="showPage('cases')">
+            <div class="board-header">
+                <div class="board-title">Inventários</div>
+                <div class="board-desc">3 casos ativos</div>
+            </div>
+            <div class="board-actions">
+                <button class="btn-board">Ver Casos</button>
+            </div>
+        </div>
+        <button class="board-card btn-new-board" onclick="openModal('newBoard')">
+            <i class="fas fa-plus"></i>
+            <span>Novo Quadro</span>
+        </button>
+    `;
 }
 
 // ==================== MODAIS ====================
+
 function openModal(modalName) {
-    const overlay = document.getElementById('modalOverlay');
-    const modal   = document.getElementById('modal-' + modalName);
-    if (!overlay || !modal) return;
-    overlay.classList.add('active');
+    document.getElementById('modalOverlay').classList.add('active');
     document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    modal.style.display = 'block';
+    document.getElementById('modal-' + modalName).style.display = 'block';
 }
 
 function closeModal(event) {
-    const overlay = document.getElementById('modalOverlay');
-    if (!overlay) return;
-    if (!event || event.target === overlay || event.target.closest?.('.modal-close')) {
-        overlay.classList.remove('active');
+    if (!event || event.target === document.getElementById('modalOverlay') || event.target.closest('.modal-close')) {
+        document.getElementById('modalOverlay').classList.remove('active');
         document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
     }
 }
 
-// ==================== NOTIFICAÇÕES ====================
-function showNotification(message, type = 'info') {
-    const n = document.getElementById('notification');
-    const t = document.getElementById('notificationText');
-    if (!n || !t) return;
-    t.textContent = message;
-    n.className   = 'notification ' + type;
-    n.classList.add('show');
-    setTimeout(() => n.classList.remove('show'), 3500);
+function createCase() {
+    const title = document.getElementById('caseTitle').value;
+    if (!title) {
+        showNotification('Preencha o título do caso', 'error');
+        return;
+    }
+    
+    showNotification('Caso criado com sucesso!', 'success');
+    closeModal();
+    
+    // Limpar formulário
+    document.getElementById('newCaseForm').reset();
 }
 
-// ==================== HORÁRIO ====================
+// ==================== NOTIFICAÇÕES ====================
+
+function showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    const text = document.getElementById('notificationText');
+    
+    text.textContent = message;
+    notification.className = 'notification ' + type;
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+// ==================== DOWNLOAD DE REQUERIMENTOS ====================
+
+function downloadRequirement(type) {
+    // Simulação de download
+    const requirements = {
+        'escritura': 'requerimento_escritura.pdf',
+        'divorcio': 'requerimento_divorcio.pdf',
+        'procuracao': 'requerimento_procuracao.pdf',
+        'usucapiao': 'requerimento_usucapiao.pdf'
+    };
+    
+    showNotification('Iniciando download: ' + requirements[type], 'info');
+    
+    // Aqui você implementaria o download real do Supabase Storage
+    setTimeout(() => {
+        showNotification('Download concluído!', 'success');
+    }, 1500);
+}
+
+// ==================== FILTROS DE CASOS ====================
+
+function filterCases(status) {
+    // Atualizar botões ativos
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Aqui você filtraria os casos na interface
+    showNotification('Filtrando casos: ' + status, 'info');
+}
+
+// ==================== PERFIL ====================
+
+function updateProfile(event) {
+    event.preventDefault();
+    showNotification('Perfil atualizado com sucesso!', 'success');
+}
+
+function changePassword() {
+    showNotification('Funcionalidade em desenvolvimento', 'info');
+}
+
+// ==================== STATUS DO HORÁRIO ====================
+
 function updateOpenStatus() {
-    const now    = new Date();
-    const isOpen = now.getDay() >= 1 && now.getDay() &lt;= 5
-                && now.getHours() >= 9 && now.getHours() &lt; 17;
-    const badge  = document.getElementById('status-badge');
+    const now = new Date();
+    const day = now.getDay();
+    const hour = now.getHours();
+    const isOpen = day >= 1 && day <= 5 && hour >= 9 && hour < 17;
+    
+    const badge = document.getElementById('status-badge');
     if (badge) {
-        badge.textContent      = isOpen ? '🟢 Aberto Agora' : '🔴 Fechado';
+        badge.textContent = isOpen ? '🟢 Aberto Agora' : '🔴 Fechado';
         badge.style.background = isOpen ? '#d1fae5' : '#fee2e2';
-        badge.style.color      = isOpen ? '#065f46'  : '#991b1b';
+        badge.style.color = isOpen ? '#065f46' : '#991b1b';
     }
 }
+
+// Inicializar
 updateOpenStatus();
 setInterval(updateOpenStatus, 60000);
 
-// ==================== SESSÃO ====================
-document.addEventListener('authReady', async function () {
-    if (!window.Auth) return;
-    const { user, profile } = await window.Auth.getCurrentUser();
-    if (!user) return;
-    document.getElementById('loginPage').style.display    = 'none';
-    document.getElementById('appContainer').style.display = 'flex';
-    const un = document.getElementById('userName');
-    const ur = document.getElementById('userRole');
-    const ua = document.getElementById('userAvatar');
-    const pn = document.getElementById('profileName');
-    const pe = document.getElementById('profileEmail');
-    if (un) un.textContent = profile?.name || user.email;
-    if (ur) ur.textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
-    if (ua) ua.textContent = (profile?.name || user.email).substring(0,2).toUpperCase();
-    if (pn) pn.value = profile?.name || '';
-    if (pe) pe.value = user.email || '';
-    await loadDashboard();
+// Verificar sessão ao carregar
+window.addEventListener('authReady', async function() {
+    if (window.Auth) {
+        const { user } = await window.Auth.getCurrentUser();
+        if (user) {
+            // Usuário já logado
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'flex';
+            loadDashboard();
+        }
+    }
 });
 </script>
+
+<!-- Dentro do <head> ou antes de </body> no index.html -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="public/js/auth.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Espera o Auth estar pronto
+        if (!window.Auth || !window.Auth.client) {
+            console.log('Auth não pronto no index.html, aguardando...');
+            setTimeout(arguments.callee, 100); // Tenta novamente em 100ms
+            return;
+        }
+
+        const { user, profile, error } = await window.Auth.getCurrentUser();
+        if (user && window.Auth.isAdmin(profile)) {
+            window.location.href = 'admin.html'; // Redireciona admin logado
+        }
+    });
+</script>
+
+    
 </body>
-</html>
