@@ -158,6 +158,118 @@
     }
 }
 
+        /* Modal de funcionalidades do caso */
+.case-workspace-modal {
+    width: min(980px, 95vw);
+    max-height: 92vh;
+}
+
+.case-workspace-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.case-workspace-title {
+    font-size: 22px;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.case-workspace-subtitle {
+    color: var(--text-light);
+    font-size: 13px;
+}
+
+.case-tabs {
+    display: flex;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-top: 16px;
+}
+
+.case-tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    padding: 12px 0;
+    cursor: pointer;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    border-bottom: 2px solid transparent;
+    font-weight: 600;
+}
+
+.case-tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.case-tab-content { display: none; }
+.case-tab-content.active { display: block; }
+
+.docs-panel {
+    background: #0ea5e9;
+    color: #fff;
+    padding: 16px;
+    border-radius: 10px;
+    margin: 14px 0;
+}
+
+.doc-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.doc-row:last-child { border-bottom: none; }
+
+.doc-meta { font-size: 12px; color: var(--text-light); }
+
+.upload-trigger {
+    border: 1px dashed var(--primary);
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.attachment-list {
+    margin-top: 14px;
+    max-height: 180px;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.attachment-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+}
+
+.attachment-item:last-child { border-bottom: none; }
+
+.case-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+@media (max-width: 768px) {
+    .case-edit-grid,
+    .doc-row { grid-template-columns: 1fr; }
+}
         
 </style>
 </head>
@@ -683,15 +795,123 @@
             </button>
         </div>
     </div>
+    <div id="modal-caseWorkspace" class="modal case-workspace-modal" style="display:none;">
+        <div class="modal-header">
+            <div>
+                <h3 class="modal-title">Funcionalidades do Caso</h3>
+                <p class="case-workspace-subtitle">Edição completa, anexos e acompanhamento interno</p>
+            </div>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="case-workspace-head">
+                <div>
+                    <h2 class="case-workspace-title" id="workspaceCaseTitle">Caso</h2>
+                    <p class="case-workspace-subtitle" id="workspaceCaseMeta">Última atualização: --</p>
+                </div>
+                <span class="status processing" id="workspaceCaseStatus">Em Andamento</span>
+            </div>
+
+            <div class="case-tabs">
+                <button class="case-tab-btn active" onclick="switchCaseWorkspaceTab('etapas', event)">Etapas</button>
+                <button class="case-tab-btn" onclick="switchCaseWorkspaceTab('documentos', event)">Documentos Necessários</button>
+                <button class="case-tab-btn" onclick="switchCaseWorkspaceTab('avulsos', event)">Documentos Avulsos</button>
+                <button class="case-tab-btn" onclick="switchCaseWorkspaceTab('chat', event)">Chat Clientes</button>
+                <button class="case-tab-btn" onclick="switchCaseWorkspaceTab('interna', event)">Área Interna</button>
+            </div>
+
+            <div class="case-tab-content active" data-tab="etapas">
+                <div class="case-edit-grid">
+                    <div class="form-group">
+                        <label class="form-label">Título</label>
+                        <input type="text" class="form-input" id="workspaceEditTitle">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="workspaceEditStatus">
+                            <option value="iniciado">Iniciado</option>
+                            <option value="em_andamento">Em andamento</option>
+                            <option value="aguardando">Aguardando</option>
+                            <option value="concluido">Concluído</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição e observações</label>
+                    <textarea class="form-input" id="workspaceEditDescription" style="min-height:100px;"></textarea>
+                </div>
+            </div>
+
+            <div class="case-tab-content" data-tab="documentos">
+                <div class="docs-panel">
+                    <strong>Documentos</strong>
+                    <p style="font-size:12px;opacity:.9;">Visualização por categoria e atualização em tempo real.</p>
+                </div>
+
+                <div class="doc-row">
+                    <div>
+                        <strong>RG</strong>
+                        <div class="doc-meta" id="docMetaRg">Nenhum arquivo enviado</div>
+                    </div>
+                    <label class="upload-trigger">
+                        <input type="file" hidden onchange="handleCaseAttachment(event, 'RG')">
+                        Anexar
+                    </label>
+                    <i class="fas fa-eye" title="Visualização"></i>
+                </div>
+
+                <div class="doc-row">
+                    <div>
+                        <strong>Certidão de nascimento</strong>
+                        <div class="doc-meta" id="docMetaCertidao">Nenhum arquivo enviado</div>
+                    </div>
+                    <label class="upload-trigger">
+                        <input type="file" hidden onchange="handleCaseAttachment(event, 'Certidão de nascimento')">
+                        Anexar
+                    </label>
+                    <i class="fas fa-eye" title="Visualização"></i>
+                </div>
+
+                <div class="doc-row">
+                    <div>
+                        <strong>Foto 3x4</strong>
+                        <div class="doc-meta" id="docMetaFoto">Nenhum arquivo enviado</div>
+                    </div>
+                    <label class="upload-trigger">
+                        <input type="file" hidden onchange="handleCaseAttachment(event, 'Foto 3x4')">
+                        Anexar
+                    </label>
+                    <i class="fas fa-eye" title="Visualização"></i>
+                </div>
+            </div>
+
+            <div class="case-tab-content" data-tab="avulsos">
+                <div class="form-group">
+                    <label class="form-label">Anexar documentos avulsos</label>
+                    <input type="file" class="form-input" multiple onchange="handleCaseAttachment(event, 'Avulso')">
+                </div>
+                <div class="attachment-list" id="workspaceAttachmentList"></div>
+            </div>
+
+            <div class="case-tab-content" data-tab="chat">
+                <p style="color:var(--text-light);font-size:14px;">Espaço reservado para o histórico de chat com clientes.</p>
+            </div>
+
+            <div class="case-tab-content" data-tab="interna">
+                <div class="form-group">
+                    <label class="form-label">Notas internas</label>
+                    <textarea class="form-input" id="workspaceInternalNotes" placeholder="Use este campo para orientações da equipe." style="min-height:120px;"></textarea>
+                </div>
+            </div>
+        </div>
     
         <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
-            <button class="btn btn-primary" onclick="createBoard()">
-                <i class="fas fa-columns"></i> Criar Quadro
+            <button class="btn btn-outline" onclick="closeModal()">Fechar</button>
+            <button class="btn btn-primary" onclick="saveCaseWorkspace()">
+                <i class="fas fa-save"></i> Salvar alterações
             </button>
         </div>
     </div>
-</div>
             <div id="modal-newBoard" class="modal" style="display:none;">
         <div class="modal-header">
             <h3 class="modal-title">Novo Quadro</h3>
@@ -866,6 +1086,8 @@ const AppState = {
     boards: [],
     cases: [],
     team: [],
+    caseDocuments: {},
+    activeCaseId: null,
     currentFilter: 'all',
     currentUser: null,
     currentProfile: null
@@ -1030,7 +1252,7 @@ function renderCases() {
                 : 'pending';
 
         return `
-            <div class="board-card" style="padding:18px;">
+          <div class="board-card" style="padding:18px;cursor:pointer;" onclick="openCaseWorkspace('${c.id}')">
                 <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
                     <div>
                         <h3 style="margin-bottom:6px;">${c.title}</h3>
@@ -1040,12 +1262,159 @@ function renderCases() {
                 </div>
              <div style="margin-top:12px;color:var(--text-light);font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
                     <span>Criado em: ${new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
-                    <button class="btn btn-outline" style="padding:6px 10px;" onclick="deleteCase('${c.id}')">Excluir</button>
+                     <div style="display:flex;gap:8px;">
+                        <button class="btn btn-outline" style="padding:6px 10px;" onclick="event.stopPropagation(); openCaseWorkspace('${c.id}')">Abrir</button>
+                        <button class="btn btn-outline" style="padding:6px 10px;" onclick="event.stopPropagation(); deleteCase('${c.id}')">Excluir</button>
+                    </div>
                 </div>
             </div>
         `;
     }).join('');
 }
+function switchCaseWorkspaceTab(tab, event) {
+    document.querySelectorAll('.case-tab-btn').forEach(btn => btn.classList.remove('active'));
+    if (event?.target) event.target.classList.add('active');
+
+    document.querySelectorAll('.case-tab-content').forEach(section => {
+        section.classList.toggle('active', section.dataset.tab === tab);
+    });
+}
+
+function ensureCaseDocumentsBucket(caseId) {
+    if (!caseId) return [];
+    if (!AppState.caseDocuments[caseId]) AppState.caseDocuments[caseId] = [];
+    return AppState.caseDocuments[caseId];
+}
+
+function updateRequiredDocMeta(caseId) {
+    const docs = ensureCaseDocumentsBucket(caseId);
+    const summarize = (category) => {
+        const count = docs.filter(item => item.category === category).length;
+        return count ? `${count} documento(s) enviado(s)` : 'Nenhum arquivo enviado';
+    };
+
+    const rg = document.getElementById('docMetaRg');
+    const certidao = document.getElementById('docMetaCertidao');
+    const foto = document.getElementById('docMetaFoto');
+
+    if (rg) rg.textContent = summarize('RG');
+    if (certidao) certidao.textContent = summarize('Certidão de nascimento');
+    if (foto) foto.textContent = summarize('Foto 3x4');
+}
+
+function renderCaseAttachmentList() {
+    const list = document.getElementById('workspaceAttachmentList');
+    if (!list) return;
+
+    const docs = ensureCaseDocumentsBucket(AppState.activeCaseId);
+    if (!docs.length) {
+        list.innerHTML = '<div class="attachment-item"><span>Nenhum anexo enviado ainda.</span></div>';
+        updateRequiredDocMeta(AppState.activeCaseId);
+        return;
+    }
+
+    list.innerHTML = docs.map(doc => `
+        <div class="attachment-item">
+            <span><strong>${doc.name}</strong> • ${doc.category}</span>
+            <span>${doc.uploadedAt}</span>
+        </div>
+    `).join('');
+
+    updateRequiredDocMeta(AppState.activeCaseId);
+}
+
+function openCaseWorkspace(caseId) {
+    const selectedCase = AppState.cases.find(item => String(item.id) === String(caseId));
+    if (!selectedCase) {
+        showNotification('Caso não encontrado.', 'error');
+        return;
+    }
+
+    AppState.activeCaseId = selectedCase.id;
+
+    document.getElementById('workspaceCaseTitle').textContent = selectedCase.title || 'Caso sem título';
+    document.getElementById('workspaceCaseMeta').textContent = `Última atualização: ${new Date(selectedCase.created_at || Date.now()).toLocaleString('pt-BR')}`;
+    document.getElementById('workspaceCaseStatus').textContent = formatCaseStatus(selectedCase.status);
+    document.getElementById('workspaceEditTitle').value = selectedCase.title || '';
+    document.getElementById('workspaceEditStatus').value = selectedCase.status || 'iniciado';
+    document.getElementById('workspaceEditDescription').value = selectedCase.description || '';
+    document.getElementById('workspaceInternalNotes').value = selectedCase.internal_notes || '';
+
+    switchCaseWorkspaceTab('etapas');
+    document.querySelectorAll('.case-tab-btn').forEach((btn, index) => btn.classList.toggle('active', index === 0));
+    renderCaseAttachmentList();
+    openModal('caseWorkspace');
+}
+
+function handleCaseAttachment(event, category) {
+    if (!AppState.activeCaseId) {
+        showNotification('Abra um caso antes de anexar documentos.', 'error');
+        return;
+    }
+
+    const files = Array.from(event.target?.files || []);
+    if (!files.length) return;
+
+    const docs = ensureCaseDocumentsBucket(AppState.activeCaseId);
+    files.forEach(file => {
+        docs.push({
+            name: file.name,
+            size: file.size,
+            category,
+            uploadedAt: new Date().toLocaleString('pt-BR')
+        });
+    });
+
+    event.target.value = '';
+    renderCaseAttachmentList();
+    showNotification('Documento anexado com sucesso.', 'success');
+}
+
+async function saveCaseWorkspace() {
+    if (!AppState.activeCaseId) return;
+
+    const selectedCase = AppState.cases.find(item => String(item.id) === String(AppState.activeCaseId));
+    if (!selectedCase) return;
+
+    const nextTitle = document.getElementById('workspaceEditTitle').value.trim();
+    const nextStatus = document.getElementById('workspaceEditStatus').value;
+    const nextDescription = document.getElementById('workspaceEditDescription').value.trim();
+    const nextInternalNotes = document.getElementById('workspaceInternalNotes').value.trim();
+
+    if (!nextTitle) {
+        showNotification('O título do caso é obrigatório.', 'error');
+        return;
+    }
+
+    selectedCase.title = nextTitle;
+    selectedCase.status = nextStatus;
+    selectedCase.description = nextDescription;
+    selectedCase.internal_notes = nextInternalNotes;
+
+    const client = getSupabaseClient();
+    if (client) {
+        const { error } = await client
+            .from('cases')
+            .update({
+                title: nextTitle,
+                status: nextStatus,
+                description: nextDescription
+            })
+            .eq('id', AppState.activeCaseId);
+
+        if (error && !isTableMissingError(error)) {
+            showNotification('As alterações ficaram salvas localmente.', 'info');
+            console.warn('Falha ao atualizar caso no Supabase:', error);
+        }
+    }
+
+    renderCases();
+    renderStats();
+    document.getElementById('workspaceCaseTitle').textContent = nextTitle;
+    document.getElementById('workspaceCaseStatus').textContent = formatCaseStatus(nextStatus);
+    showNotification('Caso atualizado com sucesso.', 'success');
+}
+
 
 function renderTeam() {
     const teamList = document.getElementById('teamList');
