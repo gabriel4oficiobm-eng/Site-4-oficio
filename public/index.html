@@ -4,543 +4,415 @@
     <link rel="icon" href="data:,">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartório do 4º Ofício - Sistema Completo</title>
+    <title>Cartório do 4º Ofício - Sistema</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- SUPABASE - Carregar primeiro -->
     <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
     <style>
-:root{--primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#dbeafe;--secondary:#64748b;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--info:#3b82f6;--bg:#f1f5f9;--card:#ffffff;--text:#1e293b;--text-light:#64748b;--border:#e2e8f0;--shadow:0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06);--shadow-lg:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05);--shadow-xl:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04)}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6}/* Login Page */.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:20px}.login-container{width:100%;max-width:420px}.login-box{background:white;border-radius:16px;padding:40px;box-shadow:var(--shadow-xl)}.login-logo{text-align:center;margin-bottom:32px}.login-logo i{font-size:48px;color:var(--primary);margin-bottom:16px}.login-logo h1{font-size:24px;font-weight:700;color:var(--text)}.login-logo p{color:var(--text-light);margin-top:8px}.form-group{margin-bottom:20px}.form-label{display:block;margin-bottom:6px;font-size:14px;font-weight:500;color:var(--text)}.form-input{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:8px;font-size:14px;transition:all 0.2s}.form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;border:none}.btn-primary{background:var(--primary);color:white}.btn-primary:hover{background:var(--primary-dark)}.btn-secondary{background:var(--secondary);color:white}.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.login-footer{text-align:center;margin-top:24px;color:var(--text-light);font-size:14px}.login-footer a{color:var(--primary);text-decoration:none}.tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:16px}.tab{flex:1;padding:12px;text-align:center;background:none;border:none;font-size:14px;font-weight:500;color:var(--text-light);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s}.tab.active{color:var(--primary);border-bottom-color:var(--primary)}/* App Container */.app-container{display:flex;min-height:100vh}.sidebar{width:260px;background:white;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;z-index:100}.sidebar-header{padding:20px;border-bottom:1px solid var(--border)}.logo{display:flex;align-items:center;gap:12px}.logo-icon{width:40px;height:40px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:20px}.logo span{font-weight:700;font-size:18px;color:var(--text)}.user-info{padding:20px;border-bottom:1px solid var(--border)}.user-avatar{width:48px;height:48px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;margin-bottom:12px}.user-name{font-weight:600;font-size:14px}.user-role{font-size:12px;color:var(--text-light);margin-top:2px}.nav-menu{flex:1;padding:16px;overflow-y:auto}.nav-section{margin-bottom:24px}.nav-section-title{font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;padding:0 12px}.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:var(--text);text-decoration:none;font-size:14px;transition:all 0.2s;margin-bottom:2px}.nav-item:hover{background:var(--bg)}.nav-item.active{background:var(--primary-light);color:var(--primary)}.nav-item i{width:20px;text-align:center}.sidebar-footer{padding:16px;border-top:1px solid var(--border)}/* Main Content */.main-content{flex:1;margin-left:260px;display:flex;flex-direction:column}.top-header{height:64px;background:white;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}.breadcrumb{font-size:14px;color:var(--text-light)}.header-actions{display:flex;align-items:center;gap:16px}.search-box{position:relative}.search-box input{width:300px;padding:8px 12px 8px 36px;border:1px solid var(--border);border-radius:8px;font-size:14px}.search-box i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-light)}.content-area{flex:1;padding:24px;overflow-y:auto}.page{display:none}.page.active{display:block}/* Stats Grid */.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-bottom:24px}.stat-card{background:white;border-radius:12px;padding:20px;border:1px solid var(--border);box-shadow:var(--shadow)}.stat-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:12px}.stat-value{font-size:32px;font-weight:700;color:var(--text)}.stat-label{font-size:14px;color:var(--text-light)}.stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}.stat-icon.blue{background:var(--primary-light);color:var(--primary)}.stat-icon.green{background:#d1fae5;color:var(--success)}.stat-icon.yellow{background:#fef3c7;color:var(--warning)}.stat-icon.red{background:#fee2e2;color:var(--danger)}/* Boards Grid */.boards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}.board-card{background:white;border-radius:12px;border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:all 0.2s;box-shadow:var(--shadow)}.board-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}.board-header{padding:20px;border-bottom:1px solid var(--border)}.board-title{font-size:16px;font-weight:600;margin-bottom:4px}.board-desc{font-size:14px;color:var(--text-light)}.board-actions{padding:16px;display:flex;gap:8px}.btn-board{flex:1;padding:8px 16px;background:var(--bg);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s}.btn-board:hover{background:var(--primary);color:white}.btn-new-board{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;border:2px dashed var(--border);background:transparent}.btn-new-board i{font-size:32px;color:var(--primary);margin-bottom:8px}.btn-new-board span{color:var(--text-light);font-size:14px}/* Cases Grid */.cases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:20px}.case-card{background:white;border-radius:12px;border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow)}.case-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:start}.case-title{font-size:16px;font-weight:600;margin-bottom:4px}.case-meta{font-size:13px;color:var(--text-light)}.case-priority{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500}.priority-high{background:#fee2e2;color:#991b1b}.priority-medium{background:#fef3c7;color:#92400e}.priority-low{background:#d1fae5;color:#065f46}.case-body{padding:20px}.case-info{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}.case-info-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-light)}.case-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}.case-progress{flex:1;margin-right:16px}.progress-bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}.progress-fill{height:100%;background:var(--primary);border-radius:3px;transition:width 0.3s}.btn-case-action{padding:8px 16px;background:var(--primary);color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer}.case-filters{display:flex;gap:12px;margin-bottom:20px}.filter-btn{padding:8px 16px;background:white;border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s}.filter-btn.active{background:var(--primary);color:white;border-color:var(--primary)}/* Case Detail */.case-detail-header{background:white;border-radius:12px;padding:24px;margin-bottom:24px;border:1px solid var(--border)}.case-detail-title{font-size:24px;font-weight:700;margin-bottom:8px}.case-detail-meta{display:flex;gap:16px;color:var(--text-light);font-size:14px}.case-tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid var(--border)}.case-tab{padding:12px 20px;background:none;border:none;font-size:14px;font-weight:500;color:var(--text-light);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s}.case-tab.active{color:var(--primary);border-bottom-color:var(--primary)}.tab-content{display:none}.tab-content.active{display:block}.steps-timeline{position:relative;padding-left:32px}.steps-timeline::before{content:'';position:absolute;left:11px;top:0;bottom:0;width:2px;background:var(--border)}.step-item{position:relative;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border)}.step-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}.step-check{position:absolute;left:-32px;width:24px;height:24px;background:white;border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}.step-check:hover{border-color:var(--primary)}.step-check.completed{background:var(--success);border-color:var(--success);color:white}.step-title{font-weight:600;margin-bottom:4px}.step-desc{font-size:14px;color:var(--text-light)}.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:all 0.2s}.upload-zone:hover{border-color:var(--primary);background:var(--primary-light)}.upload-zone i{font-size:32px;color:var(--primary);margin-bottom:12px}.chat-messages{max-height:400px;overflow-y:auto;margin-bottom:16px;padding:16px;background:var(--bg);border-radius:12px}.chat-input{display:flex;gap:12px}.message{margin-bottom:12px;padding:12px 16px;border-radius:12px;max-width:80%}.message.sent{margin-left:auto;background:var(--primary);color:white}.message.received{background:white;border:1px solid var(--border)}/* Team */.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}.team-card{background:white;border-radius:12px;padding:20px;border:1px solid var(--border);display:flex;align-items:center;gap:16px}.team-avatar{width:56px;height:56px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;font-weight:600}.team-info{flex:1}.team-name{font-weight:600;margin-bottom:2px}.team-role{font-size:13px;color:var(--text-light)}.team-status{width:12px;height:12px;border-radius:50%}.status-online{background:var(--success)}.status-offline{background:var(--text-light)}/* Modals */.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}.modal-overlay.active{display:flex}.modal{background:white;border-radius:16px;width:100%;max-width:500px;max-height:90vh;overflow:hidden;box-shadow:var(--shadow-xl)}.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}.modal-title{font-size:18px;font-weight:600}.modal-close{background:none;border:none;font-size:20px;color:var(--text-light);cursor:pointer}.modal-body{padding:24px;overflow-y:auto;max-height:60vh}.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px}.form-select{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:white}.form-textarea{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:8px;font-size:14px;min-height:100px;resize:vertical;font-family:inherit}/* Notifications */.notification{position:fixed;top:20px;right:20px;padding:16px 20px;border-radius:12px;color:white;font-weight:500;box-shadow:var(--shadow-lg);transform:translateX(400px);transition:transform 0.3s;z-index:1001;max-width:400px}.notification.show{transform:translateX(0)}.notification.success{background:var(--success)}.notification.error{background:var(--danger)}.notification.info{background:var(--info)}/* Loading */.loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.empty-state{text-align:center;padding:60px 20px;color:var(--text-light)}.empty-state i{font-size:48px;margin-bottom:16px;color:var(--border)}/* Public Site */.public-site{display:none;background:white;min-height:100vh}.public-nav{background:white;border-bottom:1px solid var(--border);padding:16px 32px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}.public-nav .logo{color:var(--text)}.public-nav-links{display:flex;gap:24px}.public-nav a{color:var(--text);text-decoration:none;font-weight:500;transition:color 0.2s}.public-nav a:hover{color:var(--primary)}.public-hero{background:linear-gradient(135deg,var(--primary) 0%,#1e40af 100%);color:white;padding:80px 32px;text-align:center}.public-hero h1{font-size:48px;font-weight:700;margin-bottom:16px}.public-hero p{font-size:20px;opacity:0.9;margin-bottom:32px}.public-content{padding:60px 32px;max-width:1200px;margin:0 auto}.section-title{text-align:center;font-size:32px;font-weight:700;margin-bottom:48px;color:var(--text)}.quick-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:60px}.quick-btn{background:white;border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;text-decoration:none;color:var(--text);transition:all 0.2s;display:block}.quick-btn:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--primary)}.quick-btn i{font-size:32px;color:var(--primary);margin-bottom:12px}.quick-btn h3{font-size:16px;font-weight:600;margin-bottom:4px}.quick-btn p{font-size:14px;color:var(--text-light)}.public-footer{background:var(--text);color:white;padding:48px 32px;margin-top:80px}.footer-content{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:32px}.footer-section h4{font-size:16px;font-weight:600;margin-bottom:16px}.footer-section p,.footer-section a{color:#94a3b8;text-decoration:none;line-height:1.8;font-size:14px}.footer-section a:hover{color:white}.back-to-login{position:fixed;top:20px;right:20px;z-index:1001}@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}.boards-grid,.cases-grid{grid-template-columns:1fr}}
+        :root {
+            --primary: #2563eb; --primary-dark: #1d4ed8; --primary-light: #dbeafe;
+            --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --info: #3b82f6;
+            --bg: #f1f5f9; --text: #1e293b; --text-light: #64748b;
+            --border: #e2e8f0; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
 
-/* Acesso Rápido - Estilos adicionais */
-.acesso-rapido { background: #f8fafc; padding: 60px 20px; }
-.acesso-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
-.acesso-card { background: white; padding: 30px; border-radius: 12px; text-align: center; text-decoration: none; color: inherit; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; }
-.acesso-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-.acesso-card i { font-size: 40px; margin-bottom: 16px; }
-.acesso-card h3 { color: #1e40af; margin-bottom: 8px; font-size: 16px; }
-.acesso-card p { color: #6b7280; font-size: 14px; margin-bottom: 12px; }
-.acesso-card span { font-weight: 500; }
+        /* LOGIN */
+        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
+        .login-box { background: white; border-radius: 16px; padding: 40px; box-shadow: var(--shadow-xl); width: 100%; max-width: 420px; }
+        .login-logo { text-align: center; margin-bottom: 32px; }
+        .login-logo i { font-size: 48px; color: var(--primary); }
+        .login-logo h1 { font-size: 24px; font-weight: 700; margin-top: 12px; }
+        .login-logo p { color: var(--text-light); margin-top: 8px; }
+        .tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid var(--border); }
+        .tab { flex: 1; padding: 12px; background: none; border: none; cursor: pointer; font-size: 14px;
+            font-weight: 500; color: var(--text-light); transition: all 0.2s; }
+        .tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); margin-bottom: -2px; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; }
+        .form-input { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px;
+            font-size: 14px; outline: none; transition: border-color 0.2s; font-family: inherit; }
+        .form-input:focus { border-color: var(--primary); }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px;
+            font-weight: 500; font-family: inherit; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; justify-content: center; padding: 12px; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-outline { background: none; border: 1px solid var(--border); color: var(--text); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
 
-/* Mapa */
-.mapa-container { margin-bottom: 30px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-.mapa-container iframe { width: 100%; height: 350px; border: 0; }
+        /* PUBLIC SITE */
+        .public-site { display: none; background: white; min-height: 100vh; }
+        .public-nav { background: white; border-bottom: 1px solid var(--border); padding: 16px 32px;
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .public-nav h2 { font-size: 18px; font-weight: 700; color: var(--primary); }
 
-/* Área Admin */
-.admin-upload-area { background: #f0f9ff; border: 2px dashed #3b82f6; border-radius: 12px; padding: 24px; margin: 20px 0; }
-.admin-upload-area h3 { color: #1e40af; margin-bottom: 16px; }
-</style>
+        /* APP */
+        .app-container { display: none; height: 100vh; overflow: hidden; }
+        .sidebar { width: 260px; background: white; border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+        .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); }
+        .sidebar-logo { font-size: 18px; font-weight: 700; color: var(--primary); }
+        .sidebar-logo p { font-size: 12px; color: var(--text-light); font-weight: 400; margin-top: 4px; }
+        .sidebar-user { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary);
+            color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; }
+        .user-info { flex: 1; min-width: 0; }
+        .user-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-role { font-size: 12px; color: var(--text-light); }
+        .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; cursor: pointer;
+            color: var(--text-light); font-size: 14px; font-weight: 500; transition: all 0.2s; border: none; background: none; width: 100%; }
+        .nav-item:hover { background: var(--bg); color: var(--text); }
+        .nav-item.active { background: var(--primary-light); color: var(--primary); }
+        .nav-item i { width: 18px; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid var(--border); }
+        .main-content { flex: 1; margin-left: 260px; display: flex; flex-direction: column; height: 100vh; }
+        .top-header { height: 64px; background: white; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 50; }
+        .content-area { flex: 1; padding: 24px; overflow-y: auto; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* STATS */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .stat-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+        .stat-header { display: flex; justify-content: space-between; align-items: center; }
+        .stat-value { font-size: 32px; font-weight: 700; }
+        .stat-label { font-size: 14px; color: var(--text-light); margin-top: 4px; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .stat-icon.blue { background: #dbeafe; color: #2563eb; }
+        .stat-icon.green { background: #d1fae5; color: #10b981; }
+        .stat-icon.yellow { background: #fef3c7; color: #f59e0b; }
+        .stat-icon.gray { background: #f1f5f9; color: #64748b; }
+
+        /* KANBAN */
+        .kanban-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
+        .kanban-col-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 12px 16px;
+            background: white; border-radius: 10px; box-shadow: var(--shadow); }
+        .kanban-drop { min-height: 200px; display: flex; flex-direction: column; gap: 10px; }
+        .kanban-card { background: white; border-radius: 8px; padding: 14px; box-shadow: var(--shadow);
+            border: 1px solid var(--border); cursor: grab; transition: all 0.2s; }
+        .kanban-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+        .kanban-card.dragging { opacity: 0.4; }
+
+        /* FILTER BTNS */
+        .filter-btn { padding: 8px 16px; border: 1px solid var(--border); border-radius: 20px;
+            background: white; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* MODAL */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
+            display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; border-radius: 16px; padding: 32px; width: 100%; max-width: 480px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .modal-title { font-size: 18px; font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-light); }
+        .modal-footer { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+
+        /* NOTIFICATION */
+        .notification { position: fixed; bottom: 24px; right: 24px; padding: 14px 20px; border-radius: 10px;
+            color: white; font-weight: 500; transform: translateX(200%); transition: transform 0.3s; z-index: 9999; }
+        .notification.show { transform: translateX(0); }
+        .notification.success { background: var(--success); }
+        .notification.error { background: var(--danger); }
+        .notification.info { background: var(--info); }
+
+        /* LOADING */
+        .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* TEAM */
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; }
+            .kanban-board { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
 
-<!-- LOGIN PAGE -->
+<!-- ==================== LOGIN PAGE ==================== -->
 <div id="loginPage" class="login-page">
-    <div class="login-container">
-        <div class="login-box">
-            <div class="login-logo">
-                <i class="fas fa-landmark"></i>
-                <h1>4º Ofício de Notas</h1>
-                <p>Barra Mansa - RJ</p>
-            </div>
-            
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('login')">Entrar</button>
-                <button class="tab" onclick="switchTab('register')">Cadastrar</button>
-            </div>
-            
-            <form id="loginForm" onsubmit="handleLogin(event)">
+    <div class="login-box">
+        <div class="login-logo">
+            <i class="fas fa-university"></i>
+            <h1>Cartório 4º Ofício</h1>
+            <p>Sistema de Gestão</p>
+        </div>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('login')">Entrar</button>
+            <button class="tab" onclick="switchTab('register')">Cadastrar</button>
+        </div>
+        <div id="loginForm">
+            <form onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-input" id="loginEmail" value="admin@4oficio.com" placeholder="seu@email.com" required>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Senha</label>
                     <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="loginBtn">
-                    <i class="fas fa-sign-in-alt"></i>
-                    <span>Entrar</span>
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
                 </button>
             </form>
-            
-            <form id="registerForm" onsubmit="handleRegister(event)" style="display:none;">
+        </div>
+        <div id="registerForm" style="display:none;">
+            <form onsubmit="handleRegister(event)">
                 <div class="form-group">
                     <label class="form-label">Nome Completo</label>
-                    <input type="text" class="form-input" id="regName" placeholder="Seu nome" required>
+                    <input type="text" class="form-input" id="regName" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-input" id="regEmail" placeholder="seu@email.com" required>
+                    <input type="email" class="form-input" id="regEmail" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Senha</label>
-                    <input type="password" class="form-input" id="regPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    <input type="password" class="form-input" id="regPassword" minlength="6" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Tipo de Conta</label>
-                    <select class="form-select" id="regType">
+                    <label class="form-label">Tipo de Usuário</label>
+                    <select class="form-input" id="registerType" onchange="toggleOABField()">
                         <option value="cliente">Cliente</option>
                         <option value="advogado">Advogado</option>
+                        <option value="admin">Administrador</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="registerBtn">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Cadastrar</span>
+                <div id="oabField" style="display:none;" class="form-group">
+                    <label class="form-label">Número OAB</label>
+                    <input type="text" class="form-input" id="registerOab" placeholder="RJ123456">
+                </div>
+                <button type="submit" class="btn btn-primary" id="registerBtn">
+                    <i class="fas fa-user-plus"></i> Cadastrar
                 </button>
             </form>
-            
-            <div class="login-footer">
-                <p>Ou acesse o <a href="#" onclick="enterPublicSite(); return false;">site público</a></p>
-            </div>
         </div>
     </div>
 </div>
 
-<!-- PUBLIC SITE -->
-<div id="publicSite" class="public-site" style="display:none;">
-    <nav class="public-nav">
-        <div class="logo">
-            <div class="logo-icon"><i class="fas fa-landmark"></i></div>
-            <span>4º Ofício</span>
-        </div>
-        <div class="public-nav-links">
-            <a href="#inicio">Início</a>
-            <a href="#servicos">Serviços</a>
-            <a href="#requerimentos">Requerimentos</a>
-            <a href="#contato">Contato</a>
-        </div>
-      <a href="#" class="btn" onclick="showLoginModal(); return false;">
-    <i class="fas fa-lock"></i> Área Restrita
-</a>
-    </nav>
-    
-    <section class="public-hero" id="inicio">
-        <h1>Cartório do 4º Ofício<br>e Registro de Imóveis</h1>
-        <p>Barra Mansa - Rio de Janeiro</p>
-        <p style="font-size:16px;margin-top:16px;opacity:0.8;">Excelência e tradição no serviço notarial e de registro</p>
-    </section>
-    
-    <!-- ACESSO RÁPIDO COM LINKS -->
-    <section class="acesso-rapido" id="servicos">
-        <div class="public-content">
-            <h2 class="section-title"><i class="fas fa-bolt" style="color:#f59e0b;"></i> Acesso Rápido</h2>
-            <div class="acesso-grid">
-                
-                <a href="https://ridigital.org.br/CertidaoDigital/frmPedidosCertidao.aspx?from=menu&digital=1" target="_blank" class="acesso-card">
-                    <i class="fas fa-certificate" style="color:#3b82f6;"></i>
-                    <h3>Pedido de Certidão Online</h3>
-                    <p>Solicite certidões de forma rápida e digital</p>
-                    <span style="color:#3b82f6;">Acessar →</span>
-                </a>
-                
-                <a href="https://ridigital.org.br/eProtocolo/DefaultAC.aspx" target="_blank" class="acesso-card">
-                    <i class="fas fa-file-alt" style="color:#10b981;"></i>
-                    <h3>E-Protocolo</h3>
-                    <p>Acompanhe seus protocolos eletrônicos</p>
-                    <span style="color:#10b981;">Acessar →</span>
-                </a>
-                
-                <a href="https://ridigital.org.br/VisualizarMatricula/DefaultVM.aspx?from=menu" target="_blank" class="acesso-card">
-                    <i class="fas fa-home" style="color:#f59e0b;"></i>
-                    <h3>Visualização de Matrícula</h3>
-                    <p>Consulte matrículas de imóveis online</p>
-                    <span style="color:#f59e0b;">Acessar →</span>
-                </a>
-                
-                <a href="https://ridigital.org.br/CE/DefaultCE.aspx" target="_blank" class="acesso-card">
-                    <i class="fas fa-search" style="color:#8b5cf6;"></i>
-                    <h3>Pesquisa Qualificada</h3>
-                    <p>Realize pesquisas certificadas</p>
-                    <span style="color:#8b5cf6;">Acessar →</span>
-                </a>
-                
-            </div>
-        </div>
-    </section>
-    
-    <!-- MAPA E HORÁRIO -->
-    <section style="padding:60px 32px;background:#f8fafc;" id="contato">
-        <div class="public-content">
-            <h2 class="section-title">Localização e Horário</h2>
-            
-            <!-- MAPA DO GOOGLE -->
-            <div class="mapa-container">
-                <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3684.5789!2d-44.1715!3d-22.6642!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9c69e7e5f5e5e5e5%3A0x5e5e5e5e5e5e5e5e!2sR.%20Nilo%20Pe%C3%A7anha%2C%205%20-%20Centro%2C%20Barra%20Mansa%20-%20RJ%2C%2027310-190!5e0!3m2!1spt-BR!2sbr!4v1234567890"
-                    allowfullscreen="" 
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade">
-                </iframe>
-            </div>
-            
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">
-                <div class="board-card" style="padding:24px;">
-                    <div id="status-badge" style="display:inline-block;padding:8px 16px;border-radius:20px;font-weight:600;margin-bottom:16px;background:#d1fae5;color:#065f46;">
-                        🟢 Aberto Agora
-                    </div>
-                    <h3 style="font-size:20px;margin-bottom:8px;">Segunda a Sexta</h3>
-                    <p style="font-size:32px;font-weight:700;color:var(--primary);margin-bottom:8px;">09:00 às 17:00</p>
-                    <p style="color:var(--text-light);">Exceto feriados municipais e estaduais</p>
-                </div>
-                
-                <div class="board-card" style="padding:24px;">
-                    <h3 style="font-size:20px;margin-bottom:16px;"><i class="fas fa-map-marker-alt" style="color:var(--primary);"></i> Endereço</h3>
-                    <p style="margin-bottom:8px;"><strong>R. Nilo Peçanha, nº 5 - Centro</strong></p>
-                    <p style="color:var(--text-light);margin-bottom:16px;">Barra Mansa - RJ, 27310-190</p>
-                    
-                    <h4 style="margin-bottom:8px;"><i class="fas fa-phone" style="color:var(--primary);"></i> Contato</h4>
-                    <p style="margin-bottom:4px;">(24) 3323-0620</p>
-                    <p style="color:var(--text-light);">(24) 98882-6353</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- REQUERIMENTOS -->
-    <section style="padding:60px 32px;" id="requerimentos">
-        <div class="public-content">
-            <h2 class="section-title">Requerimentos</h2>
-            
-            <!-- ÁREA DO ADMIN - Upload de Arquivos -->
-            <div id="adminUploadSection"></div>
-            
-            <div class="boards-grid">
-                <div class="board-card" style="padding:24px;text-align:center;">
-                    <i class="fas fa-home" style="font-size:32px;color:var(--primary);margin-bottom:12px;"></i>
-                    <h3>Escritura de Compra e Venda</h3>
-                    <p style="color:var(--text-light);margin:12px 0;">Download do requerimento em PDF</p>
-                    <button class="btn btn-primary" style="width:100%;" onclick="downloadRequirement('escritura')">
-                        <i class="fas fa-download"></i> Baixar PDF
-                    </button>
-                </div>
-                
-                <div class="board-card" style="padding:24px;text-align:center;">
-                    <i class="fas fa-heart-broken" style="font-size:32px;color:var(--primary);margin-bottom:12px;"></i>
-                    <h3>Divórcio / Dissolução</h3>
-                    <p style="color:var(--text-light);margin:12px 0;">Download do requerimento em PDF</p>
-                    <button class="btn btn-primary" style="width:100%;" onclick="downloadRequirement('divorcio')">
-                        <i class="fas fa-download"></i> Baixar PDF
-                    </button>
-                </div>
-                
-                <div class="board-card" style="padding:24px;text-align:center;">
-                    <i class="fas fa-file-signature" style="font-size:32px;color:var(--primary);margin-bottom:12px;"></i>
-                    <h3>Procuração</h3>
-                    <p style="color:var(--text-light);margin:12px 0;">Download do requerimento em PDF</p>
-                    <button class="btn btn-primary" style="width:100%;" onclick="downloadRequirement('procuracao')">
-                        <i class="fas fa-download"></i> Baixar PDF
-                    </button>
-                </div>
-                
-                <div class="board-card" style="padding:24px;text-align:center;">
-                    <i class="fas fa-map-marked-alt" style="font-size:32px;color:var(--primary);margin-bottom:12px;"></i>
-                    <h3>Usucapião</h3>
-                    <p style="color:var(--text-light);margin:12px 0;">Download do requerimento em PDF</p>
-                    <button class="btn btn-primary" style="width:100%;" onclick="downloadRequirement('usucapiao')">
-                        <i class="fas fa-download"></i> Baixar PDF
-                    </button>
-
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- FOOTER -->
-    <footer class="public-footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>4º Ofício de Notas</h4>
-                <p>Cartório de Notas e Registro de Imóveis de Barra Mansa/RJ</p>
-                <p>Excelência e tradição desde 1890</p>
-            </div>
-            
-            <div class="footer-section">
-                <h4>Contato</h4>
-                <p><i class="fas fa-phone"></i> (24) 3323-0620</p>
-                <p><i class="fas fa-envelope"></i> 4oficiobm@gmail.com</p>
-                <p><i class="fas fa-map-marker-alt"></i> R. Nilo Peçanha, 5 - Centro</p>
-            </div>
-            
-            <div class="footer-section">
-                <h4>Links Úteis</h4>
-                <p><a href="https://www.cnj.jus.br" target="_blank">CNJ - Conselho Nacional de Justiça</a></p>
-                <p><a href="https://www.tjrj.jus.br" target="_blank">TJ/RJ - Tribunal de Justiça</a></p>
-                <p><a href="https://www.arpensp.org.br" target="_blank">ARPEN-SP</a></p>
-            </div>
-            
-            <div class="footer-section">
-                <h4>Horário de Funcionamento</h4>
-                <p>Segunda a Sexta: 09h às 17h</p>
-                <p>Sábado, Domingo e Feriados: Fechado</p>
-            </div>
-        </div>
-        
-        <div style="text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid #334155;color:#94a3b8;font-size:14px;">
-            <p>&copy; 2026 4º Ofício de Notas e Registro de Imóveis de Barra Mansa/RJ. Todos os direitos reservados.</p>
-        </div>
-    </footer>
-</div>
-
-<!-- APP CONTAINER (Área Restrita) -->
+<!-- ==================== APP ==================== -->
 <div id="appContainer" class="app-container" style="display:none;">
-    <!-- SIDEBAR -->
+
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <div class="logo-icon"><i class="fas fa-landmark"></i></div>
-                <span>4º Ofício</span>
+            <div class="sidebar-logo">
+                <i class="fas fa-university"></i> 4º Ofício
+                <p>Cartório de Registro</p>
             </div>
         </div>
-        
-        <div class="user-info">
-            <div class="user-avatar" id="userAvatar">RS</div>
-            <div class="user-name" id="userName">Raphael Souza</div>
-            <div class="user-role" id="userRole">Administrador</div>
+        <div class="sidebar-user">
+            <div class="user-avatar" id="userAvatar">--</div>
+            <div class="user-info">
+                <div class="user-name" id="userName">Carregando...</div>
+                <div class="user-role" id="userRole">...</div>
+            </div>
         </div>
-        
-        <nav class="nav-menu">
-            <div class="nav-section">
-                <div class="nav-section-title">Menu Principal</div>
-                <a href="#" class="nav-item active" onclick="showPage('dashboard'); return false;">
-                    <i class="fas fa-chart-line"></i> Dashboard
-                </a>
-                <a href="#" class="nav-item" onclick="showPage('boards'); return false;">
-                    <i class="fas fa-columns"></i> Quadros
-                </a>
-                <a href="#" class="nav-item" onclick="showPage('cases'); return false;">
-                    <i class="fas fa-briefcase"></i> Casos
-                </a>
-                <a href="#" class="nav-item" onclick="showPage('team'); return false;">
-                    <i class="fas fa-users"></i> Equipe
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-section-title">Configurações</div>
-                <a href="#" class="nav-item" onclick="showPage('profile'); return false;">
-                    <i class="fas fa-user"></i> Meu Perfil
-                </a>
-                <a href="#" class="nav-item" onclick="showPage('settings'); return false;">
-                    <i class="fas fa-cog"></i> Configurações
-                </a>
-            </div>
+        <nav class="sidebar-nav">
+            <button class="nav-item active" onclick="showPage('dashboard')">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </button>
+            <button class="nav-item" onclick="showPage('boards')">
+                <i class="fas fa-columns"></i> Quadros
+            </button>
+            <button class="nav-item" onclick="showPage('cases')">
+                <i class="fas fa-briefcase"></i> Casos
+            </button>
+            <button class="nav-item" onclick="showPage('team')">
+                <i class="fas fa-users"></i> Equipe
+            </button>
+            <button class="nav-item" onclick="showPage('profile')">
+                <i class="fas fa-user"></i> Meu Perfil
+            </button>
+            <button class="nav-item" onclick="showPage('settings')">
+                <i class="fas fa-cog"></i> Configurações
+            </button>
         </nav>
-        
         <div class="sidebar-footer">
             <button class="btn btn-outline" style="width:100%;" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i> Sair
             </button>
         </div>
     </aside>
-    
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
-        <!-- TOP HEADER -->
+
+    <div class="main-content">
         <header class="top-header">
-            <div class="breadcrumb">
-                <span id="pageTitle">Dashboard</span>
-            </div>
-            <div class="header-actions">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Buscar...">
-                </div>
-                <button class="btn btn-primary" onclick="openModal('newCase')">
-                    <i class="fas fa-plus"></i> Novo Caso
-                </button>
-            </div>
+            <span id="pageTitle" style="font-weight:600;">Dashboard</span>
+            <button class="btn btn-primary" onclick="openModal('newCase')">
+                <i class="fas fa-plus"></i> Novo Caso
+            </button>
         </header>
-        
-        <!-- CONTENT AREA -->
+
         <div class="content-area">
-            <!-- DASHBOARD PAGE -->
+
+            <!-- DASHBOARD -->
             <div id="page-dashboard" class="page active">
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div>
-                                <div class="stat-value" id="totalCases">0</div>
-                                <div class="stat-label">Total de Casos</div>
-                            </div>
+                            <div><div class="stat-value" id="totalCases">0</div><div class="stat-label">Total de Casos</div></div>
                             <div class="stat-icon blue"><i class="fas fa-briefcase"></i></div>
                         </div>
                     </div>
-                    
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div>
-                                <div class="stat-value" id="activeCases">0</div>
-                                <div class="stat-label">Casos Ativos</div>
-                            </div>
-                            <div class="stat-icon green"><i class="fas fa-play-circle"></i></div>
+                            <div><div class="stat-value" id="activeCases">0</div><div class="stat-label">Casos Ativos</div></div>
+                            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
                         </div>
                     </div>
-                    
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div>
-                                <div class="stat-value" id="pendingCases">0</div>
-                                <div class="stat-label">Aguardando</div>
-                            </div>
+                            <div><div class="stat-value" id="pendingCases">0</div><div class="stat-label">Aguardando</div></div>
                             <div class="stat-icon yellow"><i class="fas fa-clock"></i></div>
                         </div>
                     </div>
-                    
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div>
-                                <div class="stat-value" id="completedCases">0</div>
-                                <div class="stat-label">Concluídos</div>
-                            </div>
-                            <div class="stat-icon red"><i class="fas fa-check-circle"></i></div>
+                            <div><div class="stat-value" id="completedCases">0</div><div class="stat-label">Concluídos</div></div>
+                            <div class="stat-icon gray"><i class="fas fa-archive"></i></div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="boards-grid" id="dashboardBoards">
-                    <!-- Boards serão carregados dinamicamente -->
+                <div id="dashboardBoards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;"></div>
+            </div>
+
+            <!-- BOARDS / KANBAN -->
+            <div id="page-boards" class="page">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                    <div>
+                        <h2 style="font-size:20px;font-weight:700;">Quadro de Casos</h2>
+                        <p style="color:var(--text-light);font-size:14px;margin-top:4px;">Arraste os cards para atualizar o status</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="openModal('newCase')">
+                        <i class="fas fa-plus"></i> Novo Caso
+                    </button>
+                </div>
+                <div class="kanban-board">
+                    <div>
+                        <div class="kanban-col-header" style="border-top:4px solid #3b82f6;">
+                            <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;display:inline-block;"></span>
+                            <span style="font-weight:600;font-size:14px;">Iniciado</span>
+                            <span id="count-iniciado" style="margin-left:auto;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+                        </div>
+                        <div id="col-iniciado" class="kanban-drop" ondragover="allowDrop(event)" ondrop="dropCard(event,'iniciado')"></div>
+                    </div>
+                    <div>
+                        <div class="kanban-col-header" style="border-top:4px solid #f59e0b;">
+                            <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+                            <span style="font-weight:600;font-size:14px;">Pendente</span>
+                            <span id="count-pendente" style="margin-left:auto;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+                        </div>
+                        <div id="col-pendente" class="kanban-drop" ondragover="allowDrop(event)" ondrop="dropCard(event,'pendente')"></div>
+                    </div>
+                    <div>
+                        <div class="kanban-col-header" style="border-top:4px solid #10b981;">
+                            <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span>
+                            <span style="font-weight:600;font-size:14px;">Ativo</span>
+                            <span id="count-ativo" style="margin-left:auto;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+                        </div>
+                        <div id="col-ativo" class="kanban-drop" ondragover="allowDrop(event)" ondrop="dropCard(event,'ativo')"></div>
+                    </div>
+                    <div>
+                        <div class="kanban-col-header" style="border-top:4px solid #6b7280;">
+                            <span style="width:10px;height:10px;border-radius:50%;background:#6b7280;display:inline-block;"></span>
+                            <span style="font-weight:600;font-size:14px;">Concluído</span>
+                            <span id="count-concluido" style="margin-left:auto;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+                        </div>
+                        <div id="col-concluido" class="kanban-drop" ondragover="allowDrop(event)" ondrop="dropCard(event,'concluido')"></div>
+                    </div>
                 </div>
             </div>
-            
-            <!-- BOARDS PAGE -->
-<div id="page-boards" class="page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-        <div>
-            <h2 style="font-size:20px;font-weight:700;">Quadro de Casos</h2>
-            <p style="color:var(--text-light);font-size:14px;margin-top:4px;">Gerencie os casos por status</p>
-        </div>
-        <button class="btn btn-primary" onclick="openModal('newCase')">
-            <i class="fas fa-plus"></i> Novo Caso
-        </button>
-    </div>
-    <div id="kanbanBoard" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;">
-        <div class="kanban-col">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
-                 background:white;border-radius:10px;border-top:4px solid #3b82f6;box-shadow:var(--shadow);">
-                <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;display:inline-block;"></span>
-                <span style="font-weight:600;font-size:14px;">Iniciado</span>
-                <span id="count-iniciado" style="margin-left:auto;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+
+            <!-- CASES -->
+            <div id="page-cases" class="page">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                    <h2 style="font-size:20px;font-weight:700;">Casos</h2>
+                    <button class="btn btn-primary" onclick="openModal('newCase')">
+                        <i class="fas fa-plus"></i> Novo Caso
+                    </button>
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+                    <button class="filter-btn active" onclick="filterCases('all', event)">Todos</button>
+                    <button class="filter-btn" onclick="filterCases('iniciado', event)">Iniciado</button>
+                    <button class="filter-btn" onclick="filterCases('pendente', event)">Pendente</button>
+                    <button class="filter-btn" onclick="filterCases('ativo', event)">Ativo</button>
+                    <button class="filter-btn" onclick="filterCases('concluido', event)">Concluído</button>
+                </div>
+                <div id="casesList"></div>
             </div>
-            <div id="col-iniciado" ondragover="allowDrop(event)" ondrop="dropCard(event,'iniciado')"
-                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;"></div>
-        </div>
-        <div class="kanban-col">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
-                 background:white;border-radius:10px;border-top:4px solid #f59e0b;box-shadow:var(--shadow);">
-                <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
-                <span style="font-weight:600;font-size:14px;">Pendente</span>
-                <span id="count-pendente" style="margin-left:auto;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+
+            <!-- TEAM -->
+            <div id="page-team" class="page">
+                <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Equipe</h2>
+                <div id="teamList" class="team-grid"></div>
             </div>
-            <div id="col-pendente" ondragover="allowDrop(event)" ondrop="dropCard(event,'pendente')"
-                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;"></div>
-        </div>
-        <div class="kanban-col">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
-                 background:white;border-radius:10px;border-top:4px solid #10b981;box-shadow:var(--shadow);">
-                <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span>
-                <span style="font-weight:600;font-size:14px;">Ativo</span>
-                <span id="count-ativo" style="margin-left:auto;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+
+            <!-- PROFILE -->
+            <div id="page-profile" class="page">
+                <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Meu Perfil</h2>
+                <div style="background:white;border-radius:12px;padding:24px;border:1px solid var(--border);max-width:500px;">
+                    <form onsubmit="updateProfile(event)">
+                        <div class="form-group">
+                            <label class="form-label">Nome Completo</label>
+                            <input type="text" class="form-input" id="profileName">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="profileEmail" readonly style="background:#f8fafc;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telefone</label>
+                            <input type="tel" class="form-input" id="profilePhone" placeholder="(24) 99999-9999">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Alterações
+                        </button>
+                    </form>
+                </div>
             </div>
-            <div id="col-ativo" ondragover="allowDrop(event)" ondrop="dropCard(event,'ativo')"
-                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;"></div>
-        </div>
-        <div class="kanban-col">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;
-                 background:white;border-radius:10px;border-top:4px solid #6b7280;box-shadow:var(--shadow);">
-                <span style="width:10px;height:10px;border-radius:50%;background:#6b7280;display:inline-block;"></span>
-                <span style="font-weight:600;font-size:14px;">Concluído</span>
-                <span id="count-concluido" style="margin-left:auto;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;">0</span>
+
+            <!-- SETTINGS -->
+            <div id="page-settings" class="page">
+                <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Configurações</h2>
+                <div style="background:white;border-radius:12px;padding:24px;border:1px solid var(--border);max-width:500px;">
+                    <h3 style="margin-bottom:16px;font-size:16px;">Notificações</h3>
+                    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;">
+                            <input type="checkbox" checked> Receber notificações por email
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;">
+                            <input type="checkbox" checked> Notificar novos casos
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;">
+                            <input type="checkbox"> Notificar atualizações de status
+                        </label>
+                    </div>
+                    <h3 style="margin-bottom:16px;font-size:16px;">Segurança</h3>
+                    <button class="btn btn-outline" onclick="changePassword()">
+                        <i class="fas fa-lock"></i> Alterar Senha
+                    </button>
+                </div>
             </div>
-            <div id="col-concluido" ondragover="allowDrop(event)" ondrop="dropCard(event,'concluido')"
-                 style="min-height:200px;display:flex;flex-direction:column;gap:10px;"></div>
+
         </div>
     </div>
 </div>
-
-<!-- CASES PAGE -->
-<div id="page-cases" class="page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-        <h2 style="font-size:20px;font-weight:700;">Casos</h2>
-        <button class="btn btn-primary" onclick="openModal('newCase')">
-            <i class="fas fa-plus"></i> Novo Caso
-        </button>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
-        <button class="filter-btn active" onclick="filterCases('all')">Todos</button>
-        <button class="filter-btn" onclick="filterCases('iniciado')">Iniciado</button>
-        <button class="filter-btn" onclick="filterCases('pendente')">Pendente</button>
-        <button class="filter-btn" onclick="filterCases('ativo')">Ativo</button>
-        <button class="filter-btn" onclick="filterCases('concluido')">Concluído</button>
-    </div>
-    <div id="casesList"></div>
-</div>
-
-<!-- TEAM PAGE -->
-<div id="page-team" class="page">
-    <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Equipe</h2>
-    <div id="teamList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;"></div>
-</div>
-
-<!-- PROFILE PAGE -->
-<div id="page-profile" class="page">
-    <div class="case-detail-header" style="margin-bottom:24px;">
-        <h2 class="case-detail-title">Meu Perfil</h2>
-        <p class="case-detail-meta">Gerencie suas informações pessoais</p>
-    </div>
-    <div class="board-card" style="padding:24px;">
-        <form onsubmit="updateProfile(event)">
-            <div class="form-group">
-                <label class="form-label">Nome Completo</label>
-                <input type="text" class="form-input" id="profileName">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="profileEmail" readonly>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Telefone</label>
-                <input type="tel" class="form-input" id="profilePhone" placeholder="(24) 99999-9999">
-            </div>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Salvar Alterações
-            </button>
-        </form>
-    </div>
-</div>
-
-<!-- SETTINGS PAGE -->
-<div id="page-settings" class="page">
-    <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Configurações</h2>
-    <div class="board-card" style="padding:24px;">
-        <h3 style="margin-bottom:16px;">Notificações</h3>
-        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px;">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="checkbox" checked> Receber notificações por email
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="checkbox" checked> Notificar novos casos
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="checkbox"> Notificar atualizações de casos
-            </label>
-        </div>
-        <h3 style="margin:24px 0 16px;">Segurança</h3>
-        <button class="btn btn-outline" onclick="changePassword()">
-            <i class="fas fa-lock"></i> Alterar Senha
-        </button>
-    </div>
-</div>
-
-</div></div></main></div>
 
 <!-- MODAL -->
 <div id="modalOverlay" class="modal-overlay" onclick="closeModal(event)">
-    <div id="modal-newCase" class="modal" style="display:none;">
+    <div id="modal-newCase" class="modal">
         <div class="modal-header">
             <h3 class="modal-title">Novo Caso</h3>
-            <button class="modal-close" onclick="closeModal(event)">
-                <i class="fas fa-times"></i>
-            </button>
+            <button class="modal-close" onclick="closeModal(event)"><i class="fas fa-times"></i></button>
         </div>
         <form id="newCaseForm">
             <div class="form-group">
@@ -549,8 +421,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Descrição</label>
-                <textarea class="form-input" id="caseDescription" rows="3"
-                    placeholder="Detalhes do caso..." style="resize:vertical;"></textarea>
+                <textarea class="form-input" id="caseDescription" rows="3" style="resize:vertical;" placeholder="Detalhes do caso..."></textarea>
             </div>
             <div class="form-group">
                 <label class="form-label">Status Inicial</label>
@@ -572,118 +443,97 @@
 </div>
 
 <!-- NOTIFICATION -->
-<div id="notification" class="notification">
-    <span id="notificationText"></span>
-</div>
+<div id="notification" class="notification"><span id="notificationText"></span></div>
 
+<!-- SCRIPTS -->
 <script src="js/auth.js"></script>
 <script src="js/admin.js"></script>
-
 <script>
-// ==================== TABS ====================
+
+// ===== TABS =====
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    if (event?.target) event.target.classList.add('active');
+    event.target.classList.add('active');
     document.getElementById('loginForm').style.display    = tab === 'login' ? 'block' : 'none';
     document.getElementById('registerForm').style.display = tab === 'login' ? 'none'  : 'block';
 }
 
 function toggleOABField() {
-    const field = document.getElementById('oabField');
-    const type  = document.getElementById('registerType')?.value;
+    var field = document.getElementById('oabField');
+    var type  = document.getElementById('registerType').value;
     if (field) field.style.display = type === 'advogado' ? 'block' : 'none';
 }
 
-function showLoginModal() {
-    document.getElementById('publicSite').style.display = 'none';
-    document.getElementById('loginPage').style.display  = 'flex';
-}
-
-function closeLoginModal() {
-    document.getElementById('loginPage').style.display  = 'none';
-    document.getElementById('publicSite').style.display = 'block';
-}
-
-function enterPublicSite() {
-    document.getElementById('loginPage').style.display    = 'none';
-    document.getElementById('publicSite').style.display   = 'block';
-    document.getElementById('appContainer').style.display = 'none';
-}
-
-function backToLogin() {
-    document.getElementById('publicSite').style.display = 'none';
-    document.getElementById('loginPage').style.display  = 'flex';
-}
-
+// ===== NAVEGAÇÃO =====
 function showPage(pageName) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const page = document.getElementById('page-' + pageName);
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+    var page = document.getElementById('page-' + pageName);
     if (page) page.classList.add('active');
-    if (event?.target?.closest?.('.nav-item'))
-        event.target.closest('.nav-item').classList.add('active');
-    const titles = {
-        dashboard:'Dashboard', boards:'Quadros', cases:'Casos',
-        team:'Equipe', profile:'Meu Perfil', settings:'Configurações'
-    };
-    const t = document.getElementById('pageTitle');
+    if (event && event.target) event.target.classList.add('active');
+    var titles = { dashboard:'Dashboard', boards:'Quadros', cases:'Casos', team:'Equipe', profile:'Meu Perfil', settings:'Configurações' };
+    var t = document.getElementById('pageTitle');
     if (t) t.textContent = titles[pageName] || pageName;
 }
 
-// ==================== LOGIN ====================
+// ===== LOGIN =====
 async function handleLogin(event) {
     event.preventDefault();
-    const btn  = document.getElementById('loginBtn');
-    const orig = btn.innerHTML;
+    var btn  = document.getElementById('loginBtn');
+    var orig = btn.innerHTML;
     btn.innerHTML = '<span class="loading"></span> Entrando...';
     btn.disabled  = true;
 
-    if (!window.Auth?.login) {
-        showNotification('Sistema não carregado.', 'error');
+    if (!window.Auth || !window.Auth.login) {
+        showNotification('Sistema não carregado. Aguarde.', 'error');
         btn.innerHTML = orig; btn.disabled = false; return;
     }
 
-    const { user, profile, error } = await window.Auth.login(
+    var result = await window.Auth.login(
         document.getElementById('loginEmail').value,
         document.getElementById('loginPassword').value
     );
 
-    if (error) {
+    if (result.error) {
         showNotification('Email ou senha incorretos.', 'error');
         btn.innerHTML = orig; btn.disabled = false; return;
     }
 
     document.getElementById('loginPage').style.display    = 'none';
-    document.getElementById('publicSite').style.display   = 'none';
     document.getElementById('appContainer').style.display = 'flex';
 
-    const un = document.getElementById('userName');
-    const ur = document.getElementById('userRole');
-    const ua = document.getElementById('userAvatar');
-    if (un) un.textContent = profile?.name || user.email;
-    if (ur) ur.textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
-    if (ua) ua.textContent = (profile?.name || user.email).substring(0,2).toUpperCase();
+    var un = document.getElementById('userName');
+    var ur = document.getElementById('userRole');
+    var ua = document.getElementById('userAvatar');
+    var pn = document.getElementById('profileName');
+    var pe = document.getElementById('profileEmail');
+    if (un) un.textContent = result.profile.name || result.user.email;
+    if (ur) ur.textContent = result.profile.role === 'admin' ? 'Administrador' : 'Usuário';
+    if (ua) ua.textContent = (result.profile.name || result.user.email).substring(0,2).toUpperCase();
+    if (pn) pn.value = result.profile.name || '';
+    if (pe) pe.value = result.user.email || '';
 
     showNotification('Bem-vindo! 🎉', 'success');
-    await loadDashboard();
+    loadDashboard();
 }
 
+// ===== REGISTRO =====
 async function handleRegister(event) {
     event.preventDefault();
-    const btn = document.getElementById('registerBtn');
+    var btn = document.getElementById('registerBtn');
     btn.innerHTML = '<span class="loading"></span> Cadastrando...';
     btn.disabled  = true;
 
-    const { error } = await window.Auth.register({
-        name:     document.getElementById('regName')?.value,
-        email:    document.getElementById('regEmail')?.value,
-        password: document.getElementById('regPassword')?.value,
-        role:     document.getElementById('regType')?.value || 'cliente',
-        oab:      document.getElementById('registerOab')?.value
+    var result = await window.Auth.register({
+        name:     document.getElementById('regName').value,
+        email:    document.getElementById('regEmail').value,
+        password: document.getElementById('regPassword').value,
+        role:     document.getElementById('registerType').value,
+        oab:      document.getElementById('registerOab') ? document.getElementById('registerOab').value : null
     });
 
-    if (error) {
-        showNotification('Erro: ' + error, 'error');
+    if (result.error) {
+        showNotification('Erro: ' + result.error, 'error');
         btn.innerHTML = 'Cadastrar'; btn.disabled = false; return;
     }
     showNotification('Cadastro realizado! Faça login.', 'success');
@@ -691,6 +541,7 @@ async function handleRegister(event) {
     btn.innerHTML = 'Cadastrar'; btn.disabled = false;
 }
 
+// ===== LOGOUT =====
 async function logout() {
     if (window.Auth) await window.Auth.logout();
     document.getElementById('appContainer').style.display = 'none';
@@ -698,17 +549,17 @@ async function logout() {
     showNotification('Sessão encerrada.', 'info');
 }
 
-// ==================== DASHBOARD ====================
+// ===== DASHBOARD =====
 async function loadDashboard() {
-    if (!window.Auth?.client) return;
-    const { data: cases } = await window.Auth.client.from('cases').select('*');
-    const all = cases || [];
+    if (!window.Auth || !window.Auth.client) return;
+    var res = await window.Auth.client.from('cases').select('*');
+    var all = res.data || [];
 
-    const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    function el(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
     el('totalCases',     all.length);
-    el('activeCases',    all.filter(c => c.status === 'ativo').length);
-    el('pendingCases',   all.filter(c => c.status === 'pendente').length);
-    el('completedCases', all.filter(c => c.status === 'concluido').length);
+    el('activeCases',    all.filter(function(c) { return c.status === 'ativo'; }).length);
+    el('pendingCases',   all.filter(function(c) { return c.status === 'pendente'; }).length);
+    el('completedCases', all.filter(function(c) { return c.status === 'concluido'; }).length);
 
     loadCasesList(all);
     loadBoardsList(all);
@@ -717,287 +568,235 @@ async function loadDashboard() {
 }
 
 function loadCasesList(cases) {
-    const c = document.getElementById('casesList');
+    var c = document.getElementById('casesList');
     if (!c) return;
     if (!cases.length) {
         c.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-light);"><i class="fas fa-folder-open" style="font-size:32px;margin-bottom:12px;display:block;opacity:0.4;"></i>Nenhum caso ainda.</div>';
         return;
     }
-    c.innerHTML = cases.map(x => `
-        <div style="padding:16px;margin-bottom:12px;background:white;border-radius:8px;
-             border:1px solid var(--border);display:flex;justify-content:space-between;
-             align-items:center;box-shadow:var(--shadow);">
-            <div>
-                <strong style="font-size:15px;">${x.title || 'Sem título'}</strong>
-                <p style="color:var(--text-light);font-size:13px;margin:4px 0 8px;">${x.description || ''}</p>
-                <span style="font-size:12px;background:${statusColor(x.status)};color:white;
-                      padding:3px 10px;border-radius:12px;font-weight:500;">${statusLabel(x.status)}</span>
-            </div>
-            <button onclick="deleteCase('${x.id}')"
-                style="background:none;color:#ef4444;border:1px solid #fecaca;padding:8px 12px;
-                       border-radius:6px;cursor:pointer;"
-                onmouseover="this.style.background='#ef4444';this.style.color='white'"
-                onmouseout="this.style.background='none';this.style.color='#ef4444'">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>`).join('');
+    c.innerHTML = cases.map(function(x) { return (
+        '<div style="padding:16px;margin-bottom:12px;background:white;border-radius:8px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow);">' +
+        '<div>' +
+        '<strong style="font-size:15px;">' + (x.title || 'Sem título') + '</strong>' +
+        '<p style="color:var(--text-light);font-size:13px;margin:4px 0 8px;">' + (x.description || '') + '</p>' +
+        '<span style="font-size:12px;background:' + statusColor(x.status) + ';color:white;padding:3px 10px;border-radius:12px;font-weight:500;">' + statusLabel(x.status) + '</span>' +
+        '</div>' +
+        '<button onclick="deleteCase(\'' + x.id + '\')" style="background:none;color:#ef4444;border:1px solid #fecaca;padding:8px 12px;border-radius:6px;cursor:pointer;">' +
+        '<i class="fas fa-trash"></i></button></div>'
+    ); }).join('');
 }
 
 function loadBoardsList(cases) {
-    const c = document.getElementById('dashboardBoards');
+    var c = document.getElementById('dashboardBoards');
     if (!c) return;
-    const cols = [
-        {key:'iniciado',label:'Iniciado',color:'#3b82f6'},
-        {key:'pendente',label:'Pendente',color:'#f59e0b'},
-        {key:'ativo',label:'Ativo',color:'#10b981'},
-        {key:'concluido',label:'Concluído',color:'#6b7280'}
+    var cols = [
+        { key:'iniciado', label:'Iniciado', color:'#3b82f6' },
+        { key:'pendente', label:'Pendente', color:'#f59e0b' },
+        { key:'ativo',    label:'Ativo',    color:'#10b981' },
+        { key:'concluido',label:'Concluído',color:'#6b7280' }
     ];
-    c.innerHTML = cols.map(col => {
-        const items = cases.filter(x => x.status === col.key);
-        return `
-        <div style="background:white;border-radius:8px;padding:16px;border:1px solid var(--border);box-shadow:var(--shadow);">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-                <span style="width:10px;height:10px;border-radius:50%;background:${col.color};display:inline-block;"></span>
-                <h3 style="font-size:14px;font-weight:600;">${col.label}</h3>
-                <span style="margin-left:auto;background:var(--bg);padding:2px 8px;border-radius:10px;font-size:12px;">${items.length}</span>
-            </div>
-            ${items.length
-                ? items.map(x => `<div style="padding:10px;background:var(--bg);border-radius:6px;margin-bottom:8px;font-size:13px;border-left:3px solid ${col.color};">${x.title}</div>`).join('')
-                : '<p style="color:var(--text-light);font-size:13px;text-align:center;padding:16px 0;">Nenhum caso</p>'
-            }
-        </div>`;
+    c.innerHTML = cols.map(function(col) {
+        var items = cases.filter(function(x) { return x.status === col.key; });
+        return '<div style="background:white;border-radius:8px;padding:16px;border:1px solid var(--border);box-shadow:var(--shadow);">' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">' +
+            '<span style="width:10px;height:10px;border-radius:50%;background:' + col.color + ';display:inline-block;"></span>' +
+            '<h3 style="font-size:14px;font-weight:600;">' + col.label + '</h3>' +
+            '<span style="margin-left:auto;background:var(--bg);padding:2px 8px;border-radius:10px;font-size:12px;">' + items.length + '</span></div>' +
+            (items.length
+                ? items.map(function(x) { return '<div style="padding:10px;background:var(--bg);border-radius:6px;margin-bottom:8px;font-size:13px;border-left:3px solid ' + col.color + ';">' + x.title + '</div>'; }).join('')
+                : '<p style="color:var(--text-light);font-size:13px;text-align:center;padding:16px 0;">Nenhum caso</p>') +
+            '</div>';
     }).join('');
 }
 
-// ==================== KANBAN ====================
-let draggedId = null;
+// ===== KANBAN =====
+var draggedId = null;
 
 function renderKanban(cases) {
-    ['iniciado','pendente','ativo','concluido'].forEach(status => {
-        const col   = document.getElementById('col-' + status);
-        const count = document.getElementById('count-' + status);
+    ['iniciado','pendente','ativo','concluido'].forEach(function(status) {
+        var col   = document.getElementById('col-' + status);
+        var count = document.getElementById('count-' + status);
         if (!col) return;
-        const items = cases.filter(c => c.status === status);
+        var items = cases.filter(function(c) { return c.status === status; });
         if (count) count.textContent = items.length;
         if (!items.length) {
-            col.innerHTML = `<div style="border:2px dashed var(--border);border-radius:8px;padding:24px;
-                text-align:center;color:var(--text-light);font-size:13px;">
-                <i class="fas fa-inbox" style="font-size:20px;margin-bottom:8px;display:block;"></i>Nenhum caso</div>`;
+            col.innerHTML = '<div style="border:2px dashed var(--border);border-radius:8px;padding:24px;text-align:center;color:var(--text-light);font-size:13px;"><i class="fas fa-inbox" style="font-size:20px;margin-bottom:8px;display:block;"></i>Nenhum caso</div>';
             return;
         }
-        col.innerHTML = items.map(c => `
-            <div class="kanban-card" draggable="true" id="card-${c.id}"
-                 ondragstart="dragStart(event,'${c.id}')" ondragend="dragEnd(event)"
-                 style="background:white;border-radius:8px;padding:14px;box-shadow:var(--shadow);
-                        border:1px solid var(--border);cursor:grab;border-left:4px solid ${statusColor(c.status)};">
-                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
-                    <strong style="font-size:14px;">${c.title}</strong>
-                    <button onclick="deleteCase('${c.id}')"
-                        style="background:none;border:none;color:#cbd5e1;cursor:pointer;padding:2px 4px;"
-                        onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                ${c.description ? `<p style="color:var(--text-light);font-size:12px;margin-bottom:10px;">${c.description}</p>` : ''}
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-                    <span style="font-size:11px;color:var(--text-light);">
-                        <i class="fas fa-calendar-alt"></i> ${new Date(c.created_at).toLocaleDateString('pt-BR')}
-                    </span>
-                    <select onchange="updateCaseStatus('${c.id}',this.value)"
-                        style="font-size:11px;border:1px solid var(--border);border-radius:4px;
-                               padding:2px 6px;cursor:pointer;background:var(--bg);">
-                        <option value="iniciado"  ${c.status==='iniciado' ?'selected':''}>Iniciado</option>
-                        <option value="pendente"  ${c.status==='pendente' ?'selected':''}>Pendente</option>
-                        <option value="ativo"     ${c.status==='ativo'    ?'selected':''}>Ativo</option>
-                        <option value="concluido" ${c.status==='concluido'?'selected':''}>Concluído</option>
-                    </select>
-                </div>
-            </div>`).join('');
+        col.innerHTML = items.map(function(c) {
+            return '<div class="kanban-card" draggable="true" id="card-' + c.id + '" ' +
+                'ondragstart="dragStart(event,\'' + c.id + '\')" ondragend="dragEnd(event)" ' +
+                'style="border-left:4px solid ' + statusColor(c.status) + ';">' +
+                '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">' +
+                '<strong style="font-size:14px;">' + c.title + '</strong>' +
+                '<button onclick="deleteCase(\'' + c.id + '\')" style="background:none;border:none;color:#cbd5e1;cursor:pointer;padding:2px 4px;" onmouseover="this.style.color=\'#ef4444\'" onmouseout="this.style.color=\'#cbd5e1\'"><i class="fas fa-times"></i></button>' +
+                '</div>' +
+                (c.description ? '<p style="color:var(--text-light);font-size:12px;margin-bottom:10px;">' + c.description + '</p>' : '') +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">' +
+                '<span style="font-size:11px;color:var(--text-light);"><i class="fas fa-calendar-alt"></i> ' + new Date(c.created_at).toLocaleDateString('pt-BR') + '</span>' +
+                '<select onchange="updateCaseStatus(\'' + c.id + '\',this.value)" style="font-size:11px;border:1px solid var(--border);border-radius:4px;padding:2px 6px;cursor:pointer;background:var(--bg);">' +
+                '<option value="iniciado"'  + (c.status==='iniciado'  ? ' selected' : '') + '>Iniciado</option>' +
+                '<option value="pendente"'  + (c.status==='pendente'  ? ' selected' : '') + '>Pendente</option>' +
+                '<option value="ativo"'     + (c.status==='ativo'     ? ' selected' : '') + '>Ativo</option>' +
+                '<option value="concluido"' + (c.status==='concluido' ? ' selected' : '') + '>Concluído</option>' +
+                '</select></div></div>';
+        }).join('');
     });
 }
 
 function dragStart(event, id) {
     draggedId = id;
-    setTimeout(() => { const c = document.getElementById('card-'+id); if(c) c.style.opacity='0.4'; }, 0);
+    setTimeout(function() { var c = document.getElementById('card-'+id); if(c) c.style.opacity='0.4'; }, 0);
 }
-
 function dragEnd(event) {
-    const c = document.getElementById('card-'+draggedId);
+    var c = document.getElementById('card-'+draggedId);
     if (c) c.style.opacity = '1';
 }
-
 function allowDrop(event) { event.preventDefault(); }
-
 async function dropCard(event, newStatus) {
     event.preventDefault();
     if (!draggedId) return;
     await updateCaseStatus(draggedId, newStatus);
     draggedId = null;
 }
-
 async function updateCaseStatus(id, newStatus) {
-    const { error } = await window.Auth.client.from('cases').update({ status: newStatus }).eq('id', id);
-    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
+    var res = await window.Auth.client.from('cases').update({ status: newStatus }).eq('id', id);
+    if (res.error) { showNotification('Erro: ' + res.error.message, 'error'); return; }
     showNotification('Status atualizado! ✅', 'success');
-    await loadDashboard();
+    loadDashboard();
 }
 
-// ==================== EQUIPE ====================
+// ===== EQUIPE =====
 async function loadTeam() {
-    const container = document.getElementById('teamList');
+    var container = document.getElementById('teamList');
     if (!container) return;
-    const { data } = await window.Auth.client.from('profiles').select('*').order('name');
-    if (!data?.length) {
+    var res = await window.Auth.client.from('profiles').select('*').order('name');
+    if (!res.data || !res.data.length) {
         container.innerHTML = '<p style="color:var(--text-light);">Nenhum membro cadastrado ainda.</p>';
         return;
     }
-    const roleLabel = { admin:'Administrador', cliente:'Cliente', advogado:'Advogado' };
-    const roleColor = { admin:'#3b82f6', cliente:'#10b981', advogado:'#f59e0b' };
-    container.innerHTML = data.map(p => `
-        <div style="background:white;border-radius:10px;padding:20px;border:1px solid var(--border);
-             box-shadow:var(--shadow);text-align:center;">
-            <div style="width:56px;height:56px;border-radius:50%;background:${roleColor[p.role]||'#6b7280'};
-                 color:white;display:flex;align-items:center;justify-content:center;
-                 font-size:20px;font-weight:700;margin:0 auto 12px;">
-                ${(p.name||p.email).substring(0,2).toUpperCase()}
-            </div>
-            <strong style="display:block;margin-bottom:4px;">${p.name || 'Sem nome'}</strong>
-            <p style="color:var(--text-light);font-size:13px;margin-bottom:8px;">${p.email}</p>
-            <span style="font-size:12px;background:${roleColor[p.role]||'#6b7280'}20;
-                  color:${roleColor[p.role]||'#6b7280'};padding:3px 10px;border-radius:12px;font-weight:500;">
-                ${roleLabel[p.role]||p.role}
-            </span>
-        </div>`).join('');
+    var roleLabel = { admin:'Administrador', cliente:'Cliente', advogado:'Advogado' };
+    var roleColor = { admin:'#3b82f6', cliente:'#10b981', advogado:'#f59e0b' };
+    container.innerHTML = res.data.map(function(p) {
+        var color = roleColor[p.role] || '#6b7280';
+        return '<div style="background:white;border-radius:10px;padding:20px;border:1px solid var(--border);box-shadow:var(--shadow);text-align:center;">' +
+            '<div style="width:56px;height:56px;border-radius:50%;background:' + color + ';color:white;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;margin:0 auto 12px;">' +
+            (p.name||p.email).substring(0,2).toUpperCase() + '</div>' +
+            '<strong style="display:block;margin-bottom:4px;">' + (p.name || 'Sem nome') + '</strong>' +
+            '<p style="color:var(--text-light);font-size:13px;margin-bottom:8px;">' + p.email + '</p>' +
+            '<span style="font-size:12px;background:' + color + '20;color:' + color + ';padding:3px 10px;border-radius:12px;font-weight:500;">' + (roleLabel[p.role]||p.role) + '</span></div>';
+    }).join('');
 }
 
-// ==================== STATUS / CORES ====================
-function statusColor(s) {
-    return {ativo:'#10b981',pendente:'#f59e0b',iniciado:'#3b82f6',concluido:'#6b7280'}[s]||'#6b7280';
-}
-
-function statusLabel(s) {
-    return {ativo:'Ativo',pendente:'Pendente',iniciado:'Iniciado',concluido:'Concluído'}[s]||s;
-}
-
-// ==================== CASOS ====================
-async function filterCases(status) {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    if (event?.target) event.target.classList.add('active');
-    let q = window.Auth.client.from('cases').select('*');
+// ===== CASOS =====
+async function filterCases(status, evt) {
+    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    if (evt && evt.target) evt.target.classList.add('active');
+    var q = window.Auth.client.from('cases').select('*');
     if (status !== 'all') q = q.eq('status', status);
-    const { data } = await q;
-    loadCasesList(data || []);
+    var res = await q;
+    loadCasesList(res.data || []);
 }
 
 async function createCase() {
-    const title = document.getElementById('caseTitle')?.value?.trim();
+    var title = document.getElementById('caseTitle').value.trim();
     if (!title) { showNotification('Preencha o título!', 'error'); return; }
-    const { data: { user } } = await window.Auth.client.auth.getUser();
-    const { error } = await window.Auth.client.from('cases').insert([{
-        title,
-        description: document.getElementById('caseDescription')?.value || '',
-        status:      document.getElementById('caseStatus')?.value || 'iniciado',
-        created_by:  user?.id || null,
+    var userRes = await window.Auth.client.auth.getUser();
+    var res = await window.Auth.client.from('cases').insert([{
+        title:       title,
+        description: document.getElementById('caseDescription').value || '',
+        status:      document.getElementById('caseStatus').value || 'iniciado',
+        created_by:  userRes.data.user ? userRes.data.user.id : null,
         created_at:  new Date().toISOString()
     }]);
-    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
+    if (res.error) { showNotification('Erro: ' + res.error.message, 'error'); return; }
     showNotification('Caso criado! ✅', 'success');
     closeModal();
-    document.getElementById('newCaseForm')?.reset();
-    await loadDashboard();
+    document.getElementById('newCaseForm').reset();
+    loadDashboard();
 }
 
 async function deleteCase(id) {
     if (!confirm('Excluir este caso?')) return;
-    const { error } = await window.Auth.client.from('cases').delete().eq('id', id);
-    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
+    var res = await window.Auth.client.from('cases').delete().eq('id', id);
+    if (res.error) { showNotification('Erro: ' + res.error.message, 'error'); return; }
     showNotification('Caso excluído!', 'success');
-    await loadDashboard();
+    loadDashboard();
 }
 
-// ==================== PERFIL ====================
+// ===== PERFIL =====
 async function updateProfile(event) {
     event.preventDefault();
-    const { data: { user } } = await window.Auth.client.auth.getUser();
-    const { error } = await window.Auth.client.from('profiles').update({
-        name:       document.getElementById('profileName')?.value,
-        phone:      document.getElementById('profilePhone')?.value,
+    var userRes = await window.Auth.client.auth.getUser();
+    var res = await window.Auth.client.from('profiles').update({
+        name:       document.getElementById('profileName').value,
+        phone:      document.getElementById('profilePhone').value,
         updated_at: new Date().toISOString()
-    }).eq('id', user.id);
-    if (error) { showNotification('Erro: ' + error.message, 'error'); return; }
+    }).eq('id', userRes.data.user.id);
+    if (res.error) { showNotification('Erro: ' + res.error.message, 'error'); return; }
     showNotification('Perfil atualizado! ✅', 'success');
 }
 
 async function changePassword() {
-    const { data: { user } } = await window.Auth.client.auth.getUser();
-    await window.Auth.client.auth.resetPasswordForEmail(user.email);
+    var userRes = await window.Auth.client.auth.getUser();
+    await window.Auth.client.auth.resetPasswordForEmail(userRes.data.user.email);
     showNotification('Link enviado para seu email! 📧', 'info');
 }
 
-// ==================== MODAIS ====================
+// ===== MODAIS =====
 function openModal(modalName) {
-    const overlay = document.getElementById('modalOverlay');
-    const modal   = document.getElementById('modal-' + modalName);
+    var overlay = document.getElementById('modalOverlay');
+    var modal   = document.getElementById('modal-' + modalName);
     if (!overlay || !modal) return;
     overlay.classList.add('active');
-    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    modal.style.display = 'block';
 }
-
 function closeModal(event) {
-    const overlay = document.getElementById('modalOverlay');
+    var overlay = document.getElementById('modalOverlay');
     if (!overlay) return;
-    if (!event || event.target === overlay || event.target.closest?.('.modal-close')) {
+    if (!event || event.target === overlay || (event.target.className && event.target.className.indexOf('modal-close') !== -1)) {
         overlay.classList.remove('active');
-        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
     }
 }
 
-// ==================== NOTIFICAÇÕES ====================
-function showNotification(message, type = 'info') {
-    const n = document.getElementById('notification');
-    const t = document.getElementById('notificationText');
+// ===== STATUS =====
+function statusColor(s) {
+    return { ativo:'#10b981', pendente:'#f59e0b', iniciado:'#3b82f6', concluido:'#6b7280' }[s] || '#6b7280';
+}
+function statusLabel(s) {
+    return { ativo:'Ativo', pendente:'Pendente', iniciado:'Iniciado', concluido:'Concluído' }[s] || s;
+}
+
+// ===== NOTIFICAÇÕES =====
+function showNotification(message, type) {
+    if (!type) type = 'info';
+    var n = document.getElementById('notification');
+    var t = document.getElementById('notificationText');
     if (!n || !t) return;
     t.textContent = message;
-    n.className   = 'notification ' + type;
-    n.classList.add('show');
-    setTimeout(() => n.classList.remove('show'), 3500);
+    n.className   = 'notification ' + type + ' show';
+    setTimeout(function() { n.classList.remove('show'); }, 3500);
 }
 
-// ==================== HORÁRIO ====================
-function updateOpenStatus() {
-    const now    = new Date();
-    const isOpen = now.getDay() >= 1 && now.getDay() &lt;= 5
-                && now.getHours() >= 9 && now.getHours() &lt; 17;
-    const badge  = document.getElementById('status-badge');
-    if (badge) {
-        badge.textContent      = isOpen ? '🟢 Aberto Agora' : '🔴 Fechado';
-        badge.style.background = isOpen ? '#d1fae5' : '#fee2e2';
-        badge.style.color      = isOpen ? '#065f46'  : '#991b1b';
-    }
-}
-updateOpenStatus();
-setInterval(updateOpenStatus, 60000);
-
-// ==================== SESSÃO ====================
+// ===== SESSÃO =====
 document.addEventListener('authReady', async function () {
     if (!window.Auth) return;
-    const { user, profile } = await window.Auth.getCurrentUser();
-    if (!user) return;
+    var result = await window.Auth.getCurrentUser();
+    if (!result.user) return;
     document.getElementById('loginPage').style.display    = 'none';
     document.getElementById('appContainer').style.display = 'flex';
-    const un = document.getElementById('userName');
-    const ur = document.getElementById('userRole');
-    const ua = document.getElementById('userAvatar');
-    const pn = document.getElementById('profileName');
-    const pe = document.getElementById('profileEmail');
-    if (un) un.textContent = profile?.name || user.email;
-    if (ur) ur.textContent = profile?.role === 'admin' ? 'Administrador' : 'Usuário';
-    if (ua) ua.textContent = (profile?.name || user.email).substring(0,2).toUpperCase();
-    if (pn) pn.value = profile?.name || '';
-    if (pe) pe.value = user.email || '';
-    await loadDashboard();
+    var un = document.getElementById('userName');
+    var ur = document.getElementById('userRole');
+    var ua = document.getElementById('userAvatar');
+    var pn = document.getElementById('profileName');
+    var pe = document.getElementById('profileEmail');
+    if (un) un.textContent = result.profile.name || result.user.email;
+    if (ur) ur.textContent = result.profile.role === 'admin' ? 'Administrador' : 'Usuário';
+    if (ua) ua.textContent = (result.profile.name || result.user.email).substring(0,2).toUpperCase();
+    if (pn) pn.value = result.profile.name || '';
+    if (pe) pe.value = result.user.email || '';
+    loadDashboard();
 });
+
 </script>
 </body>
 </html>
