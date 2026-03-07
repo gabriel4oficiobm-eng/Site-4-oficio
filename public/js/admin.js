@@ -1,168 +1,487 @@
-(function () {
-    'use strict';
-
-    function initAdmin() {
-        if (!window.Auth) {
-            setTimeout(initAdmin, 500);
-            return;
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - 4º Ofício</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="public/js/auth.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        console.log('✅ Admin inicializado');
+        body {
+            font-family: 'Source Sans 3', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f2;
+            min-height: 100vh;
+        }
 
-        window.Admin = {
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            background: #002147;
+            position: fixed;
+            left: 0;
+            top: 0;
+            color: white;
+            padding: 25px 20px;
+            overflow-y: auto;
+        }
 
-            isAdmin: (p) => p?.role === 'admin',
+        .sidebar-header {
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 25px;
+        }
 
-            getFileUrl(filePath) {
-                const { data } = window.Auth.client.storage
-                    .from('requirements').getPublicUrl(filePath);
-                return data.publicUrl;
-            },
+        .sidebar-header h2 {
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: .3px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-            formatCategory(cat) {
-                return {
-                    escritura: 'Escritura', divorcio: 'Divórcio',
-                    procuracao: 'Procuração', usucapiao: 'Usucapião',
-                    inventario: 'Inventário', outros: 'Outros'
-                }[cat] || cat;
-            },
+        .sidebar-header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
 
-            formatSize(bytes) {
-                if (!bytes) return '0 B';
-                const k = 1024;
-                const sizes = ['B', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-            },
+        .sidebar nav ul {
+            list-style: none;
+        }
 
-            renderUploadSection(containerId, profile) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                if (!this.isAdmin(profile)) { container.style.display = 'none'; return; }
-                container.innerHTML = `
-                    <div style="background:#f8fafc;border:2px dashed #3b82f6;border-radius:12px;padding:24px;margin:20px 0;">
-                        <h3 style="color:#1e40af;margin-bottom:16px;">
-                            <i class="fas fa-cloud-upload-alt"></i> Área do Administrador
-                        </h3>
-                        <div style="margin-bottom:16px;">
-                            <label style="display:block;margin-bottom:8px;font-weight:500;">Categoria:</label>
-                            <select id="uploadCategory" style="width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;">
-                                <option value="escritura">Escritura de Compra e Venda</option>
-                                <option value="divorcio">Divórcio / Dissolução</option>
-                                <option value="procuracao">Procuração</option>
-                                <option value="usucapiao">Usucapião</option>
-                                <option value="inventario">Inventário</option>
-                                <option value="outros">Outros</option>
-                            </select>
-                        </div>
-                        <div style="margin-bottom:16px;">
-                            <label style="display:block;margin-bottom:8px;font-weight:500;">Arquivo PDF:</label>
-                            <input type="file" id="requirementFile" accept=".pdf"
-                                style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;">
-                        </div>
-                        <button onclick="window.handleFileUpload()"
-                            style="background:#3b82f6;color:white;padding:12px 24px;border:none;border-radius:8px;cursor:pointer;font-weight:500;">
-                            <i class="fas fa-upload"></i> Enviar Arquivo
-                        </button>
-                        <div id="uploadStatus" style="margin-top:16px;"></div>
-                        <div style="margin-top:24px;border-top:1px solid #dbeafe;padding-top:16px;">
-                            <h4 style="margin-bottom:12px;"><i class="fas fa-list"></i> Arquivos Enviados</h4>
-                            <div id="adminFilesList"><p style="color:#6b7280;">Carregando...</p></div>
-                        </div>
-                    </div>`;
-                this.loadFilesList();
-            },
+        .sidebar nav ul li {
+            margin-bottom: 5px;
+        }
 
-            async loadFilesList() {
-                const listDiv = document.getElementById('adminFilesList');
-                if (!listDiv) return;
-                try {
-                    const { data, error } = await window.Auth.client
-                        .from('requirement_files').select('*')
-                        .order('created_at', { ascending: false });
-                    if (error) throw error;
-                    if (!data?.length) {
-                        listDiv.innerHTML = '<p style="color:#6b7280;">Nenhum arquivo enviado ainda.</p>';
+        .sidebar nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .sidebar nav ul li a:hover,
+        .sidebar nav ul li a.active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 25px;
+        }
+
+        .header {
+            background: #ffffff;
+            padding: 20px 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(0,33,71,0.1);
+        }
+
+        .header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: .3px;
+            color: #002147;
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info span {
+            color: #5b6470;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: #9b1c1c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #7f1d1d;
+        }
+
+        /* Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,33,71,0.1);
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .card-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            color: #5b6470;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #002147;
+        }
+
+        .card.positive .number {
+            color: #27ae60;
+        }
+
+        .card.warning .number {
+            color: #f39c12;
+        }
+
+        .card.negative .number {
+            color: #e74c3c;
+        }
+
+        /* Sections */
+        .section {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,33,71,0.1);
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            color: #002147;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #002147, #153a63);
+            color: white;
+            border: 1px solid #001735;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            color: #5b6470;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.processing {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 18px;
+            color: #002147;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading State -->
+    <div id="loading" class="loading">
+        Verificando autenticação...
+    </div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboard" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🔐 Painel Admin</h2>
+                <p>4º Ofício de Registro de Imóveis</p>
+            </div>
+
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">📊 Dashboard</a></li>
+                    <li><a href="#">📋 Protocolos</a></li>
+                    <li><a href="#">💬 Atendimento</a></li>
+                    <li><a href="#">📈 Relatórios</a></li>
+                    <li><a href="#">⚙️ Configurações</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>Bem-vindo, <span id="userName">Admin</span></h1>
+                <div class="user-info">
+                    <span id="userEmail">admin@cartorio4oficio.com</span>
+                    <button class="logout-btn" onclick="logout()">Sair</button>
+                </div>
+            </div>
+
+            <!-- Cards -->
+            <div class="cards">
+                <div class="card">
+                    <div class="card-icon">📋</div>
+                    <h3>Protocolos Hoje</h3>
+                    <div class="number">12</div>
+                </div>
+                <div class="card positive">
+                    <div class="card-icon">✅</div>
+                    <h3>Concluídos</h3>
+                    <div class="number">8</div>
+                </div>
+                <div class="card warning">
+                    <div class="card-icon">⏳</div>
+                    <h3>Pendentes</h3>
+                    <div class="number">3</div>
+                </div>
+                <div class="card negative">
+                    <div class="card-icon">⚠️</div>
+                    <h3>Urgentes</h3>
+                    <div class="number">1</div>
+                </div>
+            </div>
+
+            <!-- Protocolos Section -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>📋 Últimos Protocolos</h2>
+                    <button class="btn-add">+ Novo Protocolo</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nº Protocolo</th>
+                                <th>Tipo</th>
+                                <th>Requerente</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#2024-001</td>
+                                <td>Registro</td>
+                                <td>João Silva</td>
+                                <td>05/03/2026</td>
+                                <td><span class="status completed">Concluído</span></td>
+                            </tr>
+                            <tr>
+                                <td>#2024-002</td>
+                                <td>Averbação</td>
+                                <td>Maria Santos</td>
+                                <td>05/03/2026</td>
+                                <td><span class="status processing">Em Andamento</span></td>
+                            </tr>
+                            <tr>
+                                <td>#2024-003</td>
+                                <td>Certidão</td>
+                                <td>Pedro Costa</td>
+                                <td>04/03/2026</td>
+                                <td><span class="status pending">Pendente</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Atendimento Section -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>💬 Atendimentos do Dia</h2>
+                    <button class="btn-add">+ Novo Atendimento</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Horário</th>
+                                <th>Nome</th>
+                                <th>Assunto</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>09:00</td>
+                                <td>Carlos Oliveira</td>
+                                <td>Consulta de Matrícula</td>
+                                <td><span class="status completed">Atendido</span></td>
+                            </tr>
+                            <tr>
+                                <td>10:30</td>
+                                <td>Ana Paula</td>
+                                <td>Retificação</td>
+                                <td><span class="status processing">Em Atendimento</span></td>
+                            </tr>
+                            <tr>
+                                <td>14:00</td>
+                                <td>Roberto Lima</td>
+                                <td>Registro de Imóvel</td>
+                                <td><span class="status pending">Aguardando</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Verifica autenticação ao carregar
+        document.addEventListener('DOMContentLoaded', async function() {
+            const loading = document.getElementById('loading');
+            const dashboard = document.getElementById('dashboard');
+
+            // Aguarda Auth carregar
+            let attempts = 0;
+            const maxAttempts = 50;
+
+            const checkAuth = setInterval(async () => {
+                attempts++;
+
+                if (window.Auth && !window.Auth.error) {
+                    clearInterval(checkAuth);
+
+                    // Verifica se usuário está logado
+                    const { user } = await window.Auth.getCurrentUser();
+
+                    if (!user) {
+                        // Não logado, redireciona para login
+                        window.location.href = 'login.html';
                         return;
                     }
-                    listDiv.innerHTML = data.map(f => `
-                        <div style="display:flex;justify-content:space-between;align-items:center;
-                             padding:12px;background:white;border-radius:8px;margin-bottom:8px;border:1px solid #e5e7eb;">
-                            <div>
-                                <strong>${f.name}</strong><br>
-                                <small style="color:#6b7280;">
-                                    ${this.formatCategory(f.category)} • ${this.formatSize(f.file_size)} •
-                                    ${new Date(f.created_at).toLocaleDateString('pt-BR')}
-                                </small>
-                            </div>
-                            <div style="display:flex;gap:8px;">
-                                <a href="${this.getFileUrl(f.file_path)}" target="_blank"
-                                    style="background:#3b82f6;color:white;padding:6px 12px;border-radius:6px;text-decoration:none;">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                                <button onclick="window.deleteRequirementFile('${f.id}','${f.file_path}')"
-                                    style="background:#ef4444;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>`).join('');
-                } catch (e) {
-                    listDiv.innerHTML = `<p style="color:#ef4444;">Erro: ${e.message}</p>`;
+
+                    // Logado, mostra dashboard
+                    document.getElementById('userName').textContent = user.email.split('@')[0];
+                    document.getElementById('userEmail').textContent = user.email;
+
+                    loading.style.display = 'none';
+                    dashboard.style.display = 'block';
+
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(checkAuth);
+                    loading.innerHTML = 'Erro ao carregar. <a href="login.html">Voltar para login</a>';
                 }
-            }
-        };
-
-        window.handleFileUpload = async function () {
-            const fileInput = document.getElementById('requirementFile');
-            const category  = document.getElementById('uploadCategory')?.value;
-            const status    = document.getElementById('uploadStatus');
-            const file      = fileInput?.files[0];
-            if (!file) { status.innerHTML = '<span style="color:#ef4444;">⚠️ Selecione um arquivo PDF!</span>'; return; }
-            if (file.type !== 'application/pdf') { status.innerHTML = '<span style="color:#ef4444;">⚠️ Apenas PDF!</span>'; return; }
-            status.innerHTML = '<span style="color:#3b82f6;">⏳ Enviando...</span>';
-            try {
-                const fileName = `${category}_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
-                const { error: uploadError } = await window.Auth.client.storage
-                    .from('requirements').upload(fileName, file, { contentType: 'application/pdf' });
-                if (uploadError) throw uploadError;
-                const { data: { user } } = await window.Auth.client.auth.getUser();
-                const { error: dbError } = await window.Auth.client.from('requirement_files').insert([{
-                    name: file.name, file_path: fileName, category,
-                    file_type: file.type, file_size: file.size,
-                    uploaded_by: user?.id || null, created_at: new Date().toISOString()
-                }]);
-                if (dbError) throw dbError;
-                status.innerHTML = '<span style="color:#10b981;">✅ Enviado com sucesso!</span>';
-                fileInput.value = '';
-                window.Admin.loadFilesList();
-                if (window.showNotification) window.showNotification('Arquivo enviado!', 'success');
-            } catch (e) {
-                status.innerHTML = `<span style="color:#ef4444;">❌ Erro: ${e.message}</span>`;
-            }
-        };
-
-        window.deleteRequirementFile = async function (fileId, filePath) {
-            if (!confirm('Excluir este arquivo?')) return;
-            try {
-                await window.Auth.client.storage.from('requirements').remove([filePath]);
-                const { error } = await window.Auth.client.from('requirement_files').delete().eq('id', fileId);
-                if (error) throw error;
-                window.Admin.loadFilesList();
-                if (window.showNotification) window.showNotification('Arquivo excluído!', 'success');
-            } catch (e) {
-                alert('Erro ao excluir: ' + e.message);
-            }
-        };
-
-        document.addEventListener('authReady', async function () {
-            const { profile } = await window.Auth.getCurrentUser();
-            window.Admin.renderUploadSection('adminUploadSection', profile);
+            }, 100);
         });
-    }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAdmin);
-    } else {
-        initAdmin();
-    }
-})();
+        // Logout
+        async function logout() {
+            await window.Auth.logout();
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
