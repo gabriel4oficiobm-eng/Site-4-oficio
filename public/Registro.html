@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Requerimento Profissional | 4º Ofício</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        :root {
+            --azul-oxford: #002147;
+            --dourado-champagne: #C5A059;
+            --off-white: #FCFCFA;
+            --texto-doc: #000000;
+            --borda-input: rgba(197, 160, 89, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; display: flex; height: 100vh; background-color: #E2E2E2; overflow: hidden; }
+
+        .sidebar {
+            width: 480px; background-color: var(--azul-oxford); padding: 25px; color: white;
+            overflow-y: auto; z-index: 10; box-shadow: 8px 0 20px rgba(0,0,0,0.4);
+        }
+
+        .sidebar h2 { font-family: 'Playfair Display', serif; color: var(--dourado-champagne); margin-bottom: 15px; font-size: 1.3rem; text-align: center; border-bottom: 1px solid var(--dourado-champagne); padding-bottom: 10px; }
+        .label-grupo { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: var(--dourado-champagne); margin: 15px 0 8px; display: block; font-weight: 700; }
+        
+        .form-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .form-group { flex: 1; margin-bottom: 10px; }
+        
+        input, select, textarea {
+            width: 100%; padding: 10px; background: rgba(255,255,255,0.08); border: 1.5px solid var(--borda-input);
+            border-radius: 5px; color: white; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; transition: 0.3s;
+        }
+        input::placeholder { color: rgba(255,255,255,0.35); font-style: italic; }
+        select option { color: #000; background: #fff; }
+        input:focus { border-color: white; outline: none; background: rgba(255,255,255,0.12); }
+
+        .preview-area { flex-grow: 1; display: flex; justify-content: center; align-items: flex-start; padding: 30px; overflow-y: auto; }
+        #documento {
+            width: 210mm; min-height: 297mm; background-color: var(--off-white); padding: 20mm 25mm;
+            box-shadow: 0 0 40px rgba(0,0,0,0.2); color: var(--texto-doc); position: relative;
+        }
+
+        .header { text-align: center; border-bottom: 2px solid var(--azul-oxford); margin-bottom: 25px; padding-bottom: 15px; }
+        .header h1 { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--azul-oxford); text-transform: uppercase; }
+        .header p { font-size: 9.5px; color: #333; margin-top: 4px; font-weight: 600; line-height: 1.3; }
+
+        .titulo-doc { text-align: center; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 15px; margin: 25px 0; color: var(--azul-oxford); text-decoration: underline; }
+        
+        .content { font-size: 13px; line-height: 1.7; text-align: justify; font-weight: 600; }
+        .campo-valor { font-weight: 800; text-transform: uppercase; border-bottom: 1px dotted #999; }
+
+        .ato-destaque { margin: 15px 0; border: 2px solid var(--azul-oxford); padding: 12px; text-align: center; font-weight: 800; background: #fff; color: var(--azul-oxford); font-size: 13.5px; }
+
+        .signature-area { margin-top: 60px; text-align: center; }
+        .line { width: 320px; border-top: 1.5px solid #000; margin: 0 auto 8px; }
+        
+        .actions { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 12px; }
+        .btn { padding: 15px 25px; border-radius: 50px; border: none; cursor: pointer; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.3s; }
+        .btn-pdf { background: var(--azul-oxford); color: var(--dourado-champagne); border: 1.2px solid var(--dourado-champagne); }
+        .btn-print { background: #fff; color: var(--azul-oxford); }
+
+        .hidden { display: none; }
+
+        @media print {
+            .sidebar, .actions { display: none !important; }
+            body { background: white; }
+            .preview-area { padding: 0; }
+            #documento { box-shadow: none; margin: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h2>REQUERIMENTO</h2>
+        
+        <span class="label-grupo">Identificação do Apresentante</span>
+        <div class="form-group"><input type="text" id="inNome" placeholder="Nome Completo" oninput="sinc()"></div>
+        
+        <div class="form-row">
+            <select id="inEstadoCivil" onchange="sinc()">
+                <option value="">Estado Civil</option>
+                <option value="SOLTEIRO(A)">Solteiro(a)</option>
+                <option value="CASADO(A)">Casado(a)</option>
+                <option value="VIÚVO(A)">Viúvo(a)</option>
+                <option value="SEPARADO(A)">Separado(a)</option>
+                <option value="DIVORCIADO(A)">Divorciado(a)</option>
+            </select>
+            <select id="inUniao" onchange="sinc()">
+                <option value="">União Estável?</option>
+                <option value="SIM">Sim</option>
+                <option value="NÃO">Não</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <input type="text" id="inRG" placeholder="RG: 00.000.000-0" oninput="mascaraRG(this); sinc()">
+            <input type="text" id="inCPF" placeholder="CPF: 000.000.000-00" maxlength="14" oninput="mascaraCPF(this); sinc()">
+        </div>
+        
+        <div class="form-group"><input type="text" id="inNac" placeholder="Nacionalidade" oninput="sinc()"></div>
+
+        <div class="form-row">
+            <input type="text" id="inZap" placeholder="WhatsApp: (00)00000-0000" maxlength="15" oninput="mascaraZap(this); sinc()">
+            <input type="email" id="inEmail" placeholder="E-mail" oninput="sinc()">
+        </div>
+
+        <span class="label-grupo">Endereço Completo</span>
+        <div class="form-row">
+            <input type="text" id="inRua" placeholder="Rua / Logradouro" oninput="sinc()" style="flex: 2;">
+            <input type="text" id="inNumEnd" placeholder="Nº" oninput="sinc()" style="flex: 0.5;">
+        </div>
+        <div class="form-row">
+            <input type="text" id="inBairro" placeholder="Bairro" oninput="sinc()">
+            <input type="text" id="inCidade" placeholder="Cidade" oninput="sinc()">
+        </div>
+        <div class="form-row">
+            <input type="text" id="inEstado" placeholder="Estado (UF)" oninput="sinc()" style="flex: 0.4;">
+            <input type="text" id="inCompEnd" placeholder="Complemento" oninput="sinc()">
+        </div>
+
+        <span class="label-grupo">Objeto do Registro</span>
+        <div class="form-group">
+            <select id="inAto" onchange="toggleOutros()">
+                <option value="FORMAL DE PARTILHA">Formal de Partilha</option>
+                <option value="INSTRUMENTO PARTICULAR SFH">Instrumento Particular SFH</option>
+                <option value="ESCRITURA DE COMPRA E VENDA" selected>Escritura de Compra e Venda</option>
+                <option value="CLÁUSULA DE VIGÊNCIA EM LOCAÇÃO">Cláusula de Vigência em Locação</option>
+                <option value="ESCRITURA DE DOAÇÃO">Escritura de Doação</option>
+                <option value="ARREMATAÇÃO">Arrematação</option>
+                <option value="ESCRITURA DE INVENTÁRIO">Escritura de Inventário</option>
+                <option value="ALIENAÇÃO FIDUCIÁRIA">Alienação Fiduciária</option>
+                <option value="MANDADO JUDICIAL">Mandado Judicial</option>
+                <option value="REGISTRO NO LIVRO 3 AUXILIAR">Registro no Livro 3 Auxiliar</option>
+                <option value="INSTRUMENTO PARTICULAR">Instrumento Particular</option>
+                <option value="EXAME PRÉVIO">Exame Prévio</option>
+                <option value="OUTROS">Outros (Especificar)</option>
+            </select>
+        </div>
+        <div id="divOutros" class="form-group hidden">
+            <input type="text" id="inAtoOutros" placeholder="Descreva o ato..." oninput="sinc()">
+        </div>
+
+        <span class="label-grupo">Referência do Imóvel</span>
+        <div class="form-row">
+            <select id="inTipoRef" onchange="toggleRef()">
+                <option value="MATRÍCULA">Matrícula</option>
+                <option value="TRANSCRIÇÃO">Transcrição</option>
+            </select>
+            <input type="text" id="inNumMat" placeholder="Número" oninput="sinc()">
+        </div>
+        
+        <div id="divRefExtra" class="form-row hidden">
+            <input type="text" id="inLivro" placeholder="Livro" oninput="sinc()">
+            <input type="text" id="inFolha" placeholder="Folha" oninput="sinc()">
+        </div>
+
+        <div class="form-group"><textarea id="inDescImovel" rows="2" placeholder="Descrição/Localização do Imóvel" oninput="sinc()"></textarea></div>
+
+        <span class="label-grupo">Data</span>
+        <div class="form-row">
+            <input type="number" id="inDia" placeholder="Dia" oninput="sinc()">
+            <select id="inMes" onchange="sinc()">
+                <option value="janeiro">Janeiro</option><option value="fevereiro">Fevereiro</option>
+                <option value="março">Março</option><option value="abril">Abril</option>
+                <option value="maio">Maio</option><option value="junho">Junho</option>
+                <option value="julho">Julho</option><option value="agosto">Agosto</option>
+                <option value="setembro">Setembro</option><option value="outubro">Outubro</option>
+                <option value="novembro">Novembro</option><option value="dezembro">Dezembro</option>
+            </select>
+            <input type="number" id="inAno" value="2024" oninput="sinc()">
+        </div>
+    </aside>
+
+    <main class="preview-area">
+        <div id="documento">
+            <div class="header">
+                <h1>CARTÓRIO DO 4º OFÍCIO DE BARRA MANSA - RJ</h1>
+                <p>SERVIÇO REGISTRAL DO 4º OFÍCIO, 3ª CIRCUNSCRIÇÃO<br>
+                Rua Nilo Peçanha, nº 5 – Centro – Barra Mansa – RJ<br>
+                CNPJ 30.653.232/0001-00 | Tel: (24) 3322-0954 | (24) 3323-0620 | (24) 988826353</p>
+            </div>
+
+            <div class="titulo-doc">REQUERIMENTO PARA REGISTRO</div>
+
+            <div class="content">
+                <p><strong>APRESENTANTE:</strong> <span class="campo-valor" id="outNome">__________</span>, 
+                Estado Civil: <span class="campo-valor" id="outEst">__________</span>, 
+                União Estável: <span class="campo-valor" id="outUni">__________</span>, 
+                RG: <span class="campo-valor" id="outRG">__________</span>, 
+                CPF: <span class="campo-valor" id="outCPF">__________</span>, 
+                Nacionalidade: <span class="campo-valor" id="outNac">__________</span>.</p>
+                
+                <p><strong>CONTATOS:</strong> WhatsApp: <span class="campo-valor" id="outZap">__________</span> | E-mail: <span class="campo-valor" id="outEmail">__________</span>.</p>
+                
+                <p><strong>ENDEREÇO:</strong> <span class="campo-valor" id="outEnd">__________</span>.</p>
+                
+                <p style="margin-top: 15px;">Vem requerer, nos termos do artigo 167, I Lei 6015/73, o <strong>REGISTRO</strong> abaixo:</p>
+                
+                <div class="ato-destaque" id="outAto">ESCRITURA DE COMPRA E VENDA</div>
+
+                <p><strong>DADOS DO IMÓVEL:</strong> <span id="outLabelRef">MATRÍCULA</span> Nº <span class="campo-valor" id="outNumMat">__________</span> <span id="outExtraInfo"></span>.</p>
+                
+                <p><strong>DESCRIÇÃO:</strong> <span class="campo-valor" id="outDesc">__________</span>.</p>
+                
+                <p style="margin-top: 45px;">Barra Mansa, <span class="campo-valor" id="outData">__ de ________ de 2024</span>.</p>
+            </div>
+
+            <div class="signature-area">
+                <div class="line"></div>
+                <p style="font-size: 11px; font-weight: 800; text-transform: uppercase;" id="outAssinatura">APRESENTANTE</p>
+            </div>
+        </div>
+    </main>
+
+    <div class="actions">
+        <button class="btn btn-print" onclick="window.print()">Imprimir</button>
+        <button class="btn btn-pdf" onclick="gerarPDF()">Exportar PDF</button>
+    </div>
+
+    <script>
+        function mascaraCPF(i) {
+            let v = i.value.replace(/\D/g, "");
+            if (v.length > 11) v = v.substring(0, 11);
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            i.value = v;
+        }
+
+        function mascaraRG(i) {
+            let v = i.value.replace(/\D/g, "");
+            v = v.replace(/(\d{2})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            i.value = v;
+        }
+
+        function mascaraZap(i) {
+            let v = i.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+            v = v.replace(/(\d{5})(\d)/, "$1-$2");
+            i.value = v;
+        }
+
+        function toggleOutros() {
+            const val = document.getElementById('inAto').value;
+            document.getElementById('divOutros').className = (val === 'OUTROS') ? 'form-group' : 'form-group hidden';
+            sinc();
+        }
+
+        function toggleRef() {
+            const val = document.getElementById('inTipoRef').value;
+            document.getElementById('divRefExtra').className = (val === 'TRANSCRIÇÃO') ? 'form-row' : 'form-row hidden';
+            sinc();
+        }
+
+        function sinc() {
+            const nome = document.getElementById('inNome').value || '__________';
+            document.getElementById('outNome').innerText = nome;
+            document.getElementById('outAssinatura').innerText = nome;
+            
+            document.getElementById('outEst').innerText = document.getElementById('inEstadoCivil').value || '__________';
+            document.getElementById('outUni').innerText = document.getElementById('inUniao').value || '__________';
+            document.getElementById('outRG').innerText = document.getElementById('inRG').value || '__________';
+            document.getElementById('outCPF').innerText = document.getElementById('inCPF').value || '__________';
+            document.getElementById('outNac').innerText = document.getElementById('inNac').value || '__________';
+            document.getElementById('outZap').innerText = document.getElementById('inZap').value || '__________';
+            document.getElementById('outEmail').innerText = document.getElementById('inEmail').value || '__________';
+            
+            const rua = document.getElementById('inRua').value;
+            const num = document.getElementById('inNumEnd').value;
+            const bairro = document.getElementById('inBairro').value;
+            const cidade = document.getElementById('inCidade').value;
+            const uf = document.getElementById('inEstado').value;
+            const comp = document.getElementById('inCompEnd').value;
+            
+            let endStr = rua ? rua : '__________';
+            if (num) endStr += `, nº ${num}`;
+            if (comp) endStr += ` (${comp})`;
+            if (bairro) endStr += `, Bairro ${bairro}`;
+            if (cidade) endStr += ` - ${cidade}`;
+            if (uf) endStr += `/${uf}`;
+            document.getElementById('outEnd').innerText = endStr;
+            
+            const ato = document.getElementById('inAto').value;
+            document.getElementById('outAto').innerText = (ato === 'OUTROS') ? document.getElementById('inAtoOutros').value : ato;
+
+            const tRef = document.getElementById('inTipoRef').value;
+            document.getElementById('outLabelRef').innerText = tRef;
+            document.getElementById('outNumMat').innerText = document.getElementById('inNumMat').value || '__________';
+            document.getElementById('outDesc').innerText = document.getElementById('inDescImovel').value || '__________';
+
+            if (tRef === 'TRANSCRIÇÃO') {
+                const l = document.getElementById('inLivro').value || '___';
+                const f = document.getElementById('inFolha').value || '___';
+                document.getElementById('outExtraInfo').innerHTML = ` | <strong>LIVRO:</strong> ${l} | <strong>FOLHA:</strong> ${f}`;
+            } else {
+                document.getElementById('outExtraInfo').innerText = '';
+            }
+
+            const d = document.getElementById('inDia').value || '__';
+            const m = document.getElementById('inMes').value;
+            const a = document.getElementById('inAno').value || '2024';
+            document.getElementById('outData').innerText = `${d} de ${m} de ${a}`;
+        }
+
+        function gerarPDF() {
+            const element = document.getElementById('documento');
+            html2pdf().set({
+                margin: 0,
+                filename: 'Requerimento_Oficial_4Oficio.pdf',
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 3 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).from(element).save();
+        }
+
+        window.onload = () => {
+            const hoje = new Date();
+            document.getElementById('inDia').value = hoje.getDate();
+            document.getElementById('inAno').value = hoje.getFullYear();
+            sinc();
+        };
+    </script>
+</body>
+</html>
