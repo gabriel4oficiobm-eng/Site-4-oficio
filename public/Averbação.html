@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Averbação | 4º Ofício Barra Mansa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        :root {
+            --azul-oxford: #002147;
+            --dourado-champagne: #C5A059;
+            --off-white: #FCFCFA;
+            --texto-doc: #000000;
+            --borda-input: rgba(197, 160, 89, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; display: flex; height: 100vh; background-color: #E2E2E2; overflow: hidden; }
+
+        .sidebar {
+            width: 450px; background-color: var(--azul-oxford); padding: 20px; color: white;
+            overflow-y: auto; z-index: 10; box-shadow: 8px 0 20px rgba(0,0,0,0.4);
+        }
+
+        .sidebar h2 { font-family: 'Playfair Display', serif; color: var(--dourado-champagne); margin-bottom: 15px; font-size: 1.2rem; text-align: center; border-bottom: 1px solid var(--dourado-champagne); padding-bottom: 10px; }
+        .label-grupo { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: var(--dourado-champagne); margin: 15px 0 8px; display: block; font-weight: 700; }
+        
+        .form-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .form-group { flex: 1; margin-bottom: 10px; }
+        
+        input, select, textarea {
+            width: 100%; padding: 10px; background: rgba(255,255,255,0.08); border: 1.5px solid var(--borda-input);
+            border-radius: 5px; color: white; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; transition: 0.3s;
+        }
+        input:focus, select:focus { border-color: white; outline: none; background: rgba(255,255,255,0.12); }
+        select option { color: #000; background: #fff; }
+
+        .preview-area { flex-grow: 1; display: flex; justify-content: center; padding: 30px; overflow-y: auto; }
+        #documento {
+            width: 210mm; min-height: 297mm; background-color: var(--off-white); padding: 20mm 25mm;
+            box-shadow: 0 0 40px rgba(0,0,0,0.2); color: var(--texto-doc); position: relative;
+        }
+
+        .header { text-align: center; border-bottom: 2px solid var(--azul-oxford); margin-bottom: 20px; padding-bottom: 10px; }
+        .header h1 { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--azul-oxford); text-transform: uppercase; margin-bottom: 5px; }
+        .header p { font-size: 9px; color: #333; font-weight: 600; line-height: 1.2; }
+
+        .titulo-doc { text-align: center; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 14px; margin: 20px 0; color: var(--azul-oxford); text-decoration: underline; }
+        
+        .content { font-size: 12px; line-height: 1.6; text-align: justify; font-weight: 500; }
+        .campo-valor { font-weight: 700; text-transform: uppercase; border-bottom: 1px dotted #999; }
+
+        .grid-averbacoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 15px 0; font-size: 10px; border: 1px solid #ddd; padding: 10px; }
+        .check-item { display: flex; align-items: center; gap: 8px; }
+        .box { width: 14px; height: 14px; border: 1px solid #000; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px; }
+
+        .footer-obs { font-size: 9px; margin-top: 20px; font-style: italic; border-top: 1px solid #ccc; padding-top: 5px; }
+        .signature-area { margin-top: 50px; text-align: center; }
+        .line { width: 300px; border-top: 1.5px solid #000; margin: 0 auto 5px; }
+        
+        .actions { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 12px; }
+        .btn { padding: 12px 20px; border-radius: 50px; border: none; cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .btn-pdf { background: var(--azul-oxford); color: var(--dourado-champagne); border: 1.2px solid var(--dourado-champagne); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h2>AVERBAÇÃO</h2>
+        
+        <span class="label-grupo">Dados do Requerente</span>
+        <div class="form-group"><input type="text" id="inNome" placeholder="Nome Completo" oninput="sinc()"></div>
+        
+        <div class="form-row">
+            <input type="text" id="inRG" placeholder="RG" oninput="mascaraRG(this); sinc()">
+            <input type="text" id="inCPF" placeholder="CPF" maxlength="14" oninput="mascaraCPF(this); sinc()">
+        </div>
+        
+        <div class="form-row">
+            <input type="text" id="inNac" placeholder="Nacionalidade" oninput="sinc()">
+            <select id="inEstCivil" onchange="sinc()">
+                <option value="">Estado Civil</option>
+                <option value="SOLTEIRO(A)">Solteiro(a)</option>
+                <option value="CASADO(A)">Casado(a)</option>
+                <option value="VIÚVO(A)">Viúvo(a)</option>
+                <option value="SEPARADO(A)">Separado(a)</option>
+                <option value="DIVORCIADO(A)">Divorciado(a)</option>
+            </select>
+        </div>
+        
+        <div class="form-group"><input type="text" id="inProf" placeholder="Profissão" oninput="sinc()"></div>
+
+        <span class="label-grupo">Endereço e Contato</span>
+        <div class="form-row">
+            <input type="text" id="inRua" placeholder="Rua" oninput="sinc()" style="flex: 2;">
+            <input type="text" id="inNumEnd" placeholder="Nº" oninput="sinc()" style="flex: 0.5;">
+        </div>
+        <div class="form-group"><input type="text" id="inBairro" placeholder="Bairro/Cidade" oninput="sinc()"></div>
+        <div class="form-group"><input type="text" id="inZap" placeholder="Telefone" maxlength="15" oninput="mascaraZap(this); sinc()"></div>
+
+        <span class="label-grupo">Imóvel e Referência</span>
+        <div class="form-row">
+            <select id="inTipoRef" onchange="toggleRef(); sinc()">
+                <option value="MATRÍCULA">Matrícula</option>
+                <option value="TRANSCRIÇÃO">Transcrição</option>
+            </select>
+            <input type="text" id="inNumMat" placeholder="Número" oninput="sinc()">
+        </div>
+        <div id="divRefExtra" class="form-row hidden">
+            <input type="text" id="inLivro" placeholder="Livro" oninput="sinc()">
+            <input type="text" id="inFolha" placeholder="Folha" oninput="sinc()">
+        </div>
+        <div class="form-row">
+            <input type="text" id="inLote" placeholder="Lote" oninput="sinc()">
+            <input type="text" id="inQuadra" placeholder="Quadra" oninput="sinc()">
+        </div>
+        <div class="form-group"><input type="text" id="inLoteamento" placeholder="Loteamento" oninput="sinc()"></div>
+
+        <span class="label-grupo">Tipo de Averbação</span>
+        <div class="form-group">
+            <select id="inAto" onchange="toggleOutros(); sinc()">
+                <option value="casamento">Casamento</option>
+                <option value="acao">Existência de Ação</option>
+                <option value="documentos">Documentos</option>
+                <option value="locacao">Locação / Direito Preferência</option>
+                <option value="hipoteca">Cancelamento de Hipoteca</option>
+                <option value="desmembro">Desmembramento</option>
+                <option value="fiduciaria">Cancelamento de Alienação Fiduciária</option>
+                <option value="premonitoria">Premonitória</option>
+                <option value="medidas">Descrição de Medidas (sem alteração)</option>
+                <option value="construcao">Construção / Habite-se</option>
+                <option value="remembro">Remembramento</option>
+                <option value="outros">OUTROS (ESPECIFICAR)</option>
+            </select>
+        </div>
+        <div id="divOutros" class="form-group hidden">
+            <input type="text" id="inAtoOutros" placeholder="Especifique o ato..." oninput="sinc()">
+        </div>
+
+        <span class="label-grupo">Data do Requerimento</span>
+        <div class="form-row">
+            <input type="number" id="inDia" placeholder="Dia" oninput="sinc()">
+            <select id="inMes" onchange="sinc()">
+                <option value="janeiro">Janeiro</option><option value="fevereiro">Fevereiro</option>
+                <option value="março">Março</option><option value="abril">Abril</option>
+                <option value="maio">Maio</option><option value="junho">Junho</option>
+                <option value="julho">Julho</option><option value="agosto">Agosto</option>
+                <option value="setembro">Setembro</option><option value="outubro">Outubro</option>
+                <option value="novembro">Novembro</option><option value="dezembro">Dezembro</option>
+            </select>
+            <input type="number" id="inAno" placeholder="Ano" oninput="sinc()">
+        </div>
+    </aside>
+
+    <main class="preview-area">
+        <div id="documento">
+            <div class="header">
+                <h1>CARTÓRIO DO 4º OFÍCIO DE BARRA MANSA - RJ</h1>
+                <p>SERVIÇO REGISTRAL DO 4º OFÍCIO, 3ª CIRCUNSCRIÇÃO<br>
+                Rua Nilo Peçanha, nº 5 – Centro – Barra Mansa – RJ<br>
+                CNPJ 30.653.232/0001-00 | Tel: (24) 3322-0954 | (24) 3323-0620</p>
+            </div>
+
+            <div class="titulo-doc">REQUERIMENTO PARA AVERBAÇÃO</div>
+
+            <div class="content">
+                <p><strong>REQUERENTE:</strong> <span class="campo-valor" id="outNome">__________</span>, 
+                RG: <span class="campo-valor" id="outRG">__________</span>, CPF: <span class="campo-valor" id="outCPF">__________</span>, 
+                NACIONALIDADE: <span class="campo-valor" id="outNac">__________</span>, ESTADO CIVIL: <span class="campo-valor" id="outEst">__________</span>, 
+                PROFISSÃO: <span class="campo-valor" id="outProf">__________</span>.</p>
+                
+                <p><strong>ENDEREÇO:</strong> <span class="campo-valor" id="outEnd">__________</span> | <strong>TEL:</strong> <span class="campo-valor" id="outZap">__________</span>.</p>
+
+                <p style="margin-top:10px;"><strong>DESCRIÇÃO DO IMÓVEL:</strong> Lote: <span class="campo-valor" id="outLote">___</span> | 
+                Quadra: <span class="campo-valor" id="outQuadra">___</span> | Loteamento: <span class="campo-valor" id="outLoteamento">__________</span> | <span id="outLabelRef">MATRÍCULA</span>: <span class="campo-valor" id="outNumMat">__________</span>
+                <span id="outExtraInfo"></span>.</p>
+
+                <p style="margin-top: 15px;">Vem requerer, nos termos do artigo 167, II Lei 6015/73, a averbação abaixo:</p>
+
+                <div class="grid-averbacoes">
+                    <div class="check-item"><div class="box" id="c-casamento"></div> Casamento</div>
+                    <div class="check-item"><div class="box" id="c-acao"></div> Existência de ação</div>
+                    <div class="check-item"><div class="box" id="c-documentos"></div> Documentos</div>
+                    <div class="check-item"><div class="box" id="c-locacao"></div> Locação / Direito Preferência</div>
+                    <div class="check-item"><div class="box" id="c-hipoteca"></div> Cancelamento de Hipoteca</div>
+                    <div class="check-item"><div class="box" id="c-desmembro"></div> Desmembramento</div>
+                    <div class="check-item"><div class="box" id="c-fiduciaria"></div> Cancelamento Alienação Fid.</div>
+                    <div class="check-item"><div class="box" id="c-premonitoria"></div> Premonitória</div>
+                    <div class="check-item"><div class="box" id="c-construcao"></div> Construção / Habite-se</div>
+                    <div class="check-item"><div class="box" id="c-medidas"></div> Descrição Medidas s/ Alt. Área</div>
+                    <div class="check-item"><div class="box" id="c-remembro"></div> Remembramento</div>
+                    <div class="check-item" style="grid-column: span 2;">
+                        <div class="box" id="c-outros"></div> OUTROS: <span class="campo-valor" id="outAtoOutrosDoc">________________________________________</span>
+                    </div>
+                </div>
+
+                <p style="margin-top: 40px; text-align: center;">Barra Mansa, <span class="campo-valor" id="outDia">__</span> de <span class="campo-valor" id="outMes">__________</span> de 20<span class="campo-valor" id="outAno">__</span>.</p>
+            </div>
+
+            <div class="signature-area">
+                <div class="line"></div>
+                <p style="font-size: 10px; font-weight: 800;">ASSINATURA DO REQUERENTE (FIRMA RECONHECIDA)</p>
+            </div>
+
+            <div class="footer-obs">
+                Obs. As averbações a que se referem os itens 4 e 5 do inciso II do art. 167 da Lei 6015/73 serão as feitas a requerimento dos interessados, com firma reconhecida. (Proprietário do imóvel)
+            </div>
+        </div>
+    </main>
+
+    <div class="actions">
+        <button class="btn btn-pdf" onclick="gerarPDF()">Exportar Requerimento PDF</button>
+    </div>
+
+    <script>
+        function mascaraCPF(i) {
+            let v = i.value.replace(/\D/g, "");
+            v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            i.value = v;
+        }
+
+        function mascaraRG(i) {
+            let v = i.value.replace(/\D/g, "");
+            v = v.replace(/(\d{2})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            i.value = v;
+        }
+
+        function mascaraZap(i) {
+            let v = i.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
+            i.value = v;
+        }
+
+        function toggleOutros() {
+            const val = document.getElementById('inAto').value;
+            document.getElementById('divOutros').className = (val === 'outros') ? 'form-group' : 'form-group hidden';
+        }
+
+        function toggleRef() {
+            const val = document.getElementById('inTipoRef').value;
+            document.getElementById('divRefExtra').className = (val === 'TRANSCRIÇÃO') ? 'form-row' : 'form-row hidden';
+        }
+
+        function sinc() {
+            document.getElementById('outNome').innerText = document.getElementById('inNome').value || '__________';
+            document.getElementById('outRG').innerText = document.getElementById('inRG').value || '__________';
+            document.getElementById('outCPF').innerText = document.getElementById('inCPF').value || '__________';
+            document.getElementById('outNac').innerText = document.getElementById('inNac').value || '__________';
+            document.getElementById('outEst').innerText = document.getElementById('inEstCivil').value || '__________';
+            document.getElementById('outProf').innerText = document.getElementById('inProf').value || '__________';
+            document.getElementById('outZap').innerText = document.getElementById('inZap').value || '__________';
+            document.getElementById('outLote').innerText = document.getElementById('inLote').value || '___';
+            document.getElementById('outQuadra').innerText = document.getElementById('inQuadra').value || '___';
+            document.getElementById('outLoteamento').innerText = document.getElementById('inLoteamento').value || '__________';
+
+            const rua = document.getElementById('inRua').value;
+            const num = document.getElementById('inNumEnd').value;
+            const bairro = document.getElementById('inBairro').value;
+            document.getElementById('outEnd').innerText = rua ? `${rua}, nº ${num} - ${bairro}` : '____________________';
+
+            const tRef = document.getElementById('inTipoRef').value;
+            document.getElementById('outLabelRef').innerText = tRef;
+            document.getElementById('outNumMat').innerText = document.getElementById('inNumMat').value || '__________';
+            if (tRef === 'TRANSCRIÇÃO') {
+                const l = document.getElementById('inLivro').value || '___';
+                const f = document.getElementById('inFolha').value || '___';
+                document.getElementById('outExtraInfo').innerHTML = ` | LIVRO: ${l} | FOLHAS: ${f}`;
+            } else {
+                document.getElementById('outExtraInfo').innerText = '';
+            }
+
+            const selectedAto = document.getElementById('inAto').value;
+            document.querySelectorAll('.box').forEach(b => b.innerText = '');
+            if (document.getElementById('c-' + selectedAto)) document.getElementById('c-' + selectedAto).innerText = 'X';
+            
+            if (selectedAto === 'outros') {
+                document.getElementById('outAtoOutrosDoc').innerText = document.getElementById('inAtoOutros').value || '____________________';
+            } else {
+                document.getElementById('outAtoOutrosDoc').innerText = '________________________________________';
+            }
+
+            document.getElementById('outDia').innerText = document.getElementById('inDia').value || '__';
+            document.getElementById('outMes').innerText = document.getElementById('inMes').value;
+            let anoInput = document.getElementById('inAno').value;
+            document.getElementById('outAno').innerText = anoInput ? anoInput.toString().slice(-2) : '__';
+        }
+
+        function gerarPDF() {
+            const element = document.getElementById('documento');
+            html2pdf().set({
+                margin: 0,
+                filename: 'Requerimento_Averbacao_4Oficio.pdf',
+                html2canvas: { scale: 3 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).from(element).save();
+        }
+
+        window.onload = () => {
+            const hoje = new Date();
+            document.getElementById('inDia').value = hoje.getDate();
+            document.getElementById('inMes').value = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"][hoje.getMonth()];
+            document.getElementById('inAno').value = hoje.getFullYear();
+            sinc();
+        };
+    </script>
+</body>
+</html>
