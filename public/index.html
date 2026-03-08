@@ -292,6 +292,28 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
     .case-edit-grid,
     .doc-row { grid-template-columns: 1fr; }
 }
+        /* Rebrand visual - Cartório 4º Ofício */
+:root{--primary:#0d2d66;--primary-dark:#091f47;--primary-light:#1c3f7f;--secondary:#e2b64b;--bg:#05080f;--card:#0b1220;--text:#f5f6fa;--text-light:#b9c3d8;--border:#223452}
+body{background:var(--bg);color:var(--text)}
+.public-site,.app-container,.login-page,.public-hero{background:#05080f !important}
+.public-nav,.sidebar,.top-header,.login-box,.board-card,.stat-card,.acesso-card,.quick-btn,.header,.section,.card,.team-card,.modal,.public-footer{background:#0b1220 !important;border:1px solid var(--border) !important;color:var(--text) !important}
+.breadcrumb,.stat-label,.user-role,.footer-section p,.footer-section a,.login-logo p,.team-role,.quick-btn p{color:var(--text-light) !important}
+.public-nav{box-shadow:0 8px 30px rgba(0,0,0,.45)}
+.public-nav-links a{color:var(--text) !important}
+.public-nav-links a:hover{color:var(--secondary) !important}
+.public-hero{border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.section-title,.acesso-card h3,.header h1,.section h2{color:var(--text) !important}
+.btn-primary{background:linear-gradient(120deg,#d8a93c,#f0cb6e) !important;color:#1d1404 !important;border:0}
+.btn-primary:hover{filter:brightness(1.05)}
+.btn-outline{border-color:#3c547b;color:var(--text)}
+.login-logo i{display:none}
+.brand-logo{display:block;object-fit:contain}
+.login-brand{width:min(100%,340px);margin:0 auto 14px}
+.nav-brand{width:260px;max-width:42vw}
+.sidebar-brand{width:190px;max-width:100%}
+.logo-icon{display:none !important}
+.public-footer{background:#0b1220 !important;border-top:1px solid var(--border)}
+.acesso-card span,.section-title i,.quick-btn i{color:var(--secondary) !important}
         
 </style>
 </head>
@@ -303,7 +325,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
     <div class="login-container">
         <div class="login-box">
             <div class="login-logo">
-                <i class="fas fa-landmark"></i>
+                <img src="assets/logo-cartorio.svg" alt="Logo Cartório 4º Ofício" class="brand-logo login-brand">
                 <h1> Cartório 4º Ofício</h1>
                 <p>Barra Mansa - RJ</p>
             </div>
@@ -365,8 +387,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
 <div id="publicSite" class="public-site" style="display:none;">
     <nav class="public-nav">
         <div class="logo">
-            <div class="logo-icon"><i class="fas fa-landmark"></i></div>
-            <span>4º Ofício</span>
+            <img src="assets/logo-cartorio.svg" alt="Logo Cartório 4º Ofício" class="brand-logo nav-brand">
         </div>
         <div class="public-nav-links">
             <a href="#inicio">Início</a>
@@ -610,8 +631,7 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--tex
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="logo">
-                <div class="logo-icon"><i class="fas fa-landmark"></i></div>
-                <span>4º Ofício</span>
+                <img src="assets/logo-cartorio.svg" alt="Logo Cartório 4º Ofício" class="brand-logo sidebar-brand">
             </div>
         </div>
         
